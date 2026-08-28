@@ -8,6 +8,7 @@ import {
   ListItemText,
   ListItemButton,
   Typography,
+  Box,
 } from '@mui/material';
 import BatteryFullIcon from '@mui/icons-material/BatteryFull';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
@@ -38,15 +39,39 @@ import MotionBar from './components/MotionBar';
 dayjs.extend(relativeTime);
 
 const useStyles = makeStyles()((theme) => ({
-  icon: {
-    width: '25px',
-    height: '25px',
-    filter: 'brightness(0) invert(1)',
+  row: {
+    margin: '4px 8px',
+    borderRadius: '12px',
+    backgroundColor: theme.palette.background.paper,
+    border: `1px solid ${theme.palette.divider}`,
+    boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+    transition: 'all 0.2s ease-in-out',
+    padding: '8px 12px',
+    '&:hover': {
+      backgroundColor: theme.palette.action.hover,
+      transform: 'translateY(-1px)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    },
+    '&.Mui-selected': {
+      backgroundColor: theme.palette.action.selected,
+      borderColor: theme.palette.primary.main,
+    },
   },
-  batteryText: {
-    fontSize: '0.75rem',
-    fontWeight: 'normal',
-    lineHeight: '0.875rem',
+  avatar: {
+    backgroundColor: theme.palette.action.hover,
+    borderRadius: '10px',
+    width: 40,
+    height: 40,
+  },
+  icon: {
+    width: '24px',
+    height: '24px',
+    filter: 'brightness(0) invert(0.6)',
+  },
+  iconsBox: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2px',
   },
   success: {
     color: theme.palette.success.main,
@@ -58,7 +83,7 @@ const useStyles = makeStyles()((theme) => ({
     color: theme.palette.error.main,
   },
   neutral: {
-    color: theme.palette.neutral.main,
+    color: theme.palette.text.disabled,
   },
   selected: {
     backgroundColor: theme.palette.action.selected,
@@ -105,15 +130,17 @@ const DeviceRow = ({ devices, index, style }) => {
       status = dayjs(item.lastUpdate).fromNow();
     }
     return (
-      <>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         {secondaryValue && (
           <>
-            {secondaryValue}
-            {' • '}
+            <span>{secondaryValue}</span>
+            <span>•</span>
           </>
         )}
-        <span className={classes[getStatusColor(item.status)]}>{status}</span>
-      </>
+        <span className={classes[getStatusColor(item.status)]} style={{ fontWeight: item.status === 'online' ? 600 : 400 }}>
+          {status}
+        </span>
+      </Box>
     );
   };
 
@@ -124,15 +151,19 @@ const DeviceRow = ({ devices, index, style }) => {
         onClick={() => dispatch(devicesActions.selectId(item.id))}
         disabled={!admin && item.disabled}
         selected={selectedDeviceId === item.id}
-        className={selectedDeviceId === item.id ? classes.selected : null}
+        className={classes.row}
       >
-        <ListItemAvatar>
-          <Avatar>
+        <ListItemAvatar sx={{ minWidth: 48 }}>
+          <Avatar className={classes.avatar}>
             <img className={classes.icon} src={mapIcons[mapIconKey(item.category)]} alt="" />
           </Avatar>
         </ListItemAvatar>
         <ListItemText
-          primary={primaryValue}
+          primary={
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }} noWrap>
+              {primaryValue}
+            </Typography>
+          }
           secondary={secondaryText()}
           slots={{
             primary: Typography,
@@ -144,7 +175,7 @@ const DeviceRow = ({ devices, index, style }) => {
           }}
         />
         {position && (
-          <>
+          <Box className={classes.iconsBox}>
             {position.attributes.hasOwnProperty('alarm') && (
               <Tooltip title={`${t('eventAlarm')}: ${formatAlarm(position.attributes.alarm, t)}`}>
                 <IconButton size="small">
@@ -158,9 +189,9 @@ const DeviceRow = ({ devices, index, style }) => {
               >
                 <IconButton size="small">
                   {position.attributes.ignition ? (
-                    <EngineIcon width={20} height={20} className={classes.success} />
+                    <EngineIcon width={18} height={18} className={classes.success} />
                   ) : (
-                    <EngineIcon width={20} height={20} className={classes.neutral} />
+                    <EngineIcon width={18} height={18} className={classes.neutral} />
                   )}
                 </IconButton>
               </Tooltip>
@@ -190,7 +221,7 @@ const DeviceRow = ({ devices, index, style }) => {
                 </IconButton>
               </Tooltip>
             )}
-          </>
+          </Box>
         )}
       </ListItemButton>
     </div>
