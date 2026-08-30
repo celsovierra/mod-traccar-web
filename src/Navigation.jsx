@@ -129,6 +129,9 @@ const Navigation = () => {
         <Route path="/" element={<App />}>
           <Route index element={<MainPage />} />
 
+          <Route path="device/:id" element={<DevicePage />} />
+          <Route path="device" element={<DevicePage />} />
+
           <Route path="position/:id" element={<PositionPage />} />
           <Route path="network/:positionId" element={<NetworkPage />} />
           <Route path="event/:id" element={<EventPage />} />

@@ -20,6 +20,7 @@ const MapPositions = ({
 }) => {
   const id = useId();
   const clusters = `${id}-clusters`;
+  const clustersCircle = `${id}-clusters-circle`;
   const selected = `${id}-selected`;
 
   const theme = useTheme();
@@ -28,6 +29,7 @@ const MapPositions = ({
 
   const devices = useSelector((state) => state.devices.items);
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
+  const reduxPositions = useSelector((state) => state.session.positions);
 
   const mapCluster = useAttributePreference('mapCluster', true);
   const directionType = useAttributePreference('mapDirection', 'selected');
@@ -35,8 +37,38 @@ const MapPositions = ({
   const disabledRef = useRef(disabled);
   disabledRef.current = disabled;
 
+  const animatedPositions = useRef({});
+  const animationFrameRef = useRef(null);
+  const prevSelectedId = useRef(null);
+
+  // Força o zoom 17 ao selecionar qualquer veículo (na lista ou no mapa)
+  useEffect(() => {
+    if (selectedDeviceId) {
+      const posList = positions?.length ? positions : Object.values(reduxPositions || {});
+      const targetPos = posList.find((p) => Number(p.deviceId) === Number(selectedDeviceId));
+
+      if (targetPos && prevSelectedId.current !== selectedDeviceId) {
+        prevSelectedId.current = selectedDeviceId;
+
+        const coords = toMapCoordinates(targetPos.longitude, targetPos.latitude);
+
+        setTimeout(() => {
+          map.flyTo({
+            center: coords,
+            zoom: 17,
+            speed: 1.6,
+            curve: 1,
+            essential: true,
+          });
+        }, 60);
+      }
+    } else {
+      prevSelectedId.current = null;
+    }
+  }, [selectedDeviceId, positions, reduxPositions]);
+
   const createFeature = useCallback(
-    (devices, position, selectedPositionId) => {
+    (devices, position, selectedPositionId, animatedCoord, animatedRotation) => {
       const device = devices[position.deviceId];
       let showDirection;
       switch (directionType) {
@@ -53,11 +85,11 @@ const MapPositions = ({
       return {
         id: position.id,
         deviceId: position.deviceId,
-        name: device.name,
+        name: device ? device.name : '',
         fixTime: formatTime(position.fixTime, 'seconds'),
-        category: mapIconKey(device.category),
-        color: showStatus ? position.attributes.color || getStatusColor(device.status) : 'neutral',
-        rotation: position.course,
+        category: mapIconKey(device ? device.category : ''),
+        color: showStatus ? (position.attributes?.color || getStatusColor(device?.status)) : 'neutral',
+        rotation: animatedRotation !== undefined ? animatedRotation : (position.course || 0),
         direction: showDirection,
       };
     },
@@ -82,8 +114,26 @@ const MapPositions = ({
       if (disabledRef.current) return;
       event.preventDefault();
       const feature = event.features[0];
-      if (onMarkerClick) {
-        onMarkerClick(feature.properties.id, feature.properties.deviceId);
+      if (feature?.properties) {
+        const devId = Number(feature.properties.deviceId);
+        const positionId = Number(feature.properties.id);
+        const coords = feature.geometry.coordinates;
+
+        prevSelectedId.current = devId;
+
+        setTimeout(() => {
+          map.flyTo({
+            center: coords,
+            zoom: 17,
+            speed: 1.6,
+            curve: 1,
+            essential: true,
+          });
+        }, 60);
+
+        if (onMarkerClick) {
+          onMarkerClick(positionId, devId);
+        }
       }
     },
     [onMarkerClick],
@@ -94,7 +144,7 @@ const MapPositions = ({
       if (disabledRef.current) return;
       event.preventDefault();
       const features = map.queryRenderedFeatures(event.point, {
-        layers: [clusters],
+        layers: [clustersCircle, clusters],
       });
       const clusterId = features[0].properties.cluster_id;
       const zoom = await map.getSource(id).getClusterExpansionZoom(clusterId);
@@ -103,7 +153,7 @@ const MapPositions = ({
         zoom,
       });
     },
-    [clusters, id],
+    [clusters, clustersCircle, id],
   );
 
   useEffect(() => {
@@ -124,6 +174,7 @@ const MapPositions = ({
         features: [],
       },
     });
+
     [id, selected].forEach((source) => {
       map.addLayer({
         id: source,
@@ -134,12 +185,15 @@ const MapPositions = ({
           'icon-image': '{category}-{color}',
           'icon-size': iconScale,
           'icon-allow-overlap': true,
+          'icon-rotate': ['get', 'rotation'],
+          'icon-rotation-alignment': 'map',
           'text-field': `{${titleField || 'name'}}`,
           'text-allow-overlap': true,
           'text-anchor': 'bottom',
           'text-offset': [0, -2 * iconScale],
           'text-font': findFonts(map),
           'text-size': 12,
+          'text-rotation-alignment': 'viewport',
           'symbol-sort-key': ['get', 'id'],
         },
         paint: {
@@ -165,19 +219,61 @@ const MapPositions = ({
       map.on('mouseleave', source, onMouseLeave);
       map.on('click', source, onMarkerClickCallback);
     });
+
+    // Círculos com cores por quantidade agrupada
+    map.addLayer({
+      id: clustersCircle,
+      type: 'circle',
+      source: id,
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': [
+          'step',
+          ['get', 'point_count'],
+          '#10b981', // Verde (< 10)
+          10,
+          '#3b82f6', // Azul (10 a 29)
+          30,
+          '#f59e0b', // Laranja (30 a 99)
+          100,
+          '#ef4444', // Vermelho (>= 100)
+        ],
+        'circle-radius': [
+          'step',
+          ['get', 'point_count'],
+          18,
+          10,
+          22,
+          30,
+          26,
+          100,
+          32,
+        ],
+        'circle-stroke-width': 3,
+        'circle-stroke-color': '#ffffff',
+        'circle-opacity': 0.9,
+      },
+    });
+
+    // Texto com o número dentro do círculo
     map.addLayer({
       id: clusters,
       type: 'symbol',
       source: id,
       filter: ['has', 'point_count'],
       layout: {
-        'icon-image': 'background',
-        'icon-size': iconScale,
         'text-field': '{point_count_abbreviated}',
         'text-font': findFonts(map),
-        'text-size': 14,
+        'text-size': 13,
+      },
+      paint: {
+        'text-color': '#ffffff',
       },
     });
+
+    map.on('mouseenter', clustersCircle, onMouseEnter);
+    map.on('mouseleave', clustersCircle, onMouseLeave);
+    map.on('click', clustersCircle, onClusterClick);
 
     map.on('mouseenter', clusters, onMouseEnter);
     map.on('mouseleave', clusters, onMouseLeave);
@@ -185,6 +281,13 @@ const MapPositions = ({
     map.on('click', onMapClickCallback);
 
     return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      map.off('mouseenter', clustersCircle, onMouseEnter);
+      map.off('mouseleave', clustersCircle, onMouseLeave);
+      map.off('click', clustersCircle, onClusterClick);
+
       map.off('mouseenter', clusters, onMouseEnter);
       map.off('mouseleave', clusters, onMouseLeave);
       map.off('click', clusters, onClusterClick);
@@ -192,6 +295,9 @@ const MapPositions = ({
 
       if (map.getLayer(clusters)) {
         map.removeLayer(clusters);
+      }
+      if (map.getLayer(clustersCircle)) {
+        map.removeLayer(clustersCircle);
       }
 
       [id, selected].forEach((source) => {
@@ -213,6 +319,7 @@ const MapPositions = ({
   }, [
     mapCluster,
     clusters,
+    clustersCircle,
     onMarkerClickCallback,
     onClusterClick,
     onMapClickCallback,
@@ -223,29 +330,90 @@ const MapPositions = ({
   ]);
 
   useEffect(() => {
-    [id, selected].forEach((source) => {
-      map.getSource(source)?.setData({
-        type: 'FeatureCollection',
-        features: positions
+    const duration = 3500;
+    const startTime = performance.now();
+
+    positions.forEach((p) => {
+      if (!devices.hasOwnProperty(p.deviceId)) return;
+      const targetCoord = toMapCoordinates(p.longitude, p.latitude);
+      const targetRotation = p.course || 0;
+
+      const current = animatedPositions.current[p.deviceId];
+      if (!current) {
+        animatedPositions.current[p.deviceId] = {
+          currentCoord: targetCoord,
+          startCoord: targetCoord,
+          targetCoord,
+          currentRotation: targetRotation,
+          startRotation: targetRotation,
+          targetRotation,
+        };
+      } else {
+        const diffRot = (targetRotation - (current.currentRotation % 360) + 540) % 360 - 180;
+        current.startCoord = [...current.currentCoord];
+        current.targetCoord = targetCoord;
+        current.startRotation = current.currentRotation;
+        current.targetRotation = current.currentRotation + diffRot;
+      }
+    });
+
+    const animate = (time) => {
+      const elapsed = time - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      const ease = -(Math.cos(Math.PI * progress) - 1) / 2;
+
+      Object.keys(animatedPositions.current).forEach((devId) => {
+        const item = animatedPositions.current[devId];
+        item.currentCoord = [
+          item.startCoord[0] + (item.targetCoord[0] - item.startCoord[0]) * ease,
+          item.startCoord[1] + (item.targetCoord[1] - item.startCoord[1]) * ease,
+        ];
+        item.currentRotation = item.startRotation + (item.targetRotation - item.startRotation) * ease;
+      });
+
+      const buildFeatures = (sourceTarget) =>
+        positions
           .filter((it) => devices.hasOwnProperty(it.deviceId))
           .filter((it) =>
-            source === id ? it.deviceId !== selectedDeviceId : it.deviceId === selectedDeviceId,
+            sourceTarget === id ? it.deviceId !== selectedDeviceId : it.deviceId === selectedDeviceId,
           )
-          .map((position) => ({
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: toMapCoordinates(position.longitude, position.latitude),
-            },
-            properties: createFeature(devices, position, selectedPosition && selectedPosition.id),
-          })),
-      });
-    });
+          .map((position) => {
+            const anim = animatedPositions.current[position.deviceId];
+            const coords = anim ? anim.currentCoord : toMapCoordinates(position.longitude, position.latitude);
+            const rot = anim ? anim.currentRotation : position.course;
+            return {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: coords,
+              },
+              properties: createFeature(
+                devices,
+                position,
+                selectedPosition && selectedPosition.id,
+                coords,
+                rot,
+              ),
+            };
+          });
+
+      map.getSource(id)?.setData({ type: 'FeatureCollection', features: buildFeatures(id) });
+      map.getSource(selected)?.setData({ type: 'FeatureCollection', features: buildFeatures(selected) });
+
+      if (progress < 1) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    animationFrameRef.current = requestAnimationFrame(animate);
   }, [
     mapCluster,
     clusters,
-    onMarkerClick,
-    onClusterClick,
+    clustersCircle,
     devices,
     positions,
     selectedPosition,

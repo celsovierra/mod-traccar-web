@@ -32,12 +32,31 @@ const ErrorHandler = () => {
 
   return (
     <>
-      <Snackbar open={Boolean(error) && !expanded}>
+      <Snackbar
+        open={Boolean(error) && !expanded}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{
+          top: { xs: 20, sm: 30 },
+          zIndex: 99999,
+        }}
+      >
         <Alert
-          elevation={6}
+          elevation={8}
           onClose={() => dispatch(errorsActions.pop())}
-          severity="error"
+          severity="info"
           variant="filled"
+          sx={{
+            minWidth: 280,
+            borderRadius: '16px',
+            backgroundColor: '#1f2937',
+            color: '#ffffff',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+            fontWeight: 500,
+            fontSize: '0.9rem',
+            '& .MuiAlert-icon': {
+              color: '#ffffff',
+            },
+          }}
         >
           {displayMessage}
           {multiline && (

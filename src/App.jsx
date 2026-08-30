@@ -74,6 +74,22 @@ const App = () => {
   }
   return (
     <>
+      <style>{`
+        .MuiSnackbar-root {
+          top: 24px !important;
+          bottom: auto !important;
+          left: 50% !important;
+          transform: translateX(-50%) !important;
+          z-index: 99999 !important;
+        }
+        .MuiSnackbarContent-root, .MuiAlert-root {
+          border-radius: 14px !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.28) !important;
+          font-weight: 600 !important;
+          font-size: 0.88rem !important;
+          max-width: 90vw !important;
+        }
+      `}</style>
       <SocketController />
       <CachingController />
       <UpdateController />

@@ -25,8 +25,28 @@ export default (
       return groupIds;
     };
 
+    const isMovingOnly = filter.statuses.includes('moving');
+    const isOldOfflineOnly = filterSort === 'lastUpdateAsc';
+    const twoDaysAgo = dayjs().subtract(2, 'day').valueOf();
+
     const filtered = Object.values(devices)
-      .filter((device) => !filter.statuses.length || filter.statuses.includes(device.status))
+      .filter((device) => {
+        if (isOldOfflineOnly) {
+          const isOffline = device.status === 'offline' || device.status === 'unknown';
+          const lastTime = device.lastUpdate ? dayjs(device.lastUpdate).valueOf() : 0;
+          return isOffline && (!device.lastUpdate || lastTime <= twoDaysAgo);
+        }
+        if (isMovingOnly) {
+          const pos = positions[device.id];
+          return (
+            device.status === 'online' &&
+            pos &&
+            pos.speed > 0 &&
+            pos.attributes?.ignition === true
+          );
+        }
+        return !filter.statuses.length || filter.statuses.includes(device.status);
+      })
       .filter(
         (device) =>
           !filter.groups.length || deviceGroups(device).some((id) => filter.groups.includes(id)),
@@ -42,6 +62,7 @@ export default (
           (s) => s && s.toLowerCase().includes(lowerCaseKeyword),
         );
       });
+
     switch (filterSort) {
       case 'name':
         filtered.sort((device1, device2) => device1.name.localeCompare(device2.name));
@@ -53,9 +74,17 @@ export default (
           return time2 - time1;
         });
         break;
+      case 'lastUpdateAsc':
+        filtered.sort((device1, device2) => {
+          const time1 = device1.lastUpdate ? dayjs(device1.lastUpdate).valueOf() : 0;
+          const time2 = device2.lastUpdate ? dayjs(device2.lastUpdate).valueOf() : 0;
+          return time1 - time2;
+        });
+        break;
       default:
         break;
     }
+
     setFilteredDevices(filtered);
     setFilteredPositions(
       filterMap

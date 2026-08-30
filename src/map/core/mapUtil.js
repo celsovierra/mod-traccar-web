@@ -28,6 +28,7 @@ const transformGeometry = (geometry, from, to) =>
 export const loadImage = (url) =>
   new Promise((imageLoaded) => {
     const image = new Image();
+    image.crossOrigin = 'Anonymous';
     image.onload = () => imageLoaded(image);
     image.src = url;
   });
@@ -54,19 +55,32 @@ const canvasTintImage = (image, color) => {
 };
 
 export const prepareIcon = (background, icon, color) => {
+  const isTopView = icon && icon.src && (icon.src.includes('.webp') || icon.src.includes('.png') || icon.src.startsWith('data:image/webp') || icon.src.startsWith('data:image/png'));
+  
+  // Ajuste equilibrado: 80px
+  const baseSize = isTopView ? 80 : (background ? background.width : 48);
+  const width = Math.round(baseSize * devicePixelRatio);
+  const height = Math.round(baseSize * devicePixelRatio);
+
   const canvas = document.createElement('canvas');
-  canvas.width = background.width * devicePixelRatio;
-  canvas.height = background.height * devicePixelRatio;
-  canvas.style.width = `${background.width}px`;
-  canvas.style.height = `${background.height}px`;
+  canvas.width = width;
+  canvas.height = height;
 
   const context = canvas.getContext('2d');
-  context.drawImage(background, 0, 0, canvas.width, canvas.height);
+
+  if (isTopView) {
+    context.drawImage(icon, 0, 0, width, height);
+    return context.getImageData(0, 0, width, height);
+  }
+
+  if (background) {
+    context.drawImage(background, 0, 0, width, height);
+  }
 
   if (icon) {
     const iconRatio = 0.5;
-    const imageWidth = canvas.width * iconRatio;
-    const imageHeight = canvas.height * iconRatio;
+    const imageWidth = width * iconRatio;
+    const imageHeight = height * iconRatio;
     context.drawImage(
       canvasTintImage(icon, color),
       (canvas.width - imageWidth) / 2,
@@ -76,7 +90,7 @@ export const prepareIcon = (background, icon, color) => {
     );
   }
 
-  return context.getImageData(0, 0, canvas.width, canvas.height);
+  return context.getImageData(0, 0, width, height);
 };
 
 export const reverseCoordinates = (it) => {

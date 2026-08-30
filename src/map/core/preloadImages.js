@@ -8,11 +8,9 @@ import animalSvg from '../../resources/images/icon/animal.svg';
 import bicycleSvg from '../../resources/images/icon/bicycle.svg';
 import boatSvg from '../../resources/images/icon/boat.svg';
 import busSvg from '../../resources/images/icon/bus.svg';
-import carSvg from '../../resources/images/icon/car.svg';
 import camperSvg from '../../resources/images/icon/camper.svg';
 import craneSvg from '../../resources/images/icon/crane.svg';
 import defaultSvg from '../../resources/images/icon/default.svg';
-import startSvg from '../../resources/images/icon/start.svg';
 import finishSvg from '../../resources/images/icon/finish.svg';
 import helicopterSvg from '../../resources/images/icon/helicopter.svg';
 import motorcycleSvg from '../../resources/images/icon/motorcycle.svg';
@@ -20,6 +18,7 @@ import personSvg from '../../resources/images/icon/person.svg';
 import planeSvg from '../../resources/images/icon/plane.svg';
 import scooterSvg from '../../resources/images/icon/scooter.svg';
 import shipSvg from '../../resources/images/icon/ship.svg';
+import startSvg from '../../resources/images/icon/start.svg';
 import tractorSvg from '../../resources/images/icon/tractor.svg';
 import trailerSvg from '../../resources/images/icon/trailer.svg';
 import trainSvg from '../../resources/images/icon/train.svg';
@@ -27,12 +26,14 @@ import tramSvg from '../../resources/images/icon/tram.svg';
 import truckSvg from '../../resources/images/icon/truck.svg';
 import vanSvg from '../../resources/images/icon/van.svg';
 
+import carWebp from '../../resources/images/car-azul.webp';
+
 export const mapIcons = {
   animal: animalSvg,
   bicycle: bicycleSvg,
   boat: boatSvg,
   bus: busSvg,
-  car: carSvg,
+  car: carWebp,
   camper: camperSvg,
   crane: craneSvg,
   default: defaultSvg,
@@ -59,6 +60,9 @@ export const mapIconKey = (category) => {
       return 'car';
     case 'trolleybus':
       return 'bus';
+    case 'moto':
+    case 'motorcycle2':
+      return 'motorcycle';
     default:
       return mapIcons.hasOwnProperty(category) ? category : 'default';
   }
@@ -87,7 +91,7 @@ export default async () => {
               icon,
               theme.palette[color].main,
             );
-          }),
+          }).catch((e) => console.error('Erro ao carregar icone:', category, e)),
         );
       });
       await Promise.all(results);

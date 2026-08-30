@@ -18,13 +18,16 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from './LocalizationProvider';
 import BackIcon from './BackIcon';
 
-const useStyles = makeStyles()((theme, { miniVariant }) => ({
+const useStyles = makeStyles()((theme, { miniVariant, hasMenu }) => ({
   root: {
     height: '100%',
     display: 'flex',
     [theme.breakpoints.down('md')]: {
       flexDirection: 'column',
     },
+    ...(!hasMenu && {
+      flexDirection: 'column',
+    }),
   },
   desktopDrawer: {
     width: miniVariant ? theme.spacing(7) : theme.dimensions.drawerWidthDesktop,
@@ -72,6 +75,8 @@ const PageTitle = ({ breadcrumbs }) => {
 
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
 
+  if (!breadcrumbs || breadcrumbs.length === 0) return null;
+
   if (desktop) {
     return (
       <Typography variant="h6" noWrap>
@@ -95,7 +100,8 @@ const PageTitle = ({ breadcrumbs }) => {
 
 const PageLayout = ({ menu, breadcrumbs, children }) => {
   const [miniVariant, setMiniVariant] = useState(false);
-  const { classes } = useStyles({ miniVariant });
+  const hasMenu = Boolean(menu);
+  const { classes } = useStyles({ miniVariant, hasMenu });
   const theme = useTheme();
   const navigate = useNavigate();
 
@@ -109,7 +115,7 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
 
   return (
     <div className={classes.root}>
-      {desktop ? (
+      {hasMenu && desktop && (
         <Drawer
           variant="permanent"
           className={classes.desktopDrawer}
@@ -145,7 +151,9 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
           <Divider />
           {menu}
         </Drawer>
-      ) : (
+      )}
+
+      {hasMenu && !desktop && (
         <Drawer
           variant="temporary"
           open={openDrawer}
@@ -155,21 +163,23 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
           {menu}
         </Drawer>
       )}
-      {!desktop && (
+
+      {(!desktop || !hasMenu) && (
         <AppBar className={classes.mobileToolbar} position="static" color="inherit">
           <Toolbar>
             <IconButton
               color="inherit"
               edge="start"
               sx={{ mr: 2 }}
-              onClick={() => setOpenDrawer(true)}
+              onClick={() => (hasMenu ? setOpenDrawer(true) : navigate(-1))}
             >
-              <MenuIcon />
+              {hasMenu ? <MenuIcon /> : <BackIcon />}
             </IconButton>
             <PageTitle breadcrumbs={breadcrumbs} />
           </Toolbar>
         </AppBar>
       )}
+
       <div className={classes.content}>{children}</div>
     </div>
   );
