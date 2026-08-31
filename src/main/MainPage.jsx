@@ -206,7 +206,7 @@ const MainPage = () => {
 
       <EventsDrawer open={eventsOpen} onClose={() => setEventsOpen(false)} />
 
-      {selectedDeviceId && !devicesOpen && (
+      {selectedDeviceId && (desktop || !devicesOpen) && (
         <StatusCard
           deviceId={selectedDeviceId}
           position={selectedPosition}

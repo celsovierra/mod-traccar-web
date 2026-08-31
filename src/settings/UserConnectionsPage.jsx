@@ -5,7 +5,6 @@ import {
   AccordionSummary,
   AccordionDetails,
   Typography,
-  Container,
   List,
   ListItem,
   ListItemText,
@@ -18,23 +17,24 @@ import {
   CircularProgress,
   TextField,
   InputAdornment,
+  Paper,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import DirectionsCarFilledIcon from '@mui/icons-material/DirectionsCarFilled';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import HubIcon from '@mui/icons-material/Hub';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
+import SendIcon from '@mui/icons-material/Send';
 import LinkField from '../common/components/LinkField';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import SettingsMenu from './components/SettingsMenu';
 import { formatNotificationTitle } from '../common/util/formatter';
 import PageLayout from '../common/components/PageLayout';
-import useSettingsStyles from './common/useSettingsStyles';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import { useCatch } from '../reactHelper';
 
 const UserConnectionsPage = () => {
-  const { classes } = useSettingsStyles();
   const t = useTranslation();
   const { id } = useParams();
 
@@ -45,6 +45,13 @@ const UserConnectionsPage = () => {
   const [loadingDevices, setLoadingDevices] = useState(true);
   const [loadingTest, setLoadingTest] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
+
+  // Controla apenas 1 acordeão aberto por vez
+  const [expandedPanel, setExpandedPanel] = useState('connections');
+
+  const handleAccordionChange = (panel) => (event, isExpanded) => {
+    setExpandedPanel(isExpanded ? panel : false);
+  };
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -96,14 +103,12 @@ const UserConnectionsPage = () => {
     const isLinked = currentSet.has(notificationId);
     const method = isLinked ? 'DELETE' : 'POST';
 
-    // 1. Atualiza permissão no dispositivo
     await fetchOrThrow('/api/permissions', {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deviceId, notificationId }),
     });
 
-    // 2. Garante permissão vinculada também no usuário
     if (!isLinked && !userNotificationIds.has(notificationId)) {
       await fetchOrThrow('/api/permissions', {
         method: 'POST',
@@ -145,123 +150,272 @@ const UserConnectionsPage = () => {
       menu={<SettingsMenu />}
       breadcrumbs={['settingsTitle', 'settingsUser', 'sharedConnections']}
     >
-      <Container maxWidth="xs" className={classes.container}>
-        <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', pr: 1 }}>
-              <Typography variant="subtitle1">{t('sharedConnections')}</Typography>
-              <Tooltip title="Testar Notificação Firebase">
-                <IconButton
-                  size="small"
-                  color="primary"
-                  onClick={handleSendTestNotification}
-                  disabled={loadingTest}
-                >
-                  <NotificationsActiveIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </AccordionSummary>
-          <AccordionDetails className={classes.details}>
-            <LinkField
-              endpointAll="/api/devices?all=true&excludeAttributes=true"
-              endpointLinked={`/api/devices?userId=${id}&excludeAttributes=true`}
-              baseId={id}
-              keyBase="userId"
-              keyLink="deviceId"
-              titleGetter={(it) => `${it.name} (${it.uniqueId})`}
-              label={t('deviceTitle')}
-            />
-            <LinkField
-              endpointAll="/api/geofences?all=true"
-              endpointLinked={`/api/geofences?userId=${id}`}
-              baseId={id}
-              keyBase="userId"
-              keyLink="geofenceId"
-              label={t('sharedGeofences')}
-            />
-          </AccordionDetails>
-        </Accordion>
-
-        <Box sx={{ mt: 2, mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-            Notificações por Veículo
-          </Typography>
-          <TextField
-            size="small"
-            placeholder={t('sharedSearch')}
-            value={searchFilter}
-            onChange={(e) => setSearchFilter(e.target.value)}
-            sx={{ maxWidth: 200 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" color="action" />
-                </InputAdornment>
-              ),
-              endAdornment: searchFilter ? (
-                <InputAdornment position="end">
-                  <IconButton size="small" onClick={() => setSearchFilter('')} edge="end">
-                    <ClearIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ) : null,
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: 480,
+          mx: 'auto',
+          p: { xs: 1.5, sm: 2 },
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '14px',
+            backgroundColor: '#f9fafb',
+            transition: 'all 0.2s',
+            '&:hover': { backgroundColor: '#ffffff' },
+            '&.Mui-focused': {
+              backgroundColor: '#ffffff',
+              boxShadow: '0 0 0 3px rgba(124, 58, 237, 0.15)',
+            },
+          },
+        }}
+      >
+        {/* CARD PRINCIPAL CONEXÕES */}
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: '20px',
+            mb: 2.5,
+            border: '1px solid #edf2f7',
+            boxShadow: '0 8px 24px rgba(149, 157, 165, 0.08)',
+            overflow: 'hidden',
+            backgroundColor: '#ffffff',
+          }}
+        >
+          <Accordion
+            expanded={expandedPanel === 'connections'}
+            onChange={handleAccordionChange('connections')}
+            sx={{
+              boxShadow: 'none',
+              backgroundColor: 'transparent',
+              '&:before': { display: 'none' },
             }}
-          />
-        </Box>
-
-        {loadingDevices ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-            <CircularProgress size={24} />
-          </Box>
-        ) : filteredDevices.length === 0 ? (
-          <Typography variant="body2" color="textSecondary" sx={{ px: 1, py: 1 }}>
-            {devices.length === 0 ? 'Nenhum veículo vinculado a este usuário.' : 'Nenhum veículo encontrado.'}
-          </Typography>
-        ) : (
-          filteredDevices.map((device) => {
-            const linkedNotifs = deviceNotificationMap[device.id] || new Set();
-            return (
-              <Accordion key={device.id} disableGutters sx={{ mb: 1 }}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <DirectionsCarIcon fontSize="small" color="action" />
-                    <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                      {device.name}
-                    </Typography>
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
+              sx={{
+                px: 2.5,
+                py: 1,
+                backgroundColor: expandedPanel === 'connections' ? '#f5f3ff' : '#ffffff',
+                transition: 'background-color 0.2s',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', pr: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '10px',
+                      backgroundColor: expandedPanel === 'connections' ? '#ede9fe' : '#f3f4f6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <HubIcon sx={{ fontSize: 20, color: '#7c3aed' }} />
                   </Box>
-                </AccordionSummary>
-                <AccordionDetails sx={{ pt: 0, pb: 1 }}>
-                  <List dense disablePadding>
-                    {notifications.map((item, index) => (
-                      <div key={item.id}>
-                        <ListItem disableGutters>
-                          <ListItemText
-                            primary={formatNotificationTitle(t, item, true)}
-                            primaryTypographyProps={{ variant: 'caption' }}
-                          />
-                          <ListItemSecondaryAction>
-                            <Switch
-                              edge="end"
-                              size="small"
-                              checked={linkedNotifs.has(item.id)}
-                              onChange={() => handleToggleDeviceNotification(device.id, item.id)}
-                            />
-                          </ListItemSecondaryAction>
-                        </ListItem>
-                        {index < notifications.length - 1 && <Divider />}
-                      </div>
-                    ))}
-                  </List>
-                </AccordionDetails>
-              </Accordion>
-            );
-          })
-        )}
-      </Container>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', fontSize: '0.98rem' }}>
+                    {t('sharedConnections')}
+                  </Typography>
+                </Box>
+
+                <Tooltip title="Testar Notificação Firebase">
+                  <IconButton
+                    size="small"
+                    onClick={handleSendTestNotification}
+                    disabled={loadingTest}
+                    sx={{
+                      color: '#7c3aed',
+                      backgroundColor: '#ede9fe',
+                      '&:hover': { backgroundColor: '#ddd6fe' },
+                    }}
+                  >
+                    <SendIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <LinkField
+                endpointAll="/api/devices?all=true&excludeAttributes=true"
+                endpointLinked={`/api/devices?userId=${id}&excludeAttributes=true`}
+                baseId={id}
+                keyBase="userId"
+                keyLink="deviceId"
+                titleGetter={(it) => `${it.name} (${it.uniqueId})`}
+                label={t('deviceTitle')}
+                fullWidth
+              />
+              <LinkField
+                endpointAll="/api/geofences?all=true"
+                endpointLinked={`/api/geofences?userId=${id}`}
+                baseId={id}
+                keyBase="userId"
+                keyLink="geofenceId"
+                label={t('sharedGeofences')}
+                fullWidth
+              />
+            </AccordionDetails>
+          </Accordion>
+        </Paper>
+
+        {/* NOTIFICAÇÕES POR VEÍCULO */}
+        <Box sx={{ mt: 3 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              justifyContent: 'space-between',
+              gap: 1.5,
+              mb: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '8px',
+                  backgroundColor: '#ede9fe',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <NotificationsActiveIcon sx={{ color: '#7c3aed', fontSize: 18 }} />
+              </Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '0.96rem', color: '#1e293b' }}>
+                Notificações por Veículo
+              </Typography>
+            </Box>
+
+            <TextField
+              size="small"
+              placeholder={t('sharedSearch')}
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              sx={{ width: { xs: '100%', sm: 190 } }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" sx={{ color: '#94a3b8' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: searchFilter ? (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setSearchFilter('')} edge="end">
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              }}
+            />
+          </Box>
+
+          {loadingDevices ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={28} sx={{ color: '#7c3aed' }} />
+            </Box>
+          ) : filteredDevices.length === 0 ? (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
+                textAlign: 'center',
+                borderRadius: '18px',
+                border: '1px solid #edf2f7',
+                backgroundColor: '#f8fafc',
+              }}
+            >
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                {devices.length === 0 ? 'Nenhum veículo vinculado a este usuário.' : 'Nenhum veículo encontrado.'}
+              </Typography>
+            </Paper>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {filteredDevices.map((device) => {
+                const isPanelOpen = expandedPanel === `device-${device.id}`;
+                const linkedNotifs = deviceNotificationMap[device.id] || new Set();
+
+                return (
+                  <Paper
+                    key={device.id}
+                    elevation={0}
+                    sx={{
+                      borderRadius: '18px',
+                      border: '1px solid #edf2f7',
+                      boxShadow: '0 4px 16px rgba(149, 157, 165, 0.05)',
+                      overflow: 'hidden',
+                      backgroundColor: '#ffffff',
+                    }}
+                  >
+                    <Accordion
+                      expanded={isPanelOpen}
+                      onChange={handleAccordionChange(`device-${device.id}`)}
+                      sx={{
+                        boxShadow: 'none',
+                        backgroundColor: 'transparent',
+                        '&:before': { display: 'none' },
+                      }}
+                    >
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
+                        sx={{
+                          px: 2,
+                          py: 0.8,
+                          backgroundColor: isPanelOpen ? '#f5f3ff' : '#ffffff',
+                          transition: 'background-color 0.2s',
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                          <DirectionsCarFilledIcon sx={{ color: isPanelOpen ? '#7c3aed' : '#64748b', fontSize: 20 }} />
+                          <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
+                            {device.name}
+                          </Typography>
+                        </Box>
+                      </AccordionSummary>
+                      <AccordionDetails sx={{ p: 1.5, backgroundColor: '#fbfbfe', borderTop: '1px solid #f1f5f9' }}>
+                        <List dense disablePadding>
+                          {notifications.map((item, index) => (
+                            <Box key={item.id}>
+                              <ListItem disableGutters sx={{ py: 0.6, px: 1 }}>
+                                <ListItemText
+                                  primary={formatNotificationTitle(t, item, true)}
+                                  primaryTypographyProps={{ variant: 'caption', fontWeight: 600, color: '#334155' }}
+                                />
+                                <ListItemSecondaryAction>
+                                  <Switch
+                                    edge="end"
+                                    size="small"
+                                    checked={linkedNotifs.has(item.id)}
+                                    onChange={() => handleToggleDeviceNotification(device.id, item.id)}
+                                    sx={{
+                                      '& .MuiSwitch-switchBase.Mui-checked': {
+                                        color: '#7c3aed',
+                                      },
+                                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                        backgroundColor: '#7c3aed',
+                                      },
+                                    }}
+                                  />
+                                </ListItemSecondaryAction>
+                              </ListItem>
+                              {index < notifications.length - 1 && <Divider sx={{ borderColor: '#f1f5f9' }} />}
+                            </Box>
+                          ))}
+                        </List>
+                      </AccordionDetails>
+                    </Accordion>
+                  </Paper>
+                );
+              })}
+            </Box>
+          )}
+        </Box>
+      </Box>
     </PageLayout>
   );
 };
 
 export default UserConnectionsPage;
-

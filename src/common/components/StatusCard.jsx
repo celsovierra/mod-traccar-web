@@ -131,13 +131,20 @@ const useStyles = makeStyles()((theme) => ({
     lineHeight: 1,
   },
   avatar: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     backgroundColor: '#ede9fe',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    border: '2px solid #ddd6fe',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
   },
   vehicleIcon: {
     width: 26,
@@ -447,6 +454,20 @@ const createCircleWkt = (latitude, longitude, radiusInMeters = 50, points = 32) 
   return `POLYGON((${coords.join(', ')}))`;
 };
 
+const getImageUrl = (device) => {
+  const rawImage =
+    device?.attributes?.deviceImage ||
+    device?.attributes?.image ||
+    device?.attributes?.photo ||
+    device?.attributes?.vehicleImage;
+
+  if (!rawImage) return null;
+  if (rawImage.startsWith('data:') || rawImage.startsWith('http://') || rawImage.startsWith('https://')) {
+    return rawImage;
+  }
+  return `/api/media/${device.uniqueId}/${rawImage}`;
+};
+
 const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const { classes } = useStyles();
   const navigate = useNavigate();
@@ -460,9 +481,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const deviceReadonly = useDeviceReadonly();
 
   const device = useSelector((state) => state.devices.items[deviceId]);
-  const deviceImage = device?.attributes?.deviceImage;
+  const deviceImage = getImageUrl(device);
 
-  // Lê exclusivamente os campos corretos
   const vehiclePlate = device?.attributes?.plate || '';
   const vehicleModel = device?.model || '';
 
@@ -894,11 +914,19 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                 <Box className={classes.headerBox}>
                   <Box className={classes.headerLeft}>
                     <Avatar className={classes.avatar}>
-                      <img
-                        className={classes.vehicleIcon}
-                        src={mapIcons[mapIconKey(device.category)]}
-                        alt=""
-                      />
+                      {deviceImage ? (
+                        <img
+                          className={classes.avatarImg}
+                          src={deviceImage}
+                          alt={device.name}
+                        />
+                      ) : (
+                        <img
+                          className={classes.vehicleIcon}
+                          src={mapIcons[mapIconKey(device.category)]}
+                          alt=""
+                        />
+                      )}
                     </Avatar>
                     <Box sx={{ minWidth: 0 }}>
                       <Typography
@@ -1047,7 +1075,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                     {deviceImage ? (
                       <img
                         className={classes.imageMedia}
-                        src={`/api/media/${device.uniqueId}/${deviceImage}`}
+                        src={deviceImage}
                         alt={device.name}
                       />
                     ) : (

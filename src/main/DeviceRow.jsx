@@ -62,6 +62,12 @@ const useStyles = makeStyles()((theme) => ({
     borderRadius: '10px',
     width: 40,
     height: 40,
+    overflow: 'hidden',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
   },
   icon: {
     width: '24px',
@@ -90,6 +96,20 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
+const getImageUrl = (item) => {
+  const rawImage =
+    item?.attributes?.deviceImage ||
+    item?.attributes?.image ||
+    item?.attributes?.photo ||
+    item?.attributes?.vehicleImage;
+
+  if (!rawImage) return null;
+  if (rawImage.startsWith('data:') || rawImage.startsWith('http://') || rawImage.startsWith('https://')) {
+    return rawImage;
+  }
+  return `/api/media/${item.uniqueId}/${rawImage}`;
+};
+
 const DeviceRow = ({ devices, index, style }) => {
   const { classes } = useStyles();
   const dispatch = useDispatch();
@@ -100,6 +120,8 @@ const DeviceRow = ({ devices, index, style }) => {
 
   const item = devices[index];
   const position = useSelector((state) => state.session.positions[item.id]);
+
+  const imageUrl = getImageUrl(item);
 
   const devicePrimary = useAttributePreference('devicePrimary', 'name');
   const deviceSecondary = useAttributePreference('deviceSecondary', '');
@@ -155,7 +177,19 @@ const DeviceRow = ({ devices, index, style }) => {
       >
         <ListItemAvatar sx={{ minWidth: 48 }}>
           <Avatar className={classes.avatar}>
-            <img className={classes.icon} src={mapIcons[mapIconKey(item.category)]} alt="" />
+            {imageUrl ? (
+              <img
+                className={classes.avatarImg}
+                src={imageUrl}
+                alt={item.name}
+              />
+            ) : (
+              <img
+                className={classes.icon}
+                src={mapIcons[mapIconKey(item.category)]}
+                alt=""
+              />
+            )}
           </Avatar>
         </ListItemAvatar>
         <ListItemText
