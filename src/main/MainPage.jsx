@@ -5,7 +5,6 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch, useSelector } from 'react-redux';
 import DeviceList from './DeviceList';
-import BottomMenu from '../common/components/BottomMenu';
 import StatusCard from '../common/components/StatusCard';
 import { devicesActions } from '../store';
 import usePersistedState from '../common/util/usePersistedState';
@@ -63,10 +62,6 @@ const useStyles = makeStyles()((theme) => ({
     left: theme.spacing(1.5),
     zIndex: 5,
     pointerEvents: 'auto',
-  },
-  footer: {
-    pointerEvents: 'auto',
-    zIndex: 5,
   },
   middle: {
     flex: 1,
@@ -174,10 +169,6 @@ const MainPage = () => {
           <Paper square className={classes.contentList}>
             <DeviceList devices={filteredDevices} />
           </Paper>
-        </div>
-
-        <div className={classes.footer}>
-          <BottomMenu />
         </div>
       </div>
 
