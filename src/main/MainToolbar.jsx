@@ -153,110 +153,125 @@ const MainToolbar = ({
   };
 
   return (
-    <Box className={classes.container}>
-      <Toolbar ref={toolbarRef} className={classes.toolbar} disableGutters>
-        <IconButton edge="start" onClick={() => setDevicesOpen(!devicesOpen)}>
+    <Box className={classes.container} sx={!devicesOpen ? { width: 'auto', p: 0 } : {}}>
+      <Toolbar
+        ref={toolbarRef}
+        className={classes.toolbar}
+        disableGutters
+        sx={!devicesOpen ? { minHeight: 'unset', p: 0.5 } : {}}
+      >
+        <IconButton
+          edge="start"
+          onClick={() => setDevicesOpen(!devicesOpen)}
+          sx={!devicesOpen ? { bgcolor: 'background.paper', boxShadow: 2, m: 0.5 } : {}}
+        >
           {devicesOpen ? <MapIcon /> : <DnsIcon />}
         </IconButton>
 
-        <OutlinedInput
-          placeholder={t('sharedSearchDevices')}
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          size="small"
-          fullWidth
-          endAdornment={
-            keyword ? (
-              <InputAdornment position="end">
-                <IconButton
-                  size="small"
-                  edge="end"
-                  onClick={() => setKeyword('')}
-                >
-                  <ClearIcon fontSize="small" />
-                </IconButton>
-              </InputAdornment>
-            ) : null
-          }
-        />
+        {devicesOpen && (
+          <>
+            <OutlinedInput
+              placeholder={t('sharedSearchDevices')}
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              size="small"
+              fullWidth
+              endAdornment={
+                keyword ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      edge="end"
+                      onClick={() => setKeyword('')}
+                    >
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null
+              }
+            />
 
-        <IconButton edge="end" onClick={() => navigate('/device')} disabled={deviceReadonly}>
-          <Tooltip
-            open={!deviceReadonly && devicesLoaded && totalCount === 0}
-            title={t('deviceRegisterFirst')}
-            arrow
-          >
-            <AddIcon />
-          </Tooltip>
-        </IconButton>
+            <IconButton edge="end" onClick={() => navigate('/device')} disabled={deviceReadonly}>
+              <Tooltip
+                open={!deviceReadonly && devicesLoaded && totalCount === 0}
+                title={t('deviceRegisterFirst')}
+                arrow
+              >
+                <AddIcon />
+              </Tooltip>
+            </IconButton>
+          </>
+        )}
       </Toolbar>
 
-      <Box className={classes.filterBar}>
-        <Tooltip title="Todos os veículos">
-          <Chip
-            icon={<AllInclusiveIcon fontSize="small" className={classes.iconAll} />}
-            label={totalCount}
-            size="small"
-            color={activeTab === 'all' ? 'primary' : 'default'}
-            variant={activeTab === 'all' ? 'filled' : 'outlined'}
-            onClick={() => handleSelectFilter('all')}
-            className={classes.chip}
-            clickable
-          />
-        </Tooltip>
+      {devicesOpen && (
+        <Box className={classes.filterBar}>
+          <Tooltip title="Todos os veículos">
+            <Chip
+              icon={<AllInclusiveIcon fontSize="small" className={classes.iconAll} />}
+              label={totalCount}
+              size="small"
+              color={activeTab === 'all' ? 'primary' : 'default'}
+              variant={activeTab === 'all' ? 'filled' : 'outlined'}
+              onClick={() => handleSelectFilter('all')}
+              className={classes.chip}
+              clickable
+            />
+          </Tooltip>
 
-        <Tooltip title="Online">
-          <Chip
-            icon={<CheckCircleIcon fontSize="small" className={classes.iconOnline} />}
-            label={onlineCount}
-            size="small"
-            color={activeTab === 'online' ? 'success' : 'default'}
-            variant={activeTab === 'online' ? 'filled' : 'outlined'}
-            onClick={() => handleSelectFilter('online')}
-            className={classes.chip}
-            clickable
-          />
-        </Tooltip>
+          <Tooltip title="Online">
+            <Chip
+              icon={<CheckCircleIcon fontSize="small" className={classes.iconOnline} />}
+              label={onlineCount}
+              size="small"
+              color={activeTab === 'online' ? 'success' : 'default'}
+              variant={activeTab === 'online' ? 'filled' : 'outlined'}
+              onClick={() => handleSelectFilter('online')}
+              className={classes.chip}
+              clickable
+            />
+          </Tooltip>
 
-        <Tooltip title="Offline">
-          <Chip
-            icon={<CancelIcon fontSize="small" className={classes.iconOffline} />}
-            label={offlineCount}
-            size="small"
-            color={activeTab === 'offline' ? 'error' : 'default'}
-            variant={activeTab === 'offline' ? 'filled' : 'outlined'}
-            onClick={() => handleSelectFilter('offline')}
-            className={classes.chip}
-            clickable
-          />
-        </Tooltip>
+          <Tooltip title="Offline">
+            <Chip
+              icon={<CancelIcon fontSize="small" className={classes.iconOffline} />}
+              label={offlineCount}
+              size="small"
+              color={activeTab === 'offline' ? 'error' : 'default'}
+              variant={activeTab === 'offline' ? 'filled' : 'outlined'}
+              onClick={() => handleSelectFilter('offline')}
+              className={classes.chip}
+              clickable
+            />
+          </Tooltip>
 
-        <Tooltip title="Em movimento (Ignição ON e Vel > 0)">
-          <Chip
-            icon={<NavigationIcon fontSize="small" className={classes.iconMoving} />}
-            label={movingCount}
-            size="small"
-            color={activeTab === 'moving' ? 'info' : 'default'}
-            variant={activeTab === 'moving' ? 'filled' : 'outlined'}
-            onClick={() => handleSelectFilter('moving')}
-            className={classes.chip}
-            clickable
-          />
-        </Tooltip>
+          <Tooltip title="Em movimento (Ignição ON e Vel > 0)">
+            <Chip
+              icon={<NavigationIcon fontSize="small" className={classes.iconMoving} />}
+              label={movingCount}
+              size="small"
+              color={activeTab === 'moving' ? 'info' : 'default'}
+              variant={activeTab === 'moving' ? 'filled' : 'outlined'}
+              onClick={() => handleSelectFilter('moving')}
+              className={classes.chip}
+              clickable
+            />
+          </Tooltip>
 
-        <Tooltip title="Offline há mais de 2 dias (do mais antigo para o mais recente)">
-          <Chip
-            icon={<HistoryIcon fontSize="small" className={classes.iconHistory} />}
-            label={oldOfflineCount}
-            size="small"
-            color={activeTab === 'time' ? 'warning' : 'default'}
-            variant={activeTab === 'time' ? 'filled' : 'outlined'}
-            onClick={() => handleSelectFilter('time')}
-            className={classes.chip}
-            clickable
-          />
-        </Tooltip>
-      </Box>
+          <Tooltip title="Offline há mais de 2 dias (do mais antigo para o mais recente)">
+            <Chip
+              icon={<HistoryIcon fontSize="small" className={classes.iconHistory} />}
+              label={oldOfflineCount}
+              size="small"
+              color={activeTab === 'time' ? 'warning' : 'default'}
+              variant={activeTab === 'time' ? 'filled' : 'outlined'}
+              onClick={() => handleSelectFilter('time')}
+              className={classes.chip}
+              clickable
+            />
+          </Tooltip>
+        </Box>
+      )}
     </Box>
   );
 };

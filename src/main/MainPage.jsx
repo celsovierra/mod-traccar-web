@@ -19,11 +19,14 @@ const MainMap = lazy(() => import('./MainMap'));
 const useStyles = makeStyles()((theme) => ({
   root: {
     height: '100%',
+    position: 'relative',
+    overflow: 'hidden',
   },
   sidebar: {
     pointerEvents: 'none',
     display: 'flex',
     flexDirection: 'column',
+    transition: 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
     [theme.breakpoints.up('md')]: {
       position: 'fixed',
       left: 0,
@@ -34,13 +37,32 @@ const useStyles = makeStyles()((theme) => ({
       zIndex: 3,
     },
     [theme.breakpoints.down('md')]: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
       height: '100%',
       width: '100%',
+      zIndex: 3,
+    },
+  },
+  sidebarClosed: {
+    [theme.breakpoints.up('md')]: {
+      transform: `translateX(calc(-100% - ${theme.spacing(1.5)}))`,
+    },
+    [theme.breakpoints.down('md')]: {
+      transform: 'translateX(-100%)',
     },
   },
   header: {
     pointerEvents: 'auto',
     zIndex: 6,
+  },
+  floatingToggle: {
+    position: 'fixed',
+    top: theme.spacing(1.5),
+    left: theme.spacing(1.5),
+    zIndex: 5,
+    pointerEvents: 'auto',
   },
   footer: {
     pointerEvents: 'auto',
@@ -53,7 +75,12 @@ const useStyles = makeStyles()((theme) => ({
   },
   contentMap: {
     pointerEvents: 'auto',
-    gridArea: '1 / 1',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: 1,
   },
   contentList: {
     pointerEvents: 'auto',
@@ -112,9 +139,11 @@ const MainPage = () => {
     setFilteredPositions,
   );
 
+  const isClosed = !devicesOpen || Boolean(selectedDeviceId);
+
   return (
     <div className={classes.root}>
-      {desktop && (
+      <div className={classes.contentMap}>
         <Suspense fallback={null}>
           <MainMap
             filteredPositions={filteredPositions}
@@ -122,8 +151,9 @@ const MainPage = () => {
             onEventsClick={onEventsClick}
           />
         </Suspense>
-      )}
-      <div className={classes.sidebar}>
+      </div>
+
+      <div className={`${classes.sidebar} ${isClosed ? classes.sidebarClosed : ''}`}>
         <Paper square elevation={3} className={classes.header}>
           <MainToolbar
             filteredDevices={filteredDevices}
@@ -139,33 +169,38 @@ const MainPage = () => {
             setFilterMap={setFilterMap}
           />
         </Paper>
+
         <div className={classes.middle}>
-          {!desktop && (
-            <div className={classes.contentMap}>
-              <Suspense fallback={null}>
-                <MainMap
-                  filteredPositions={filteredPositions}
-                  selectedPosition={selectedPosition}
-                  onEventsClick={onEventsClick}
-                />
-              </Suspense>
-            </div>
-          )}
-          <Paper
-            square
-            className={classes.contentList}
-            style={devicesOpen ? {} : { visibility: 'hidden' }}
-          >
+          <Paper square className={classes.contentList}>
             <DeviceList devices={filteredDevices} />
           </Paper>
         </div>
-        {desktop && (
-          <div className={classes.footer}>
-            <BottomMenu />
-          </div>
-        )}
+
+        <div className={classes.footer}>
+          <BottomMenu />
+        </div>
       </div>
+
+      {isClosed && !selectedDeviceId && (
+        <div className={classes.floatingToggle}>
+          <MainToolbar
+            filteredDevices={filteredDevices}
+            devicesOpen={devicesOpen}
+            setDevicesOpen={setDevicesOpen}
+            keyword={keyword}
+            setKeyword={setKeyword}
+            filter={filter}
+            setFilter={setFilter}
+            filterSort={filterSort}
+            setFilterSort={setFilterSort}
+            filterMap={filterMap}
+            setFilterMap={setFilterMap}
+          />
+        </div>
+      )}
+
       <EventsDrawer open={eventsOpen} onClose={() => setEventsOpen(false)} />
+
       {selectedDeviceId && (
         <StatusCard
           deviceId={selectedDeviceId}
