@@ -5,6 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch, useSelector } from 'react-redux';
 import DeviceList from './DeviceList';
+import BottomMenu from '../common/components/BottomMenu';
 import StatusCard from '../common/components/StatusCard';
 import { devicesActions } from '../store';
 import usePersistedState from '../common/util/usePersistedState';
@@ -57,11 +58,15 @@ const useStyles = makeStyles()((theme) => ({
     zIndex: 6,
   },
   floatingToggle: {
-    position: 'fixed',
+    position: 'absolute',
     top: theme.spacing(1.5),
     left: theme.spacing(1.5),
-    zIndex: 5,
+    zIndex: 10,
     pointerEvents: 'auto',
+  },
+  footer: {
+    pointerEvents: 'auto',
+    zIndex: 5,
   },
   middle: {
     flex: 1,
@@ -124,6 +129,13 @@ const MainPage = () => {
     }
   }, [desktop, mapOnSelect, selectedDeviceId]);
 
+  const handleToggleDevices = useCallback((open) => {
+    setDevicesOpen(open);
+    if (open) {
+      dispatch(devicesActions.selectId(null));
+    }
+  }, [dispatch]);
+
   useFilter(
     keyword,
     filter,
@@ -133,8 +145,6 @@ const MainPage = () => {
     setFilteredDevices,
     setFilteredPositions,
   );
-
-  const isClosed = !devicesOpen || Boolean(selectedDeviceId);
 
   return (
     <div className={classes.root}>
@@ -148,12 +158,12 @@ const MainPage = () => {
         </Suspense>
       </div>
 
-      <div className={`${classes.sidebar} ${isClosed ? classes.sidebarClosed : ''}`}>
+      <div className={`${classes.sidebar} ${!devicesOpen ? classes.sidebarClosed : ''}`}>
         <Paper square elevation={3} className={classes.header}>
           <MainToolbar
             filteredDevices={filteredDevices}
             devicesOpen={devicesOpen}
-            setDevicesOpen={setDevicesOpen}
+            setDevicesOpen={handleToggleDevices}
             keyword={keyword}
             setKeyword={setKeyword}
             filter={filter}
@@ -170,14 +180,18 @@ const MainPage = () => {
             <DeviceList devices={filteredDevices} />
           </Paper>
         </div>
+
+        <div className={classes.footer}>
+          <BottomMenu />
+        </div>
       </div>
 
-      {isClosed && !selectedDeviceId && (
+      {!devicesOpen && (
         <div className={classes.floatingToggle}>
           <MainToolbar
             filteredDevices={filteredDevices}
             devicesOpen={devicesOpen}
-            setDevicesOpen={setDevicesOpen}
+            setDevicesOpen={handleToggleDevices}
             keyword={keyword}
             setKeyword={setKeyword}
             filter={filter}
@@ -192,7 +206,7 @@ const MainPage = () => {
 
       <EventsDrawer open={eventsOpen} onClose={() => setEventsOpen(false)} />
 
-      {selectedDeviceId && (
+      {selectedDeviceId && !devicesOpen && (
         <StatusCard
           deviceId={selectedDeviceId}
           position={selectedPosition}
