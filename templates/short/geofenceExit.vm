@@ -1,0 +1,1 @@
+🚧📍 $device.name: Saiu da cerca $geofence.name às $dateTool.format("HH:mm:ss", $event.eventTime, $locale, $timezone)
