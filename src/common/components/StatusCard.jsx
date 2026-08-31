@@ -39,6 +39,7 @@ import PlaceIcon from '@mui/icons-material/Place';
 import SpeedIcon from '@mui/icons-material/Speed';
 import LockPersonIcon from '@mui/icons-material/LockPerson';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 
 import { useTranslation } from './LocalizationProvider';
 import RemoveDialog from './RemoveDialog';
@@ -47,7 +48,7 @@ import { useDeviceReadonly, useRestriction, useAdministrator } from '../util/per
 import usePositionAttributes from '../attributes/usePositionAttributes';
 import { devicesActions } from '../../store';
 import { useCatch } from '../../reactHelper';
-import { useAttributePreference, usePreference } from '../util/preferences';
+import { usePreference } from '../util/preferences';
 import fetchOrThrow from '../util/fetchOrThrow';
 import { mapIconKey, mapIcons } from '../../map/core/preloadImages';
 import { formatStatus, formatSpeed } from '../util/formatter';
@@ -202,66 +203,104 @@ const useStyles = makeStyles()((theme) => ({
     height: '100%',
     objectFit: 'cover',
   },
-  mercosulPlateContainer: {
+  vehicleModelBadge: {
     marginTop: 6,
     marginBottom: 2,
-    width: 140,
-    height: 44,
-    borderRadius: 6,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#f3f4f6',
+    border: '1px solid #e5e7eb',
+    borderRadius: 8,
+    padding: '3px 8px',
+    width: 'fit-content',
+    maxWidth: '100%',
+  },
+  vehicleModelText: {
+    fontSize: '0.74rem',
+    fontWeight: 700,
+    color: '#374151',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  mercosulPlateContainer: {
+    marginTop: 7,
+    marginBottom: 2,
+    width: 155,
+    height: 48,
+    borderRadius: 7,
     backgroundColor: '#ffffff',
-    border: '2px solid #000000',
+    border: '2.5px solid #111827',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+    boxShadow: '0 3px 8px rgba(0,0,0,0.22)',
+    boxSizing: 'border-box',
   },
   mercosulTopBar: {
-    height: 13,
+    height: 14,
     backgroundColor: '#003399',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '0 4px',
+    padding: '0 5px',
     color: '#ffffff',
   },
   mercosulFlag: {
-    width: 14,
-    height: 9,
+    width: 15,
+    height: 10,
     borderRadius: 1,
   },
   mercosulText: {
-    fontSize: '0.45rem',
-    fontWeight: 800,
-    letterSpacing: 1.5,
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontSize: '0.48rem',
+    fontWeight: 900,
+    letterSpacing: 2,
     color: '#ffffff',
     textAlign: 'center',
+    WebkitFontSmoothing: 'antialiased',
   },
   mercosulPlateBody: {
     flex: 1,
     backgroundColor: '#ffffff',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     padding: '0 6px',
     position: 'relative',
   },
   mercosulLetters: {
-    fontFamily: '"FE-Schrift", "Impact", "Arial Black", sans-serif',
-    fontWeight: 900,
-    fontSize: '1.05rem',
-    letterSpacing: 2,
+    fontFamily: '"Lucida Console", "Consolas", "Courier New", "Trebuchet MS", sans-serif',
+    fontWeight: 700,
+    fontSize: '1.15rem',
+    letterSpacing: 2.5,
     color: '#111827',
     textTransform: 'uppercase',
     textAlign: 'center',
-    width: '100%',
+    lineHeight: 1,
+    WebkitFontSmoothing: 'antialiased',
+    MozOsxFontSmoothing: 'grayscale',
+    textRendering: 'optimizeLegibility',
+  },
+  mercosulQrCode: {
+    position: 'absolute',
+    left: 4,
+    top: 3,
+    width: 13,
+    height: 13,
   },
   mercosulBr: {
     position: 'absolute',
     left: 4,
     bottom: 2,
-    fontSize: '0.4rem',
+    fontSize: '0.45rem',
     fontWeight: 900,
     color: '#111827',
+    lineHeight: 1,
+    WebkitFontSmoothing: 'antialiased',
   },
   actionsContainer: {
     display: 'flex',
@@ -423,8 +462,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const device = useSelector((state) => state.devices.items[deviceId]);
   const deviceImage = device?.attributes?.deviceImage;
 
-  // Leitura da placa do veículo
-  const vehiclePlate = device?.attributes?.plate || device?.contact || '';
+  // Lê exclusivamente os campos corretos
+  const vehiclePlate = device?.attributes?.plate || '';
+  const vehicleModel = device?.model || '';
 
   const isIgnitionOn = Boolean(
     position?.attributes?.ignition ?? position?.attributes?.acc ?? false
@@ -959,22 +999,31 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         </TableBody>
                       </Table>
 
-                      {/* Placa Mercosul do Veículo */}
+                      {/* Descrição do Modelo do Veículo (acima da placa) */}
+                      {vehicleModel && (
+                        <Box className={classes.vehicleModelBadge}>
+                          <DirectionsCarIcon sx={{ fontSize: 14, color: '#6b7280' }} />
+                          <Typography className={classes.vehicleModelText}>
+                            {vehicleModel}
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {/* Placa Mercosul com Letras Finas e Posicionamento Ajustado */}
                       <Box className={classes.mercosulPlateContainer}>
                         <Box className={classes.mercosulTopBar}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <svg width="8" height="6" viewBox="0 0 10 10">
-                              <circle cx="5" cy="2" r="1" fill="#fff" />
-                              <circle cx="2" cy="5" r="1" fill="#fff" />
-                              <circle cx="8" cy="5" r="1" fill="#fff" />
-                              <circle cx="5" cy="8" r="1" fill="#fff" />
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <svg width="7" height="7" viewBox="0 0 10 10">
+                              <circle cx="5" cy="1.5" r="1.2" fill="#ffffff" />
+                              <circle cx="1.5" cy="5" r="1.2" fill="#ffffff" />
+                              <circle cx="8.5" cy="5" r="1.2" fill="#ffffff" />
+                              <circle cx="5" cy="8.5" r="1.2" fill="#ffffff" />
                             </svg>
-                            <Typography sx={{ fontSize: '0.35rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                            <Typography sx={{ fontSize: '0.38rem', fontWeight: 900, color: '#ffffff', letterSpacing: 0.5, lineHeight: 1 }}>
                               MERCOSUL
                             </Typography>
                           </Box>
                           <Typography className={classes.mercosulText}>BRASIL</Typography>
-                          {/* Bandeira do Brasil vetorizada */}
                           <svg className={classes.mercosulFlag} viewBox="0 0 20 14">
                             <rect width="20" height="14" fill="#009c3b" />
                             <polygon points="10,2 18,7 10,12 2,7" fill="#ffdf00" />
@@ -982,9 +1031,12 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                           </svg>
                         </Box>
                         <Box className={classes.mercosulPlateBody}>
+                          <svg className={classes.mercosulQrCode} viewBox="0 0 24 24" fill="#111827">
+                            <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14 0h4v4h-4v-4zm-4-2h2v4h-2v-4zm4-2h2v2h-2v-2zm-2 6h2v4h-2v-4z" />
+                          </svg>
                           <span className={classes.mercosulBr}>BR</span>
                           <Typography className={classes.mercosulLetters}>
-                            {vehiclePlate || ''}
+                            {vehiclePlate}
                           </Typography>
                         </Box>
                       </Box>
