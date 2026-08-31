@@ -13,7 +13,7 @@ import {
 import LoginIcon from '@mui/icons-material/Login';
 import LinkIcon from '@mui/icons-material/Link';
 import { useCatch, useAsyncTask, useScrollToLoad, pageSize } from '../reactHelper';
-import { formatBoolean, formatTime } from '../common/util/formatter';
+import { formatBoolean } from '../common/util/formatter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
@@ -24,7 +24,6 @@ import { useManager } from '../common/util/permissions';
 import SearchHeader from './components/SearchHeader';
 import useSettingsStyles from './common/useSettingsStyles';
 import fetchOrThrow from '../common/util/fetchOrThrow';
-import UserDevicesValue from './components/UserDevicesValue';
 
 const UsersPage = () => {
   const { classes } = useSettingsStyles();
@@ -61,15 +60,12 @@ const UsersPage = () => {
   const loadItems = useCallback(
     async (offset, signal) => {
       const query = new URLSearchParams({ excludeAttributes: true, limit: pageSize, offset });
-      if (searchKeyword) {
-        query.append('keyword', searchKeyword);
-      }
       const response = await fetchOrThrow(`/api/users?${query.toString()}`, { signal });
       const data = await response.json();
       setItems((previous) => (offset ? [...previous, ...data] : data));
       setHasMore(data.length >= pageSize);
     },
-    [searchKeyword],
+    [],
   );
 
   const sentinelRef = useScrollToLoad(() => loadItems(items.length));
@@ -91,26 +87,26 @@ const UsersPage = () => {
           <TableRow>
             <TableCell>{t('sharedName')}</TableCell>
             <TableCell>{t('userEmail')}</TableCell>
-            <TableCell>{t('userAdmin')}</TableCell>
             <TableCell>{t('sharedDisabled')}</TableCell>
-            <TableCell>{t('userExpirationTime')}</TableCell>
-            <TableCell>{t('deviceTitle')}</TableCell>
             <TableCell className={classes.columnAction} />
           </TableRow>
         </TableHead>
         <TableBody>
           {items
             .filter((u) => temporary || !u.temporary)
+            .filter((u) => {
+              if (!searchKeyword) return true;
+              const keyword = searchKeyword.toLowerCase();
+              return (
+                (u.name && u.name.toLowerCase().includes(keyword)) ||
+                (u.email && u.email.toLowerCase().includes(keyword))
+              );
+            })
             .map((item) => (
               <TableRow key={item.id}>
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.email}</TableCell>
-                <TableCell>{formatBoolean(item.administrator, t)}</TableCell>
                 <TableCell>{formatBoolean(item.disabled, t)}</TableCell>
-                <TableCell>{formatTime(item.expirationTime, 'date')}</TableCell>
-                <TableCell>
-                  <UserDevicesValue userId={item.id} />
-                </TableCell>
                 <TableCell className={classes.columnAction} padding="none">
                   <CollectionActions
                     itemId={item.id}
@@ -123,12 +119,12 @@ const UsersPage = () => {
               </TableRow>
             ))}
           {hasMore && (
-            <TableShimmer ref={items.length > 0 ? sentinelRef : null} columns={7} endAction />
+            <TableShimmer ref={items.length > 0 ? sentinelRef : null} columns={4} endAction />
           )}
         </TableBody>
         <TableFooter>
           <TableRow>
-            <TableCell colSpan={7} align="right">
+            <TableCell colSpan={4} align="right">
               <FormControlLabel
                 control={
                   <Switch

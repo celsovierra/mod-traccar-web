@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Accordion,
@@ -5,20 +6,85 @@ import {
   AccordionDetails,
   Typography,
   Container,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  Switch,
+  Divider,
+  IconButton,
+  Tooltip,
+  Box,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import LinkField from '../common/components/LinkField';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import SettingsMenu from './components/SettingsMenu';
 import { formatNotificationTitle } from '../common/util/formatter';
 import PageLayout from '../common/components/PageLayout';
 import useSettingsStyles from './common/useSettingsStyles';
+import fetchOrThrow from '../common/util/fetchOrThrow';
+import { useCatch } from '../reactHelper';
 
 const UserConnectionsPage = () => {
   const { classes } = useSettingsStyles();
   const t = useTranslation();
-
   const { id } = useParams();
+
+  const [notifications, setNotifications] = useState([]);
+  const [linkedIds, setLinkedIds] = useState(new Set());
+  const [loadingTest, setLoadingTest] = useState(false);
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      const [allRes, linkedRes] = await Promise.all([
+        fetchOrThrow('/api/notifications?all=true'),
+        fetchOrThrow(`/api/notifications?userId=${id}`),
+      ]);
+      const allData = await allRes.json();
+      const linkedData = await linkedRes.json();
+      setNotifications(allData);
+      setLinkedIds(new Set(linkedData.map((item) => item.id)));
+    };
+    loadNotifications();
+  }, [id]);
+
+  const handleToggleNotification = async (notificationId) => {
+    const isLinked = linkedIds.has(notificationId);
+    const method = isLinked ? 'DELETE' : 'POST';
+
+    await fetchOrThrow('/api/permissions', {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: Number(id), notificationId }),
+    });
+
+    setLinkedIds((prev) => {
+      const updated = new Set(prev);
+      if (isLinked) {
+        updated.delete(notificationId);
+      } else {
+        updated.add(notificationId);
+      }
+      return updated;
+    });
+  };
+
+  const handleSendTestNotification = useCatch(async (event) => {
+    event.stopPropagation();
+    setLoadingTest(true);
+    try {
+      await fetchOrThrow('/api/notifications/test/firebase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: Number(id) }),
+      });
+      alert('Notificação de teste enviada com sucesso!');
+    } finally {
+      setLoadingTest(false);
+    }
+  });
 
   return (
     <PageLayout
@@ -28,7 +94,19 @@ const UserConnectionsPage = () => {
       <Container maxWidth="xs" className={classes.container}>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">{t('sharedConnections')}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', pr: 1 }}>
+              <Typography variant="subtitle1">{t('sharedConnections')}</Typography>
+              <Tooltip title="Testar Notificação Firebase">
+                <IconButton
+                  size="small"
+                  color="primary"
+                  onClick={handleSendTestNotification}
+                  disabled={loadingTest}
+                >
+                  <NotificationsActiveIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
           </AccordionSummary>
           <AccordionDetails className={classes.details}>
             <LinkField
@@ -41,14 +119,6 @@ const UserConnectionsPage = () => {
               label={t('deviceTitle')}
             />
             <LinkField
-              endpointAll="/api/groups?all=true"
-              endpointLinked={`/api/groups?userId=${id}`}
-              baseId={id}
-              keyBase="userId"
-              keyLink="groupId"
-              label={t('settingsGroups')}
-            />
-            <LinkField
               endpointAll="/api/geofences?all=true"
               endpointLinked={`/api/geofences?userId=${id}`}
               baseId={id}
@@ -56,66 +126,28 @@ const UserConnectionsPage = () => {
               keyLink="geofenceId"
               label={t('sharedGeofences')}
             />
-            <LinkField
-              endpointAll="/api/notifications?all=true"
-              endpointLinked={`/api/notifications?userId=${id}`}
-              baseId={id}
-              keyBase="userId"
-              keyLink="notificationId"
-              titleGetter={(it) => formatNotificationTitle(t, it, true)}
-              label={t('sharedNotifications')}
-            />
-            <LinkField
-              endpointAll="/api/calendars?all=true"
-              endpointLinked={`/api/calendars?userId=${id}`}
-              baseId={id}
-              keyBase="userId"
-              keyLink="calendarId"
-              label={t('sharedCalendars')}
-            />
-            <LinkField
-              endpointAll="/api/users?all=true&excludeAttributes=true"
-              endpointLinked={`/api/users?userId=${id}&excludeAttributes=true`}
-              baseId={id}
-              keyBase="userId"
-              keyLink="managedUserId"
-              label={t('settingsUsers')}
-            />
-            <LinkField
-              endpointAll="/api/attributes/computed?all=true"
-              endpointLinked={`/api/attributes/computed?userId=${id}`}
-              baseId={id}
-              keyBase="userId"
-              keyLink="attributeId"
-              titleGetter={(it) => it.description}
-              label={t('sharedComputedAttributes')}
-            />
-            <LinkField
-              endpointAll="/api/drivers?all=true"
-              endpointLinked={`/api/drivers?userId=${id}`}
-              baseId={id}
-              keyBase="userId"
-              keyLink="driverId"
-              titleGetter={(it) => `${it.name} (${it.uniqueId})`}
-              label={t('sharedDrivers')}
-            />
-            <LinkField
-              endpointAll="/api/commands?all=true"
-              endpointLinked={`/api/commands?userId=${id}`}
-              baseId={id}
-              keyBase="userId"
-              keyLink="commandId"
-              titleGetter={(it) => it.description}
-              label={t('sharedSavedCommands')}
-            />
-            <LinkField
-              endpointAll="/api/maintenance?all=true"
-              endpointLinked={`/api/maintenance?userId=${id}`}
-              baseId={id}
-              keyBase="userId"
-              keyLink="maintenanceId"
-              label={t('sharedMaintenance')}
-            />
+
+            <Typography variant="subtitle2" sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}>
+              {t('sharedNotifications')}
+            </Typography>
+            <List dense disablePadding>
+              {notifications.map((item, index) => (
+                <div key={item.id}>
+                  <ListItem disableGutters>
+                    <ListItemText primary={formatNotificationTitle(t, item, true)} />
+                    <ListItemSecondaryAction>
+                      <Switch
+                        edge="end"
+                        size="small"
+                        checked={linkedIds.has(item.id)}
+                        onChange={() => handleToggleNotification(item.id)}
+                      />
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  {index < notifications.length - 1 && <Divider />}
+                </div>
+              ))}
+            </List>
           </AccordionDetails>
         </Accordion>
       </Container>
