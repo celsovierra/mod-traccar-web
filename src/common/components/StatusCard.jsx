@@ -21,6 +21,7 @@ import {
   Alert,
   Avatar,
   ButtonBase,
+  CircularProgress,
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close';
@@ -29,41 +30,44 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import AnchorIcon from '@mui/icons-material/Anchor';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PlaceIcon from '@mui/icons-material/Place';
 import SpeedIcon from '@mui/icons-material/Speed';
-import AltRouteIcon from '@mui/icons-material/AltRoute';
 import LockPersonIcon from '@mui/icons-material/LockPerson';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 
 import { useTranslation } from './LocalizationProvider';
 import RemoveDialog from './RemoveDialog';
 import PositionValue from './PositionValue';
-import { useDeviceReadonly, useRestriction } from '../util/permissions';
+import { useDeviceReadonly, useRestriction, useAdministrator } from '../util/permissions';
 import usePositionAttributes from '../attributes/usePositionAttributes';
 import { devicesActions } from '../../store';
 import { useCatch } from '../../reactHelper';
-import { useAttributePreference } from '../util/preferences';
+import { useAttributePreference, usePreference } from '../util/preferences';
 import fetchOrThrow from '../util/fetchOrThrow';
 import { mapIconKey, mapIcons } from '../../map/core/preloadImages';
-import { formatStatus } from '../util/formatter';
+import { formatStatus, formatSpeed } from '../util/formatter';
 
-const useStyles = makeStyles()((theme, { desktopPadding }) => ({
+const useStyles = makeStyles()((theme) => ({
   root: {
     pointerEvents: 'none',
     position: 'fixed',
-    zIndex: 5,
+    zIndex: 1300,
+    bottom: theme.spacing(3),
     left: '50%',
+    transform: 'translateX(-50%)',
     [theme.breakpoints.up('md')]: {
-      left: `calc(50% + ${desktopPadding} / 2)`,
+      left: 'calc(50% + 140px)',
       bottom: theme.spacing(3),
     },
-    [theme.breakpoints.down('md')]: {
+    [theme.breakpoints.down('sm')]: {
       left: '50%',
-      bottom: `calc(${theme.spacing(3)} + ${theme.dimensions.bottomBarHeight}px)`,
+      bottom: theme.spacing(1.5),
     },
-    transform: 'translateX(-50%)',
   },
   card: {
     pointerEvents: 'auto',
@@ -101,7 +105,29 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   headerLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
+    flex: 1,
+    overflow: 'hidden',
+  },
+  headerRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+  },
+  speedBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+    color: '#ffffff',
+    padding: '4px 10px',
+    borderRadius: 12,
+    boxShadow: '0 2px 6px rgba(124, 58, 237, 0.35)',
+  },
+  speedNumber: {
+    fontWeight: 800,
+    fontSize: '0.85rem',
+    lineHeight: 1,
   },
   avatar: {
     width: 44,
@@ -120,8 +146,14 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   statusRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '6px',
+    gap: '10px',
     marginTop: '2px',
+    flexWrap: 'wrap',
+  },
+  statusItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
   },
   statusDot: {
     width: 7,
@@ -170,6 +202,67 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     height: '100%',
     objectFit: 'cover',
   },
+  mercosulPlateContainer: {
+    marginTop: 6,
+    marginBottom: 2,
+    width: 140,
+    height: 44,
+    borderRadius: 6,
+    backgroundColor: '#ffffff',
+    border: '2px solid #000000',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+  },
+  mercosulTopBar: {
+    height: 13,
+    backgroundColor: '#003399',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0 4px',
+    color: '#ffffff',
+  },
+  mercosulFlag: {
+    width: 14,
+    height: 9,
+    borderRadius: 1,
+  },
+  mercosulText: {
+    fontSize: '0.45rem',
+    fontWeight: 800,
+    letterSpacing: 1.5,
+    color: '#ffffff',
+    textAlign: 'center',
+  },
+  mercosulPlateBody: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0 6px',
+    position: 'relative',
+  },
+  mercosulLetters: {
+    fontFamily: '"FE-Schrift", "Impact", "Arial Black", sans-serif',
+    fontWeight: 900,
+    fontSize: '1.05rem',
+    letterSpacing: 2,
+    color: '#111827',
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    width: '100%',
+  },
+  mercosulBr: {
+    position: 'absolute',
+    left: 4,
+    bottom: 2,
+    fontSize: '0.4rem',
+    fontWeight: 900,
+    color: '#111827',
+  },
   actionsContainer: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -177,6 +270,28 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     paddingTop: 12,
     borderTop: '1px solid #f3f4f6',
     marginTop: 6,
+    gap: 6,
+  },
+  lockRectangleBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    minWidth: 110,
+    height: 36,
+    padding: '6px 14px',
+    borderRadius: 12,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease-in-out',
+    color: '#ffffff !important',
+    fontWeight: 700,
+    fontSize: '0.76rem',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+    whiteSpace: 'nowrap',
+    '&:disabled': {
+      opacity: 0.5,
+      cursor: 'not-allowed',
+    },
   },
   actionItemBtn: {
     display: 'flex',
@@ -260,39 +375,105 @@ const getRowIcon = (key) => {
       return <AccessTimeIcon sx={{ fontSize: 16, color: '#7c3aed' }} />;
     case 'address':
       return <PlaceIcon sx={{ fontSize: 16, color: '#7c3aed' }} />;
-    case 'speed':
-      return <SpeedIcon sx={{ fontSize: 16, color: '#7c3aed' }} />;
-    case 'totalDistance':
-      return <AltRouteIcon sx={{ fontSize: 16, color: '#7c3aed' }} />;
     default:
       return null;
   }
 };
 
-const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0 }) => {
-  const { classes } = useStyles({ desktopPadding });
+const calculateDistanceMeters = (lat1, lon1, lat2, lon2) => {
+  const R = 6371e3;
+  const rad = (d) => (d * Math.PI) / 180;
+  const dLat = rad(lat2 - lat1);
+  const dLon = rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+const createCircleWkt = (latitude, longitude, radiusInMeters = 50, points = 32) => {
+  const km = radiusInMeters / 1000;
+  const coords = [];
+  const distanceX = km / (111.32 * Math.cos((latitude * Math.PI) / 180));
+  const distanceY = km / 110.574;
+
+  for (let i = 0; i < points; i += 1) {
+    const theta = (i / points) * (2 * Math.PI);
+    const x = distanceX * Math.cos(theta);
+    const y = distanceY * Math.sin(theta);
+    coords.push(`${latitude + y} ${longitude + x}`);
+  }
+  coords.push(coords[0]);
+  return `POLYGON((${coords.join(', ')}))`;
+};
+
+const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
+  const { classes } = useStyles();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const t = useTranslation();
 
+  const speedUnit = usePreference('speedUnit', 'kmh');
+  const user = useSelector((state) => state.session.user);
+  const admin = useAdministrator();
   const readonly = useRestriction('readonly');
   const deviceReadonly = useDeviceReadonly();
 
   const device = useSelector((state) => state.devices.items[deviceId]);
   const deviceImage = device?.attributes?.deviceImage;
 
-  const [expanded, setExpanded] = useState(true);
-  const prevDeviceIdRef = useRef(null);
+  // Leitura da placa do veículo
+  const vehiclePlate = device?.attributes?.plate || device?.contact || '';
 
-  const [isBlocked, setIsBlocked] = useState(() => {
-    return localStorage.getItem(`device_blocked_${deviceId}`) === 'true';
+  const isIgnitionOn = Boolean(
+    position?.attributes?.ignition ?? position?.attributes?.acc ?? false
+  );
+  const ignitionColor = isIgnitionOn ? '#16a34a' : '#dc2626';
+
+  const isTrulyCommunicating = () => {
+    if (!device) return false;
+    if (device.status === 'online') return true;
+    const timeRef = position?.fixTime || device?.lastUpdate;
+    if (!timeRef) return false;
+    const diffMinutes = (Date.now() - new Date(timeRef).getTime()) / 60000;
+    return diffMinutes <= 15;
+  };
+
+  const isOnline = isTrulyCommunicating();
+  const dotColor = isOnline ? '#16a34a' : '#dc2626';
+
+  const [expanded, setExpanded] = useState(false);
+  const prevDeviceIdRef = useRef(null);
+  const [loadingCommand, setLoadingCommand] = useState(false);
+  const [loadingAnchor, setLoadingAnchor] = useState(false);
+  const autoLockTriggered = useRef(false);
+
+  const getIsBlockedReal = (pos = position, dev = device) => {
+    const posAttr = pos?.attributes || {};
+    const devAttr = dev?.attributes || {};
+    const local = localStorage.getItem(`device_blocked_${deviceId}`);
+
+    if (devAttr.blocked !== undefined) return Boolean(devAttr.blocked);
+    if (posAttr.blocked !== undefined) return Boolean(posAttr.blocked);
+    if (posAttr.out1 !== undefined) return Boolean(posAttr.out1);
+    if (posAttr.output1 !== undefined) return Boolean(posAttr.output1);
+    if (posAttr.relay !== undefined) return Boolean(posAttr.relay);
+
+    return local === 'true';
+  };
+
+  const [isBlocked, setIsBlocked] = useState(() => getIsBlockedReal());
+  const [isUnlockPending, setIsUnlockPending] = useState(() => {
+    return localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true';
+  });
+
+  const [isAnchorActive, setIsAnchorActive] = useState(() => {
+    return Boolean(device?.attributes?.anchor || localStorage.getItem(`device_anchor_${deviceId}`));
   });
 
   const positionAttributes = usePositionAttributes(t);
-  const positionItems = useAttributePreference(
-    'positionItems',
-    'fixTime,address,speed,totalDistance',
-  );
+  const positionItems = 'fixTime,address';
 
   const [removing, setRemoving] = useState(false);
   const [confirmLock, setConfirmLock] = useState(false);
@@ -300,79 +481,324 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
 
   useEffect(() => {
     if (deviceId && prevDeviceIdRef.current !== deviceId) {
-      setExpanded(true);
+      setExpanded(false);
       prevDeviceIdRef.current = deviceId;
+      autoLockTriggered.current = false;
+      setIsAnchorActive(Boolean(device?.attributes?.anchor || localStorage.getItem(`device_anchor_${deviceId}`)));
+      setIsBlocked(getIsBlockedReal());
+      setIsUnlockPending(localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true');
     }
-  }, [deviceId]);
+  }, [deviceId, device]);
 
   useEffect(() => {
     if (deviceId) {
-      const saved = localStorage.getItem(`device_blocked_${deviceId}`) === 'true';
-      const attr = position?.attributes || {};
-      const devAttr = device?.attributes || {};
-      const serverStatus = Boolean(
-        attr.blocked === true ||
-        attr.blocked === 1 ||
-        attr.out1 === true ||
-        attr.out1 === 1 ||
-        attr.output1 === true ||
-        attr.output1 === 1 ||
-        attr.relay === true ||
-        attr.relay === 1 ||
-        attr.engine === false ||
-        attr.engine === 0 ||
-        devAttr.blocked === true ||
-        devAttr.blocked === 1
-      );
-      setIsBlocked(saved || serverStatus);
+      const realStatus = getIsBlockedReal();
+      if (isOnline) {
+        if (isUnlockPending) {
+          setIsUnlockPending(false);
+          localStorage.removeItem(`device_unlock_pending_${deviceId}`);
+          setIsBlocked(false);
+          localStorage.removeItem(`device_blocked_${deviceId}`);
+        } else if (realStatus) {
+          setIsBlocked(true);
+        }
+      } else if (realStatus) {
+        setIsBlocked(true);
+      }
     }
-  }, [deviceId, position, device]);
+  }, [deviceId, position, device, isOnline, isUnlockPending]);
 
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => {
         setToast(null);
-      }, 3000);
+      }, 3500);
       return () => clearTimeout(timer);
     }
   }, [toast]);
 
   const sendSendCommand = async (type) => {
+    const isStop = type === 'engineStop';
+
+    if (isStop && !isOnline) {
+      setToast({
+        message: 'Veículo OFFLINE! Não é possível enviar comando de bloqueio.',
+        severity: 'error',
+      });
+      return;
+    }
+
+    setLoadingCommand(true);
+
     try {
       const response = await fetch('/api/commands/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({
-          deviceId,
+          deviceId: Number(deviceId),
           type,
         }),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || response.statusText);
+      if (!response.ok && isStop) {
+        throw new Error('Falha ao enviar comando de bloqueio ao rastreador.');
       }
 
-      const blockedState = type === 'engineStop';
-      setIsBlocked(blockedState);
-      localStorage.setItem(`device_blocked_${deviceId}`, String(blockedState));
+      if (isStop) {
+        setIsBlocked(true);
+        setIsUnlockPending(false);
+        localStorage.setItem(`device_blocked_${deviceId}`, 'true');
+        localStorage.removeItem(`device_unlock_pending_${deviceId}`);
 
-      setToast({
-        message: blockedState ? 'Veículo bloqueado com sucesso!' : 'Veículo desbloqueado com sucesso!',
-        severity: 'success',
-      });
+        if (device) {
+          const updatedDevice = {
+            ...device,
+            attributes: { ...device.attributes, blocked: true },
+          };
+          dispatch(devicesActions.update([updatedDevice]));
+          fetch(`/api/devices/${deviceId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(updatedDevice),
+          }).catch(() => {});
+        }
+
+        setToast({
+          message: 'Bloqueio efetuado com sucesso!',
+          severity: 'success',
+        });
+      } else {
+        autoLockTriggered.current = false;
+        if (isOnline) {
+          setIsBlocked(false);
+          setIsUnlockPending(false);
+          localStorage.removeItem(`device_blocked_${deviceId}`);
+          localStorage.removeItem(`device_unlock_pending_${deviceId}`);
+
+          if (device) {
+            const updatedDevice = {
+              ...device,
+              attributes: { ...device.attributes, blocked: false },
+            };
+            dispatch(devicesActions.update([updatedDevice]));
+            fetch(`/api/devices/${deviceId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'same-origin',
+              body: JSON.stringify(updatedDevice),
+            }).catch(() => {});
+          }
+
+          setToast({
+            message: 'Desbloqueio efetuado com sucesso!',
+            severity: 'success',
+          });
+        } else {
+          setIsUnlockPending(true);
+          localStorage.setItem(`device_unlock_pending_${deviceId}`, 'true');
+
+          setToast({
+            message: 'Desbloqueio agendado! Será executado assim que o veículo ficar online.',
+            severity: 'warning',
+          });
+        }
+      }
     } catch (error) {
       setToast({
         message: error.message || 'Erro ao enviar comando',
         severity: 'error',
       });
+    } finally {
+      setLoadingCommand(false);
     }
   };
+
+  useEffect(() => {
+    if (isAnchorActive && position && !isBlocked && !autoLockTriggered.current) {
+      const anchor = device?.attributes?.anchor || (localStorage.getItem(`device_anchor_${deviceId}`) ? JSON.parse(localStorage.getItem(`device_anchor_${deviceId}`)) : null);
+      if (anchor) {
+        const distance = calculateDistanceMeters(
+          anchor.latitude,
+          anchor.longitude,
+          position.latitude,
+          position.longitude,
+        );
+
+        if (distance > (anchor.radius || 50)) {
+          autoLockTriggered.current = true;
+          sendSendCommand('engineStop');
+          setToast({
+            message: `ALERTA: Veículo saiu da âncora (${Math.round(distance)}m) e foi bloqueado!`,
+            severity: 'error',
+          });
+        }
+      }
+    }
+  }, [position, isAnchorActive, isBlocked, deviceId, device]);
 
   const handleConfirmLock = () => {
     setConfirmLock(false);
     sendSendCommand('engineStop');
+  };
+
+  const handleToggleBlock = () => {
+    if (isUnlockPending) {
+      setToast({
+        message: 'Aguardando veículo ficar online para concluir o desbloqueio.',
+        severity: 'warning',
+      });
+      return;
+    }
+
+    if (isBlocked) {
+      sendSendCommand('engineResume');
+    } else {
+      if (!isOnline) {
+        setToast({
+          message: 'Veículo OFFLINE! Não é possível enviar comando de bloqueio.',
+          severity: 'error',
+        });
+        return;
+      }
+      setConfirmLock(true);
+    }
+  };
+
+  const removeAllAnchorGeofences = async () => {
+    try {
+      const geoRes = await fetch('/api/geofences', { credentials: 'same-origin' });
+      if (geoRes.ok) {
+        const list = await geoRes.json();
+        const prefix = `Âncora - ${device?.name || deviceId}`;
+        const toDelete = list.filter((g) => g.name && g.name.includes(prefix));
+
+        await Promise.all(
+          toDelete.map((g) =>
+            fetch(`/api/geofences/${g.id}`, {
+              method: 'DELETE',
+              credentials: 'same-origin',
+            }),
+          ),
+        );
+      }
+    } catch (e) {}
+  };
+
+  const handleToggleAnchor = async () => {
+    if (loadingAnchor) return;
+    setLoadingAnchor(true);
+
+    if (isAnchorActive) {
+      localStorage.removeItem(`device_anchor_${deviceId}`);
+      setIsAnchorActive(false);
+      autoLockTriggered.current = false;
+
+      await removeAllAnchorGeofences();
+
+      if (device) {
+        const updatedAttributes = { ...device.attributes };
+        delete updatedAttributes.anchor;
+        const updatedDevice = { ...device, attributes: updatedAttributes };
+        dispatch(devicesActions.update([updatedDevice]));
+
+        await fetch(`/api/devices/${deviceId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(updatedDevice),
+        }).catch(() => {});
+      }
+
+      window.dispatchEvent(new CustomEvent('anchorUpdate'));
+      await sendSendCommand('engineResume');
+
+      setToast({ message: 'Âncora desativada e removida!', severity: 'success' });
+      setLoadingAnchor(false);
+    } else if (position) {
+      await removeAllAnchorGeofences();
+
+      let createdGeofenceId = null;
+
+      try {
+        const wktArea = createCircleWkt(position.latitude, position.longitude, 50);
+        const geoResponse = await fetch('/api/geofences', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({
+            name: `Âncora - ${device?.name || deviceId}`,
+            description: `Âncora do veículo ${device?.name || deviceId}`,
+            area: wktArea,
+            attributes: { color: '#ef4444' },
+          }),
+        });
+
+        if (geoResponse.ok) {
+          const newGeofence = await geoResponse.json();
+          createdGeofenceId = newGeofence.id;
+
+          await fetch('/api/permissions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+              deviceId: Number(deviceId),
+              geofenceId: createdGeofenceId,
+            }),
+          }).catch(() => {});
+
+          if (user?.id) {
+            await fetch('/api/permissions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'same-origin',
+              body: JSON.stringify({
+                userId: Number(user.id),
+                geofenceId: createdGeofenceId,
+              }),
+            }).catch(() => {});
+          }
+        }
+      } catch (e) {}
+
+      const anchorData = {
+        deviceId: Number(deviceId),
+        latitude: position.latitude,
+        longitude: position.longitude,
+        radius: 50,
+        geofenceId: createdGeofenceId,
+      };
+
+      localStorage.setItem(`device_anchor_${deviceId}`, JSON.stringify(anchorData));
+
+      if (device) {
+        const updatedDevice = {
+          ...device,
+          attributes: {
+            ...device.attributes,
+            anchor: anchorData,
+          },
+        };
+        dispatch(devicesActions.update([updatedDevice]));
+
+        await fetch(`/api/devices/${deviceId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(updatedDevice),
+        }).catch(() => {});
+      }
+
+      autoLockTriggered.current = false;
+      setIsAnchorActive(true);
+      window.dispatchEvent(new CustomEvent('anchorUpdate'));
+      setToast({ message: 'Âncora criada e salva com sucesso!', severity: 'success' });
+      setLoadingAnchor(false);
+    } else {
+      setLoadingAnchor(false);
+    }
   };
 
   const handleRemove = useCatch(async (removed) => {
@@ -383,20 +809,27 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
     setRemoving(false);
   });
 
-  const isOnline = device?.status === 'online';
-  const dotColor = isOnline ? '#16a34a' : '#dc2626';
-
   return (
     <>
       <style>{`
-        @keyframes superBlinkRed {
-          0% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 2px #ef4444); }
-          50% { transform: scale(1.35); opacity: 0.15; filter: drop-shadow(0 0 16px #ef4444); }
-          100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 2px #ef4444); }
+        @keyframes pulseYellow {
+          0% { background-color: #d97706; }
+          50% { background-color: #f59e0b; }
+          100% { background-color: #d97706; }
         }
-        .blinking-lock-active {
-          animation: superBlinkRed 0.6s infinite ease-in-out !important;
-          color: #ef4444 !important;
+        .blinking-pending-btn {
+          animation: pulseYellow 0.9s infinite ease-in-out !important;
+          background-color: #d97706 !important;
+        }
+
+        @keyframes superBlinkRed {
+          0% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #dc2626); }
+          50% { opacity: 0.2; transform: scale(1.25); filter: drop-shadow(0 0 10px #dc2626); }
+          100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #dc2626); }
+        }
+        .blinking-anchor-active {
+          animation: superBlinkRed 0.7s infinite ease-in-out !important;
+          color: #dc2626 !important;
         }
       `}</style>
 
@@ -427,28 +860,58 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                         alt=""
                       />
                     </Avatar>
-                    <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1f2937', fontSize: '0.98rem', lineHeight: 1.2 }}>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography
+                        variant="subtitle1"
+                        noWrap
+                        sx={{ fontWeight: 700, color: '#1f2937', fontSize: '0.98rem', lineHeight: 1.2 }}
+                      >
                         {device.name}
                       </Typography>
                       <Box className={classes.statusRow}>
-                        <Box className={classes.statusDot} sx={{ backgroundColor: dotColor }} />
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            fontWeight: 600,
-                            color: dotColor,
-                            textTransform: 'capitalize',
-                          }}
-                        >
-                          {formatStatus(device.status, t)}
-                        </Typography>
+                        <Box className={classes.statusItem}>
+                          <Box className={classes.statusDot} sx={{ backgroundColor: dotColor }} />
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontWeight: 600,
+                              color: dotColor,
+                              textTransform: 'capitalize',
+                            }}
+                          >
+                            {isOnline ? formatStatus(device.status, t) : 'Offline'}
+                          </Typography>
+                        </Box>
+
+                        <Box className={classes.statusItem}>
+                          <VpnKeyIcon sx={{ fontSize: 13, color: ignitionColor, transform: 'rotate(-45deg)' }} />
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontWeight: 600,
+                              color: ignitionColor,
+                            }}
+                          >
+                            {isIgnitionOn ? 'Ignição ligada' : 'Ignição desligada'}
+                          </Typography>
+                        </Box>
                       </Box>
                     </Box>
                   </Box>
-                  <IconButton size="small" onClick={onClose} sx={{ color: '#4b5563' }}>
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
+
+                  {/* Badge de velocidade no topo */}
+                  <Box className={classes.headerRight}>
+                    <Box className={classes.speedBadge}>
+                      <SpeedIcon sx={{ fontSize: 16 }} />
+                      <Typography className={classes.speedNumber}>
+                        {position ? formatSpeed(position.speed, speedUnit, t) : '0 km/h'}
+                      </Typography>
+                    </Box>
+
+                    <IconButton size="small" onClick={onClose} sx={{ color: '#4b5563' }}>
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
                 </Box>
               </div>
 
@@ -495,6 +958,36 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                             })}
                         </TableBody>
                       </Table>
+
+                      {/* Placa Mercosul do Veículo */}
+                      <Box className={classes.mercosulPlateContainer}>
+                        <Box className={classes.mercosulTopBar}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <svg width="8" height="6" viewBox="0 0 10 10">
+                              <circle cx="5" cy="2" r="1" fill="#fff" />
+                              <circle cx="2" cy="5" r="1" fill="#fff" />
+                              <circle cx="8" cy="5" r="1" fill="#fff" />
+                              <circle cx="5" cy="8" r="1" fill="#fff" />
+                            </svg>
+                            <Typography sx={{ fontSize: '0.35rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                              MERCOSUL
+                            </Typography>
+                          </Box>
+                          <Typography className={classes.mercosulText}>BRASIL</Typography>
+                          {/* Bandeira do Brasil vetorizada */}
+                          <svg className={classes.mercosulFlag} viewBox="0 0 20 14">
+                            <rect width="20" height="14" fill="#009c3b" />
+                            <polygon points="10,2 18,7 10,12 2,7" fill="#ffdf00" />
+                            <circle cx="10" cy="7" r="3.2" fill="#002776" />
+                          </svg>
+                        </Box>
+                        <Box className={classes.mercosulPlateBody}>
+                          <span className={classes.mercosulBr}>BR</span>
+                          <Typography className={classes.mercosulLetters}>
+                            {vehiclePlate || ''}
+                          </Typography>
+                        </Box>
+                      </Box>
                     </CardContent>
                   )}
 
@@ -526,29 +1019,65 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
 
               <Box className={classes.actionsContainer}>
                 <ButtonBase
-                  className={classes.actionItemBtn}
-                  onClick={() => setConfirmLock(true)}
-                  disabled={disableActions || readonly}
+                  className={`${classes.lockRectangleBtn} ${
+                    isUnlockPending ? 'blinking-pending-btn' : ''
+                  }`}
+                  onClick={handleToggleBlock}
+                  disabled={disableActions || readonly || loadingCommand}
+                  sx={{
+                    backgroundColor: isUnlockPending
+                      ? '#d97706'
+                      : isBlocked
+                      ? '#16a34a'
+                      : '#dc2626',
+                    '&:hover': {
+                      backgroundColor: isUnlockPending
+                        ? '#b45309'
+                        : isBlocked
+                        ? '#15803d'
+                        : '#b91c1c',
+                    },
+                  }}
                 >
-                  <LockIcon
-                    className={isBlocked ? 'blinking-lock-active' : ''}
-                    sx={{ fontSize: 22, color: '#dc2626' }}
-                  />
-                  <Typography
-                    className={`${classes.actionText} ${isBlocked ? 'blinking-lock-active' : ''}`}
-                    sx={{ color: isBlocked ? '#dc2626' : undefined }}
-                  >
-                    Bloquear
-                  </Typography>
+                  {loadingCommand ? (
+                    <CircularProgress size={16} sx={{ color: '#ffffff' }} />
+                  ) : isUnlockPending ? (
+                    <>
+                      <HourglassEmptyIcon sx={{ fontSize: 18, color: '#ffffff' }} />
+                      <span>Aguardando</span>
+                    </>
+                  ) : isBlocked ? (
+                    <>
+                      <LockOpenIcon sx={{ fontSize: 18, color: '#ffffff' }} />
+                      <span>Desbloquear</span>
+                    </>
+                  ) : (
+                    <>
+                      <LockIcon sx={{ fontSize: 18, color: '#ffffff' }} />
+                      <span>Bloquear</span>
+                    </>
+                  )}
                 </ButtonBase>
 
                 <ButtonBase
                   className={classes.actionItemBtn}
-                  onClick={() => sendSendCommand('engineResume')}
-                  disabled={disableActions || readonly}
+                  onClick={handleToggleAnchor}
+                  disabled={disableActions || !position || loadingAnchor}
                 >
-                  <LockOpenIcon sx={{ fontSize: 22, color: '#16a34a' }} />
-                  <Typography className={classes.actionText}>Desbloquear</Typography>
+                  {loadingAnchor ? (
+                    <CircularProgress size={20} sx={{ color: '#0284c7' }} />
+                  ) : (
+                    <AnchorIcon
+                      className={isAnchorActive ? 'blinking-anchor-active' : ''}
+                      sx={{ fontSize: 22, color: isAnchorActive ? '#dc2626' : '#0284c7' }}
+                    />
+                  )}
+                  <Typography
+                    className={`${classes.actionText} ${isAnchorActive ? 'blinking-anchor-active' : ''}`}
+                    sx={{ color: isAnchorActive ? '#dc2626' : undefined }}
+                  >
+                    {isAnchorActive ? 'Ancorado' : 'Âncora'}
+                  </Typography>
                 </ButtonBase>
 
                 <ButtonBase
@@ -560,23 +1089,27 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                   <Typography className={classes.actionText}>Rota</Typography>
                 </ButtonBase>
 
-                <ButtonBase
-                  className={classes.actionItemBtn}
-                  onClick={() => navigate(`/settings/device/${deviceId}`)}
-                  disabled={disableActions || deviceReadonly}
-                >
-                  <EditIcon sx={{ fontSize: 22, color: '#3b82f6' }} />
-                  <Typography className={classes.actionText}>Editar</Typography>
-                </ButtonBase>
+                {admin && (
+                  <>
+                    <ButtonBase
+                      className={classes.actionItemBtn}
+                      onClick={() => navigate(`/settings/device/${deviceId}`)}
+                      disabled={disableActions || deviceReadonly}
+                    >
+                      <EditIcon sx={{ fontSize: 22, color: '#3b82f6' }} />
+                      <Typography className={classes.actionText}>Editar</Typography>
+                    </ButtonBase>
 
-                <ButtonBase
-                  className={classes.actionItemBtn}
-                  onClick={() => setRemoving(true)}
-                  disabled={disableActions || deviceReadonly}
-                >
-                  <DeleteIcon sx={{ fontSize: 22, color: '#ef4444' }} />
-                  <Typography className={classes.actionText}>Excluir</Typography>
-                </ButtonBase>
+                    <ButtonBase
+                      className={classes.actionItemBtn}
+                      onClick={() => setRemoving(true)}
+                      disabled={disableActions || deviceReadonly}
+                    >
+                      <DeleteIcon sx={{ fontSize: 22, color: '#ef4444' }} />
+                      <Typography className={classes.actionText}>Excluir</Typography>
+                    </ButtonBase>
+                  </>
+                )}
               </Box>
             </Card>
           </Rnd>
@@ -675,7 +1208,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
               fontWeight: 600,
               borderRadius: '16px',
               boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
-              backgroundColor: toast.severity === 'success' ? '#16a34a' : '#dc2626',
+              backgroundColor: toast.severity === 'success' ? '#16a34a' : toast.severity === 'warning' ? '#d97706' : '#dc2626',
               color: '#ffffff',
             }}
           >

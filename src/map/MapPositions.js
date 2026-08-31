@@ -1,4 +1,4 @@
-import { useId, useCallback, useEffect, useRef } from 'react';
+import { useId, useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -8,6 +8,33 @@ import { mapIconKey } from './core/preloadImages';
 import { useAttributePreference } from '../common/util/preferences';
 import { useCatchCallback } from '../reactHelper';
 import { findFonts, fromMapCoordinates, toMapCoordinates } from './core/mapUtil';
+
+const createGeoJSONCircle = (center, radiusInMeters, points = 64) => {
+  const coords = {
+    latitude: center[1],
+    longitude: center[0],
+  };
+  const km = radiusInMeters / 1000;
+  const ret = [];
+  const distanceX = km / (111.32 * Math.cos((coords.latitude * Math.PI) / 180));
+  const distanceY = km / 110.574;
+
+  for (let i = 0; i < points; i += 1) {
+    const theta = (i / points) * (2 * Math.PI);
+    const x = distanceX * Math.cos(theta);
+    const y = distanceY * Math.sin(theta);
+    ret.push([coords.longitude + x, coords.latitude + y]);
+  }
+  ret.push(ret[0]);
+
+  return {
+    type: 'Feature',
+    geometry: {
+      type: 'Polygon',
+      coordinates: [ret],
+    },
+  };
+};
 
 const MapPositions = ({
   positions,
@@ -22,6 +49,9 @@ const MapPositions = ({
   const clusters = `${id}-clusters`;
   const clustersCircle = `${id}-clusters-circle`;
   const selected = `${id}-selected`;
+  const anchorSource = `${id}-anchor-source`;
+  const anchorFillLayer = `${id}-anchor-fill`;
+  const anchorLineLayer = `${id}-anchor-line`;
 
   const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
@@ -40,6 +70,14 @@ const MapPositions = ({
   const animatedPositions = useRef({});
   const animationFrameRef = useRef(null);
   const prevSelectedId = useRef(null);
+
+  const [anchorVersion, setAnchorVersion] = useState(0);
+
+  useEffect(() => {
+    const handleAnchorEvent = () => setAnchorVersion((v) => v + 1);
+    window.addEventListener('anchorUpdate', handleAnchorEvent);
+    return () => window.removeEventListener('anchorUpdate', handleAnchorEvent);
+  }, []);
 
   // Força o zoom 17 ao selecionar qualquer veículo (na lista ou no mapa)
   useEffect(() => {
@@ -175,6 +213,35 @@ const MapPositions = ({
       },
     });
 
+    map.addSource(anchorSource, {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+    });
+
+    map.addLayer({
+      id: anchorFillLayer,
+      type: 'fill',
+      source: anchorSource,
+      paint: {
+        'fill-color': '#ef4444',
+        'fill-opacity': 0.18,
+      },
+    });
+
+    map.addLayer({
+      id: anchorLineLayer,
+      type: 'line',
+      source: anchorSource,
+      paint: {
+        'line-color': '#ef4444',
+        'line-width': 2.5,
+        'line-dasharray': [3, 2],
+      },
+    });
+
     [id, selected].forEach((source) => {
       map.addLayer({
         id: source,
@@ -230,13 +297,13 @@ const MapPositions = ({
         'circle-color': [
           'step',
           ['get', 'point_count'],
-          '#10b981', // Verde (< 10)
+          '#10b981',
           10,
-          '#3b82f6', // Azul (10 a 29)
+          '#3b82f6',
           30,
-          '#f59e0b', // Laranja (30 a 99)
+          '#f59e0b',
           100,
-          '#ef4444', // Vermelho (>= 100)
+          '#ef4444',
         ],
         'circle-radius': [
           'step',
@@ -293,6 +360,10 @@ const MapPositions = ({
       map.off('click', clusters, onClusterClick);
       map.off('click', onMapClickCallback);
 
+      if (map.getLayer(anchorLineLayer)) map.removeLayer(anchorLineLayer);
+      if (map.getLayer(anchorFillLayer)) map.removeLayer(anchorFillLayer);
+      if (map.getSource(anchorSource)) map.removeSource(anchorSource);
+
       if (map.getLayer(clusters)) {
         map.removeLayer(clusters);
       }
@@ -327,7 +398,35 @@ const MapPositions = ({
     id,
     selected,
     titleField,
+    anchorSource,
+    anchorFillLayer,
+    anchorLineLayer,
   ]);
+
+  // Atualização do Círculo da Âncora
+  useEffect(() => {
+    const anchorFeatures = [];
+    Object.keys(devices).forEach((devId) => {
+      const anchorRaw = localStorage.getItem(`device_anchor_${devId}`);
+      if (anchorRaw) {
+        try {
+          const anchor = JSON.parse(anchorRaw);
+          const coords = toMapCoordinates(anchor.longitude, anchor.latitude);
+          const circleFeature = createGeoJSONCircle(coords, anchor.radius || 50);
+          anchorFeatures.push(circleFeature);
+        } catch (e) {
+          // ignore error
+        }
+      }
+    });
+
+    if (map.getSource(anchorSource)) {
+      map.getSource(anchorSource).setData({
+        type: 'FeatureCollection',
+        features: anchorFeatures,
+      });
+    }
+  }, [anchorSource, anchorVersion, devices, selectedDeviceId]);
 
   useEffect(() => {
     const duration = 3500;

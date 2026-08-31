@@ -56,6 +56,15 @@ const DevicePage = () => {
     }
   });
 
+  const handlePlateChange = (event) => {
+    const rawValue = event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const updatedAttributes = {
+      ...item.attributes,
+      plate: rawValue,
+    };
+    setItem({ ...item, attributes: updatedAttributes });
+  };
+
   const validate = () => item && item.name && item.uniqueId;
 
   return (
@@ -87,7 +96,7 @@ const DevicePage = () => {
               />
             </AccordionDetails>
           </Accordion>
-          <Accordion>
+          <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="subtitle1">{t('sharedExtra')}</Typography>
             </AccordionSummary>
@@ -107,6 +116,14 @@ const DevicePage = () => {
                 value={item.model || ''}
                 onChange={(event) => setItem({ ...item, model: event.target.value })}
                 label={t('deviceModel')}
+              />
+              <TextField
+                value={item.attributes?.plate || ''}
+                onChange={handlePlateChange}
+                label="Placa do Veículo"
+                placeholder="Ex: ABC1D23 ou ABC1234"
+                inputProps={{ maxLength: 8, style: { textTransform: 'uppercase', fontWeight: 700 } }}
+                helperText="Preencha para exibir na placa Mercosul do mapa"
               />
               <TextField
                 value={item.contact || ''}
