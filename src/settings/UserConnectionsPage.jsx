@@ -69,7 +69,6 @@ const UserConnectionsPage = () => {
         const devicesData = await devicesRes.json();
         let existingUserNotifs = await userNotifsRes.json();
 
-        // Garante as 3 notificações criadas e vinculadas exclusivamente a este userId
         const userTypes = new Set(existingUserNotifs.map((n) => n.type));
         for (const type of REQUIRED_TYPES) {
           if (!userTypes.has(type)) {
@@ -88,13 +87,14 @@ const UserConnectionsPage = () => {
           }
         }
 
-        // Lê vínculos dos veículos apenas com as notificações exclusivas deste usuário
+        const targetNotifIds = new Set(existingUserNotifs.map((n) => n.id));
         const links = {};
         await Promise.all(
           devicesData.map(async (device) => {
             const res = await fetchOrThrow(`/api/notifications?deviceId=${device.id}`);
             const linked = await res.json();
-            links[device.id] = new Set(linked.map((item) => item.id));
+            const filteredLinked = linked.filter((it) => targetNotifIds.has(it.id));
+            links[device.id] = new Set(filteredLinked.map((item) => item.id));
           })
         );
 
