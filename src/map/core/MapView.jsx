@@ -44,12 +44,22 @@ const updateReadyValue = (value) => {
 };
 
 const initMap = async () => {
-  if (ready) return;
   if (!map.hasImage('background')) {
     Object.entries(mapImages).forEach(([key, value]) => {
       map.addImage(key, value, {
         pixelRatio: window.devicePixelRatio,
       });
+    });
+  }
+  if (!map.hasImage('device-moto')) {
+    map.loadImage('/moto-template.png', (error, image) => {
+      if (!error && image) {
+        ['device-moto', 'moto', 'motorcycle', 'default-moto'].forEach((key) => {
+          if (!map.hasImage(key)) {
+            map.addImage(key, image);
+          }
+        });
+      }
     });
   }
 };

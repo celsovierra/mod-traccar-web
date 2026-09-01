@@ -1,59 +1,40 @@
-import { useMediaQuery, Paper } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import { useTheme } from '@mui/material/styles';
-import LogoImage from './LogoImage';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
     display: 'flex',
-    height: '100%',
-  },
-  sidebar: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    background: theme.palette.primary.main,
-    paddingBottom: theme.spacing(5),
-    width: theme.dimensions.sidebarWidth,
-    [theme.breakpoints.down('lg')]: {
-      width: theme.dimensions.sidebarWidthTablet,
-    },
-    [theme.breakpoints.down('sm')]: {
-      width: '0px',
-    },
-  },
-  paper: {
-    display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
     alignItems: 'center',
-    flex: 1,
-    boxShadow: '-2px 0px 16px rgba(0, 0, 0, 0.25)',
-    [theme.breakpoints.up('lg')]: {
-      padding: theme.spacing(0, 25, 0, 0),
-    },
+    justifyContent: 'center',
+    minHeight: '100vh',
+    backgroundImage: 'linear-gradient(rgba(11, 19, 43, 0.65), rgba(11, 19, 43, 0.8)), url("https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1920&q=80")',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    padding: theme.spacing(2),
   },
   form: {
-    maxWidth: theme.spacing(52),
-    padding: theme.spacing(5),
     width: '100%',
+    maxWidth: '420px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    backdropFilter: 'blur(10px)',
+    padding: theme.spacing(4),
+    borderRadius: theme.spacing(2),
+    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3)',
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(3, 2),
+    },
   },
 }));
 
 const LoginLayout = ({ children }) => {
   const { classes } = useStyles();
-  const theme = useTheme();
 
   return (
     <main className={classes.root}>
-      <div className={classes.sidebar}>
-        {!useMediaQuery(theme.breakpoints.down('lg')) && (
-          <LogoImage color={theme.palette.secondary.contrastText} />
-        )}
-      </div>
-      <Paper className={classes.paper}>
-        <form className={classes.form}>{children}</form>
-      </Paper>
+      <form className={classes.form}>{children}</form>
     </main>
   );
 };

@@ -7,7 +7,6 @@ import { findFonts, toMapCoordinates } from './core/mapUtil';
 
 const MapMarkers = ({ markers, showTitles }) => {
   const id = useId();
-
   const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const iconScale = useAttributePreference('iconScale', desktop ? 0.75 : 1);
@@ -21,40 +20,34 @@ const MapMarkers = ({ markers, showTitles }) => {
       },
     });
 
+    const layerConfig = {
+      id,
+      type: 'symbol',
+      source: id,
+      layout: {
+        'icon-image': 'device-moto',
+        'icon-size': iconScale,
+        'icon-allow-overlap': true,
+        'icon-rotation-alignment': 'map',
+        'icon-rotate': ['get', 'rotation'],
+      },
+    };
+
     if (showTitles) {
-      map.addLayer({
-        id,
-        type: 'symbol',
-        source: id,
-        filter: ['!has', 'point_count'],
-        layout: {
-          'icon-image': '{image}',
-          'icon-size': iconScale,
-          'icon-allow-overlap': true,
-          'text-field': '{title}',
-          'text-allow-overlap': true,
-          'text-anchor': 'bottom',
-          'text-offset': [0, -2 * iconScale],
-          'text-font': findFonts(map),
-          'text-size': 12,
-        },
-        paint: {
-          'text-halo-color': 'white',
-          'text-halo-width': 1,
-        },
-      });
-    } else {
-      map.addLayer({
-        id,
-        type: 'symbol',
-        source: id,
-        layout: {
-          'icon-image': '{image}',
-          'icon-size': iconScale,
-          'icon-allow-overlap': true,
-        },
-      });
+      layerConfig.filter = ['!has', 'point_count'];
+      layerConfig.layout['text-field'] = '{title}';
+      layerConfig.layout['text-allow-overlap'] = true;
+      layerConfig.layout['text-anchor'] = 'bottom';
+      layerConfig.layout['text-offset'] = [0, -2 * iconScale];
+      layerConfig.layout['text-font'] = findFonts(map);
+      layerConfig.layout['text-size'] = 12;
+      layerConfig.paint = {
+        'text-halo-color': 'white',
+        'text-halo-width': 1,
+      };
     }
+
+    map.addLayer(layerConfig);
 
     return () => {
       if (map.getLayer(id)) {
@@ -69,21 +62,25 @@ const MapMarkers = ({ markers, showTitles }) => {
   useEffect(() => {
     map.getSource(id)?.setData({
       type: 'FeatureCollection',
-      features: markers.map(({ latitude, longitude, image, title }) => ({
+      features: markers.map(({ latitude, longitude, course, title }) => ({
         type: 'Feature',
         geometry: {
           type: 'Point',
           coordinates: toMapCoordinates(longitude, latitude),
         },
         properties: {
-          image: image || 'default-neutral',
           title: title || '',
+          rotation: course || 0,
         },
       })),
     });
-  }, [showTitles, markers, id]);
+  }, [markers, id]);
 
   return null;
+};
+
+MapMarkers.defaultProps = {
+  showTitles: false,
 };
 
 export default MapMarkers;

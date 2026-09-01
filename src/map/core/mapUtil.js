@@ -57,7 +57,6 @@ const canvasTintImage = (image, color) => {
 export const prepareIcon = (background, icon, color) => {
   const isTopView = icon && icon.src && (icon.src.includes('.webp') || icon.src.includes('.png') || icon.src.startsWith('data:image/webp') || icon.src.startsWith('data:image/png'));
   
-  // Ajuste equilibrado: 80px
   const baseSize = isTopView ? 80 : (background ? background.width : 48);
   const width = Math.round(baseSize * devicePixelRatio);
   const height = Math.round(baseSize * devicePixelRatio);
@@ -69,7 +68,20 @@ export const prepareIcon = (background, icon, color) => {
   const context = canvas.getContext('2d');
 
   if (isTopView) {
-    context.drawImage(icon, 0, 0, width, height);
+    const isMoto = icon.src.includes('motorcycle') || icon.src.includes('moto');
+    
+    if (isMoto) {
+      // Ajuste exclusivo para a moto: mais larga (1.15) e mais curta (0.75)
+      const customWidth = Math.round(width * 1.15);
+      const customHeight = Math.round(height * 0.75);
+      const offsetX = (width - customWidth) / 2;
+      const offsetY = (height - customHeight) / 2;
+      context.drawImage(icon, offsetX, offsetY, customWidth, customHeight);
+    } else {
+      // Carros e outros ícones mantêm o tamanho original 1:1 perfeito
+      context.drawImage(icon, 0, 0, width, height);
+    }
+
     return context.getImageData(0, 0, width, height);
   }
 

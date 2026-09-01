@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  useMediaQuery,
   Select,
   MenuItem,
   FormControl,
@@ -10,12 +9,15 @@ import {
   Snackbar,
   IconButton,
   Tooltip,
+  Paper,
+  Typography,
 } from '@mui/material';
 import CountryFlag from 'react-country-flag';
 import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
+import NavigationIcon from '@mui/icons-material/Navigation';
 import { useTheme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -29,7 +31,6 @@ import {
   nativeEnvironment,
   nativePostMessage,
 } from '../common/components/NativeInterface';
-import LogoImage from './LogoImage';
 import { useCatch } from '../reactHelper';
 import QrCodeDialog from '../common/components/QrCodeDialog';
 import PasswordField from '../common/components/PasswordField';
@@ -42,27 +43,75 @@ const useStyles = makeStyles()((theme) => ({
     display: 'flex',
     flexDirection: 'row',
     gap: theme.spacing(1),
+    zIndex: 10,
+  },
+  card: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    maxWidth: '420px',
+    padding: theme.spacing(4),
+    borderRadius: theme.spacing(2),
+    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(10px)',
+    gap: theme.spacing(3),
+  },
+  headerContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
+  iconBox: {
+    width: '56px',
+    height: '56px',
+    borderRadius: '16px',
+    backgroundColor: '#1e3a8a',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#ffffff',
+    boxShadow: '0 4px 12px rgba(30, 58, 138, 0.3)',
   },
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(2),
+    gap: theme.spacing(2.5),
+    width: '100%',
   },
   extraContainer: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: theme.spacing(4),
-    marginTop: theme.spacing(2),
+    justifyContent: 'space-between',
+    gap: theme.spacing(2),
+    marginTop: theme.spacing(1),
   },
-  registerButton: {
-    minWidth: 'unset',
+  submitButton: {
+    padding: theme.spacing(1.2),
+    borderRadius: theme.spacing(1),
+    fontWeight: 600,
+    textTransform: 'none',
+    fontSize: '1rem',
+    backgroundColor: '#16a34a',
+    boxShadow: 'none',
+    '&:hover': {
+      backgroundColor: '#15803d',
+      boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)',
+    },
   },
   link: {
     cursor: 'pointer',
+    fontWeight: 500,
   },
   flag: {
     marginRight: theme.spacing(1),
+  },
+  inputField: {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: theme.spacing(1),
+    },
   },
 }));
 
@@ -184,7 +233,7 @@ const LoginPage = () => {
           </IconButton>
         )}
         {languageEnabled && (
-          <FormControl>
+          <FormControl size="small">
             <Select value={language} onChange={(e) => setLocalLanguage(e.target.value)}>
               {languageList.map((it) => (
                 <MenuItem key={it.code} value={it.code}>
@@ -198,85 +247,108 @@ const LoginPage = () => {
           </FormControl>
         )}
       </div>
-      <div className={classes.container}>
-        {useMediaQuery(theme.breakpoints.down('lg')) && (
-          <LogoImage color={theme.palette.primary.main} />
-        )}
-        {!openIdForced && (
-          <>
-            <TextField
-              required
-              error={failed}
-              label={t('userEmail')}
-              name="email"
-              value={email}
-              autoComplete="email"
-              autoFocus={!email}
-              onChange={(e) => setEmail(e.target.value)}
-              helperText={failed && 'Invalid username or password'}
-            />
-            <PasswordField
-              required
-              error={failed}
-              label={t('userPassword')}
-              name="password"
-              value={password}
-              autoComplete="current-password"
-              autoFocus={!!email}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            {codeEnabled && (
+
+      <Paper className={classes.card} elevation={0}>
+        <div className={classes.headerContainer}>
+          <div className={classes.iconBox}>
+            <NavigationIcon fontSize="large" />
+          </div>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px', mt: 1 }}>
+            GPScell
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
+            Sistema de Rastreamento Veicular
+          </Typography>
+        </div>
+
+        <div className={classes.container}>
+          {!openIdForced && (
+            <>
               <TextField
                 required
                 error={failed}
-                label={t('loginTotpCode')}
-                name="code"
-                value={code}
-                type="number"
-                onChange={(e) => setCode(e.target.value)}
+                label={t('userEmail')}
+                name="email"
+                value={email}
+                autoComplete="email"
+                autoFocus={!email}
+                onChange={(e) => setEmail(e.target.value)}
+                helperText={failed && 'Usuário ou senha inválidos'}
+                className={classes.inputField}
+                size="small"
               />
-            )}
-            <Button
-              onClick={handlePasswordLogin}
-              type="submit"
-              variant="contained"
-              color="secondary"
-              disabled={!email || !password || (codeEnabled && !code)}
+              <PasswordField
+                required
+                error={failed}
+                label={t('userPassword')}
+                name="password"
+                value={password}
+                autoComplete="current-password"
+                autoFocus={!!email}
+                onChange={(e) => setPassword(e.target.value)}
+                className={classes.inputField}
+                size="small"
+              />
+              {codeEnabled && (
+                <TextField
+                  required
+                  error={failed}
+                  label={t('loginTotpCode')}
+                  name="code"
+                  value={code}
+                  type="number"
+                  onChange={(e) => setCode(e.target.value)}
+                  className={classes.inputField}
+                  size="small"
+                />
+              )}
+              <Button
+                onClick={handlePasswordLogin}
+                type="submit"
+                variant="contained"
+                disabled={!email || !password || (codeEnabled && !code)}
+                className={classes.submitButton}
+              >
+                {t('loginLogin')}
+              </Button>
+            </>
+          )}
+          {openIdEnabled && (
+            <Button 
+              onClick={() => handleOpenIdLogin()} 
+              variant="contained" 
+              className={classes.submitButton}
             >
-              {t('loginLogin')}
+              {t('loginOpenId')}
             </Button>
-          </>
-        )}
-        {openIdEnabled && (
-          <Button onClick={() => handleOpenIdLogin()} variant="contained" color="secondary">
-            {t('loginOpenId')}
-          </Button>
-        )}
-        {!openIdForced && (
-          <div className={classes.extraContainer}>
-            {registrationEnabled && (
-              <Link
-                onClick={() => navigate('/register')}
-                className={classes.link}
-                underline="none"
-                variant="caption"
-              >
-                {t('loginRegister')}
-              </Link>
-            )}
-            {emailEnabled && (
-              <Link
-                onClick={() => navigate('/reset-password')}
-                className={classes.link}
-                underline="none"
-                variant="caption"
-              >
-                {t('loginReset')}
-              </Link>
-            )}
-          </div>
-        )}
-      </div>
+          )}
+          {!openIdForced && (
+            <div className={classes.extraContainer}>
+              {registrationEnabled && (
+                <Link
+                  onClick={() => navigate('/register')}
+                  className={classes.link}
+                  underline="hover"
+                  variant="body2"
+                >
+                  {t('loginRegister')}
+                </Link>
+              )}
+              {emailEnabled && (
+                <Link
+                  onClick={() => navigate('/reset-password')}
+                  className={classes.link}
+                  underline="hover"
+                  variant="body2"
+                >
+                  {t('loginReset')}
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
+      </Paper>
+
       <QrCodeDialog open={showQr} onClose={() => setShowQr(false)} />
       <Snackbar
         open={!!announcement && !announcementShown}

@@ -13,7 +13,7 @@ import craneSvg from '../../resources/images/icon/crane.svg';
 import defaultSvg from '../../resources/images/icon/default.svg';
 import finishSvg from '../../resources/images/icon/finish.svg';
 import helicopterSvg from '../../resources/images/icon/helicopter.svg';
-import motorcycleSvg from '../../resources/images/icon/motorcycle.svg';
+import motorcycleSvg from '../../resources/images/motorcycle.png';
 import personSvg from '../../resources/images/icon/person.svg';
 import planeSvg from '../../resources/images/icon/plane.svg';
 import scooterSvg from '../../resources/images/icon/scooter.svg';
