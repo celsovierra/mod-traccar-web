@@ -59,35 +59,52 @@ const UserConnectionsPage = () => {
     const loadInitialData = async () => {
       setLoadingDevices(true);
       try {
-        const [userRes, devicesRes, userNotifsRes] = await Promise.all([
+        const [userRes, devicesRes, allNotifsRes, userNotifsRes] = await Promise.all([
           fetchOrThrow(`/api/users/${id}`),
           fetchOrThrow(`/api/devices?userId=${id}&excludeAttributes=true`),
+          fetchOrThrow('/api/notifications'),
           fetchOrThrow(`/api/notifications?userId=${id}`),
         ]);
 
         const userData = await userRes.json();
         const devicesData = await devicesRes.json();
-        let existingUserNotifs = await userNotifsRes.json();
+        const allNotifs = await allNotifsRes.json();
+        const userNotifs = await userNotifsRes.json();
 
-        const userTypes = new Set(existingUserNotifs.map((n) => n.type));
+        const resolvedUserNotifs = [];
+
         for (const type of REQUIRED_TYPES) {
-          if (!userTypes.has(type)) {
-            const createRes = await fetchOrThrow('/api/notifications', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ type, notificators: 'firebase', always: false }),
-            });
-            const created = await createRes.json();
-            await fetchOrThrow('/api/permissions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: Number(id), notificationId: created.id }),
-            });
-            existingUserNotifs.push(created);
+          let notif = userNotifs.find((n) => n.type === type);
+
+          if (!notif) {
+            notif = allNotifs.find((n) => n.type === type);
+            if (notif) {
+              await fetchOrThrow('/api/permissions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: Number(id), notificationId: notif.id }),
+              }).catch(() => {});
+            } else {
+              const createRes = await fetchOrThrow('/api/notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type, notificators: 'firebase', always: false }),
+              });
+              notif = await createRes.json();
+              await fetchOrThrow('/api/permissions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: Number(id), notificationId: notif.id }),
+              });
+            }
+          }
+
+          if (notif && !resolvedUserNotifs.some((n) => n.id === notif.id)) {
+            resolvedUserNotifs.push(notif);
           }
         }
 
-        const targetNotifIds = new Set(existingUserNotifs.map((n) => n.id));
+        const targetNotifIds = new Set(resolvedUserNotifs.map((n) => n.id));
         const links = {};
         await Promise.all(
           devicesData.map(async (device) => {
@@ -100,7 +117,7 @@ const UserConnectionsPage = () => {
 
         setUser(userData);
         setDevices(devicesData);
-        setUserNotifications(existingUserNotifs);
+        setUserNotifications(resolvedUserNotifs);
         setDeviceNotificationMap(links);
       } finally {
         setLoadingDevices(false);
