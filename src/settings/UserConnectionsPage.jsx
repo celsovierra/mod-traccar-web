@@ -45,15 +45,12 @@ const UserConnectionsPage = () => {
   const [devices, setDevices] = useState([]);
   const [userNotifications, setUserNotifications] = useState([]);
   const [deviceNotificationMap, setDeviceNotificationMap] = useState({});
+  const [loadingDeviceIds, setLoadingDeviceIds] = useState(new Set());
   const [loadingDevices, setLoadingDevices] = useState(true);
   const [loadingTest, setLoadingTest] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
 
   const [expandedPanel, setExpandedPanel] = useState('connections');
-
-  const handleAccordionChange = (panel) => (event, isExpanded) => {
-    setExpandedPanel(isExpanded ? panel : false);
-  };
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -104,21 +101,9 @@ const UserConnectionsPage = () => {
           }
         }
 
-        const targetNotifIds = new Set(resolvedUserNotifs.map((n) => n.id));
-        const links = {};
-        await Promise.all(
-          devicesData.map(async (device) => {
-            const res = await fetchOrThrow(`/api/notifications?deviceId=${device.id}`);
-            const linked = await res.json();
-            const filteredLinked = linked.filter((it) => targetNotifIds.has(it.id));
-            links[device.id] = new Set(filteredLinked.map((item) => item.id));
-          })
-        );
-
         setUser(userData);
         setDevices(devicesData);
         setUserNotifications(resolvedUserNotifs);
-        setDeviceNotificationMap(links);
       } finally {
         setLoadingDevices(false);
       }
@@ -126,6 +111,36 @@ const UserConnectionsPage = () => {
 
     loadInitialData();
   }, [id]);
+
+  const loadDeviceNotifications = async (deviceId) => {
+    if (deviceNotificationMap[deviceId] || loadingDeviceIds.has(deviceId)) return;
+
+    setLoadingDeviceIds((prev) => new Set(prev).add(deviceId));
+    try {
+      const res = await fetchOrThrow(`/api/notifications?deviceId=${deviceId}`);
+      const linked = await res.json();
+      const targetNotifIds = new Set(userNotifications.map((n) => n.id));
+      const filtered = linked.filter((it) => targetNotifIds.has(it.id));
+      
+      setDeviceNotificationMap((prev) => ({
+        ...prev,
+        [deviceId]: new Set(filtered.map((it) => it.id)),
+      }));
+    } finally {
+      setLoadingDeviceIds((prev) => {
+        const updated = new Set(prev);
+        updated.delete(deviceId);
+        return updated;
+      });
+    }
+  };
+
+  const handleAccordionChange = (panel, deviceId = null) => (event, isExpanded) => {
+    setExpandedPanel(isExpanded ? panel : false);
+    if (isExpanded && deviceId) {
+      loadDeviceNotifications(deviceId);
+    }
+  };
 
   const filteredDevices = useMemo(() => {
     if (!searchFilter.trim()) return devices;
@@ -387,6 +402,7 @@ const UserConnectionsPage = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {filteredDevices.map((device) => {
                 const isPanelOpen = expandedPanel === `device-${device.id}`;
+                const isDeviceLoading = loadingDeviceIds.has(device.id);
                 const linkedNotifs = deviceNotificationMap[device.id] || new Set();
 
                 return (
@@ -403,7 +419,7 @@ const UserConnectionsPage = () => {
                   >
                     <Accordion
                       expanded={isPanelOpen}
-                      onChange={handleAccordionChange(`device-${device.id}`)}
+                      onChange={handleAccordionChange(`device-${device.id}`, device.id)}
                       sx={{
                         boxShadow: 'none',
                         backgroundColor: 'transparent',
@@ -427,35 +443,41 @@ const UserConnectionsPage = () => {
                         </Box>
                       </AccordionSummary>
                       <AccordionDetails sx={{ p: 1.5, backgroundColor: '#fbfbfe', borderTop: '1px solid #f1f5f9' }}>
-                        <List dense disablePadding>
-                          {userNotifications.map((item, index) => (
-                            <Box key={item.id}>
-                              <ListItem disableGutters sx={{ py: 0.6, px: 1 }}>
-                                <ListItemText
-                                  primary={formatNotificationTitle(t, item, false)}
-                                  primaryTypographyProps={{ variant: 'caption', fontWeight: 600, color: '#334155' }}
-                                />
-                                <ListItemSecondaryAction>
-                                  <Switch
-                                    edge="end"
-                                    size="small"
-                                    checked={linkedNotifs.has(item.id)}
-                                    onChange={() => handleToggleDeviceNotification(device.id, item.id)}
-                                    sx={{
-                                      '& .MuiSwitch-switchBase.Mui-checked': {
-                                        color: '#7c3aed',
-                                      },
-                                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                        backgroundColor: '#7c3aed',
-                                      },
-                                    }}
+                        {isDeviceLoading ? (
+                          <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                            <CircularProgress size={20} sx={{ color: '#7c3aed' }} />
+                          </Box>
+                        ) : (
+                          <List dense disablePadding>
+                            {userNotifications.map((item, index) => (
+                              <Box key={item.id}>
+                                <ListItem disableGutters sx={{ py: 0.6, px: 1 }}>
+                                  <ListItemText
+                                    primary={formatNotificationTitle(t, item, false)}
+                                    primaryTypographyProps={{ variant: 'caption', fontWeight: 600, color: '#334155' }}
                                   />
-                                </ListItemSecondaryAction>
-                              </ListItem>
-                              {index < userNotifications.length - 1 && <Divider sx={{ borderColor: '#f1f5f9' }} />}
-                            </Box>
-                          ))}
-                        </List>
+                                  <ListItemSecondaryAction>
+                                    <Switch
+                                      edge="end"
+                                      size="small"
+                                      checked={linkedNotifs.has(item.id)}
+                                      onChange={() => handleToggleDeviceNotification(device.id, item.id)}
+                                      sx={{
+                                        '& .MuiSwitch-switchBase.Mui-checked': {
+                                          color: '#7c3aed',
+                                        },
+                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                          backgroundColor: '#7c3aed',
+                                        },
+                                      }}
+                                    />
+                                  </ListItemSecondaryAction>
+                                </ListItem>
+                                {index < userNotifications.length - 1 && <Divider sx={{ borderColor: '#f1f5f9' }} />}
+                              </Box>
+                            ))}
+                          </List>
+                        )}
                       </AccordionDetails>
                     </Accordion>
                   </Paper>
