@@ -1,4 +1,4 @@
-import { useCallback, useReducer, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -11,10 +11,10 @@ import {
   TableFooter,
   FormControlLabel,
   Switch,
+  Box,
+  Typography,
 } from '@mui/material';
 import LinkIcon from '@mui/icons-material/Link';
-import { useTheme } from '@mui/material/styles';
-import { useAsyncTask, useScrollToLoad, pageSize } from '../reactHelper';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
@@ -22,79 +22,80 @@ import CollectionFab from './components/CollectionFab';
 import CollectionActions from './components/CollectionActions';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
-import { formatAddress, formatStatus, formatTime } from '../common/util/formatter';
+import { formatStatus, formatTime } from '../common/util/formatter';
 import { useDeviceReadonly, useManager } from '../common/util/permissions';
-import { usePreference } from '../common/util/preferences';
 import useSettingsStyles from './common/useSettingsStyles';
 import DeviceUsersValue from './components/DeviceUsersValue';
 import usePersistedState from '../common/util/usePersistedState';
 import fetchOrThrow from '../common/util/fetchOrThrow';
-import AddressValue from '../common/components/AddressValue';
 import exportExcel from '../common/util/exportExcel';
 
 const DevicesPage = () => {
   const { classes } = useSettingsStyles();
-  const theme = useTheme();
   const navigate = useNavigate();
   const t = useTranslation();
 
-  const groups = useSelector((state) => state.groups.items);
-
   const manager = useManager();
   const deviceReadonly = useDeviceReadonly();
-  const coordinateFormat = usePreference('coordinateFormat');
 
-  const positions = useSelector((state) => state.session.positions);
-
-  const [reloadKey, reload] = useReducer((k) => k + 1, 0);
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [showAll, setShowAll] = usePersistedState('showAllDevices', false);
-  const [hasMore, setHasMore] = useState(true);
 
-  const loadItems = useCallback(
-    async (offset, signal) => {
-      const query = new URLSearchParams({ all: showAll, limit: pageSize, offset });
-      if (searchKeyword) {
-        query.append('keyword', searchKeyword);
-      }
-      const response = await fetchOrThrow(`/api/devices?${query.toString()}`, { signal });
+  const fetchDevices = async () => {
+    setLoading(true);
+    try {
+      const response = await fetchOrThrow(`/api/devices?all=${showAll}`);
       const data = await response.json();
-      setItems((previous) => (offset ? [...previous, ...data] : data));
-      setHasMore(data.length >= pageSize);
-    },
-    [searchKeyword, showAll],
-  );
-
-  const sentinelRef = useScrollToLoad(() => loadItems(items.length));
-
-  useAsyncTask(
-    async ({ signal }) => {
-      void reloadKey;
+      setItems(Array.isArray(data) ? data : []);
+    } catch (e) {
       setItems([]);
-      await loadItems(0, signal);
-    },
-    [reloadKey, loadItems],
-  );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDevices();
+  }, [showAll]);
+
+  const filteredItems = useMemo(() => {
+    if (!searchKeyword.trim()) return items;
+    const query = searchKeyword.toLowerCase().trim();
+
+    return items.filter((item) => {
+      const name = item.name ? String(item.name).toLowerCase() : '';
+      const uniqueId = item.uniqueId ? String(item.uniqueId).toLowerCase() : '';
+      const phone = item.phone ? String(item.phone).toLowerCase() : '';
+      const model = item.model ? String(item.model).toLowerCase() : '';
+      const contact = item.contact ? String(item.contact).toLowerCase() : '';
+      const plate = item.attributes?.plate ? String(item.attributes.plate).toLowerCase() : '';
+
+      return (
+        name.includes(query) ||
+        uniqueId.includes(query) ||
+        phone.includes(query) ||
+        model.includes(query) ||
+        contact.includes(query) ||
+        plate.includes(query)
+      );
+    });
+  }, [items, searchKeyword]);
 
   const handleExport = async () => {
-    const data = items.map((item) => ({
+    const data = filteredItems.map((item) => ({
       [t('sharedName')]: item.name,
       [t('deviceIdentifier')]: item.uniqueId,
-      [t('groupParent')]: item.groupId ? groups[item.groupId]?.name : null,
       [t('sharedPhone')]: item.phone,
       [t('deviceModel')]: item.model,
       [t('deviceContact')]: item.contact,
-      [t('userExpirationTime')]: formatTime(item.expirationTime, 'date'),
       [t('deviceStatus')]: formatStatus(item.status, t),
       [t('deviceLastUpdate')]: formatTime(item.lastUpdate, 'minutes'),
-      [t('positionAddress')]: positions[item.id]
-        ? formatAddress(positions[item.id], coordinateFormat)
-        : '',
     }));
     const sheets = new Map();
     sheets.set(t('deviceTitle'), data);
-    await exportExcel(t('deviceTitle'), 'devices.xlsx', sheets, theme);
+    await exportExcel(t('deviceTitle'), 'devices.xlsx', sheets);
   };
 
   const actionConnections = {
@@ -106,78 +107,83 @@ const DevicesPage = () => {
 
   return (
     <PageLayout menu={<SettingsMenu />} breadcrumbs={['settingsTitle', 'deviceTitle']}>
-      <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
+      {/* Barra de Pesquisa Fixa no topo */}
+      <Box
+        sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+          backgroundColor: '#ffffff',
+          borderBottom: '1px solid #e2e8f0',
+          p: 1,
+        }}
+      >
+        <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
+      </Box>
+
+      {/* Tabela de Linhas Padrão Traccar */}
       <Table className={classes.table}>
         <TableHead>
           <TableRow>
             <TableCell>{t('sharedName')}</TableCell>
             <TableCell>{t('deviceIdentifier')}</TableCell>
-            <TableCell>{t('groupParent')}</TableCell>
             <TableCell>{t('sharedPhone')}</TableCell>
             <TableCell>{t('deviceModel')}</TableCell>
             <TableCell>{t('deviceContact')}</TableCell>
-            <TableCell>{t('userExpirationTime')}</TableCell>
-            <TableCell>{t('positionAddress')}</TableCell>
             {manager && <TableCell>{t('settingsUsers')}</TableCell>}
             <TableCell className={classes.columnAction} />
           </TableRow>
         </TableHead>
         <TableBody>
-          {items.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.name}</TableCell>
-              <TableCell>{item.uniqueId}</TableCell>
-              <TableCell>{item.groupId ? groups[item.groupId]?.name : null}</TableCell>
-              <TableCell>{item.phone}</TableCell>
-              <TableCell>{item.model}</TableCell>
-              <TableCell>{item.contact}</TableCell>
-              <TableCell>{formatTime(item.expirationTime, 'date')}</TableCell>
-              <TableCell>
-                {positions[item.id] && (
-                  <AddressValue
-                    latitude={positions[item.id].latitude}
-                    longitude={positions[item.id].longitude}
-                    originalAddress={positions[item.id]?.address}
-                  />
-                )}
-              </TableCell>
-              {manager && (
-                <TableCell>
-                  <DeviceUsersValue deviceId={item.id} />
-                </TableCell>
-              )}
-              <TableCell className={classes.columnAction} padding="none">
-                <CollectionActions
-                  itemId={item.id}
-                  editPath="/settings/device"
-                  endpoint="devices"
-                  onReload={reload}
-                  customActions={[actionConnections]}
-                  readonly={deviceReadonly}
-                />
+          {loading ? (
+            <TableShimmer columns={manager ? 6 : 5} endAction />
+          ) : filteredItems.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={manager ? 7 : 6} align="center" sx={{ py: 4 }}>
+                <Typography variant="body2" sx={{ color: '#888' }}>
+                  Nenhum dispositivo encontrado.
+                </Typography>
               </TableCell>
             </TableRow>
-          ))}
-          {hasMore && (
-            <TableShimmer
-              ref={items.length > 0 ? sentinelRef : null}
-              columns={manager ? 9 : 8}
-              endAction
-            />
+          ) : (
+            filteredItems.map((item) => (
+              <TableRow key={item.id} hover>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.uniqueId}</TableCell>
+                <TableCell>{item.phone || '-'}</TableCell>
+                <TableCell>{item.model || '-'}</TableCell>
+                <TableCell>{item.contact || '-'}</TableCell>
+                {manager && (
+                  <TableCell>
+                    <DeviceUsersValue deviceId={item.id} />
+                  </TableCell>
+                )}
+                <TableCell className={classes.columnAction} padding="none">
+                  <CollectionActions
+                    itemId={item.id}
+                    editPath="/settings/device"
+                    endpoint="devices"
+                    onReload={fetchDevices}
+                    customActions={[actionConnections]}
+                    readonly={deviceReadonly}
+                  />
+                </TableCell>
+              </TableRow>
+            ))
           )}
         </TableBody>
         <TableFooter>
           <TableRow>
             <TableCell>
-              <Button onClick={handleExport} variant="text">
+              <Button onClick={handleExport} variant="text" sx={{ textTransform: 'none', fontWeight: 600 }}>
                 {t('reportExport')}
               </Button>
             </TableCell>
-            <TableCell colSpan={manager ? 9 : 8} align="right">
+            <TableCell colSpan={manager ? 6 : 5} align="right">
               <FormControlLabel
                 control={
                   <Switch
-                    checked={showAll}
+                    checked={Boolean(showAll)}
                     onChange={(e) => setShowAll(e.target.checked)}
                     size="small"
                   />
@@ -190,6 +196,7 @@ const DevicesPage = () => {
           </TableRow>
         </TableFooter>
       </Table>
+
       <CollectionFab editPath="/settings/device" />
     </PageLayout>
   );

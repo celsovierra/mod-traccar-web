@@ -40,6 +40,10 @@ import SpeedIcon from '@mui/icons-material/Speed';
 import LockPersonIcon from '@mui/icons-material/LockPerson';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
+import SyncIcon from '@mui/icons-material/Sync';
+import QueryBuilderIcon from '@mui/icons-material/QueryBuilder';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 import { useTranslation } from './LocalizationProvider';
 import RemoveDialog from './RemoveDialog';
@@ -52,6 +56,38 @@ import { usePreference } from '../util/preferences';
 import fetchOrThrow from '../util/fetchOrThrow';
 import { mapIconKey, mapIcons } from '../../map/core/preloadImages';
 import { formatStatus, formatSpeed } from '../util/formatter';
+
+// Ícone SVG Cerca
+const FenceIcon = ({ sx = {}, className = '' }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    style={{
+      width: sx.fontSize || 22,
+      height: sx.fontSize || 22,
+      color: sx.color || '#0d9488',
+      display: 'inline-block',
+      ...sx,
+    }}
+  >
+    <path d="M5 6 L7 3 L9 6 L9 21 L5 21 Z" />
+    <path d="M10 6 L12 3 L14 6 L14 21 L10 21 Z" />
+    <path d="M15 6 L17 3 L19 6 L19 21 L15 21 Z" />
+    <line x1="3" y1="9" x2="21" y2="9" />
+    <line x1="3" y1="16" x2="21" y2="16" />
+  </svg>
+);
+
+const formatDateTimeBr = (date) => {
+  const d = new Date(date);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} às ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -395,6 +431,26 @@ const useStyles = makeStyles()((theme) => ({
     display: 'flex',
     gap: theme.spacing(1.5),
   },
+  // Modal Balão Ultra-Moderno Dark
+  geofenceDialogPaper: {
+    background: 'linear-gradient(180deg, #111827 0%, #0b0f19 100%)',
+    borderRadius: '24px !important',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    color: '#f8fafc',
+    maxWidth: '430px !important',
+    width: '92% !important',
+    margin: '12px auto !important',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05) !important',
+    overflow: 'hidden',
+  },
+  customSuccessToast: {
+    background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important',
+    color: '#065f46 !important',
+    border: '1.5px solid #6ee7b7',
+    borderRadius: '20px !important',
+    boxShadow: '0 12px 30px rgba(16, 185, 129, 0.25) !important',
+    padding: '10px 18px !important',
+  },
 }));
 
 const formatShortAddress = (address) => {
@@ -509,6 +565,12 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const [loadingAnchor, setLoadingAnchor] = useState(false);
   const autoLockTriggered = useRef(false);
 
+  // Estados do Modal de Cercas
+  const [geofenceModalOpen, setGeofenceModalOpen] = useState(false);
+  const [deviceGeofences, setDeviceGeofences] = useState([]);
+  const [loadingGeofences, setLoadingGeofences] = useState(false);
+  const [unlinkingId, setUnlinkingId] = useState(null);
+
   const getIsBlockedReal = (pos = position, dev = device) => {
     const posAttr = pos?.attributes || {};
     const devAttr = dev?.attributes || {};
@@ -572,7 +634,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     if (toast) {
       const timer = setTimeout(() => {
         setToast(null);
-      }, 3500);
+      }, 4500);
       return () => clearTimeout(timer);
     }
   }, [toast]);
@@ -688,7 +750,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
         if (distance > (anchor.radius || 50)) {
           autoLockTriggered.current = true;
-          sendSendCommand('engineStop');
+          sendCommand('engineStop');
           setToast({
             message: `ALERTA: Veículo saiu da âncora (${Math.round(distance)}m) e foi bloqueado!`,
             severity: 'error',
@@ -700,7 +762,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
   const handleConfirmLock = () => {
     setConfirmLock(false);
-    sendSendCommand('engineStop');
+    sendCommand('engineStop');
   };
 
   const handleToggleBlock = () => {
@@ -713,7 +775,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     }
 
     if (isBlocked) {
-      sendSendCommand('engineResume');
+      sendCommand('engineResume');
     } else {
       if (!isOnline) {
         setToast({
@@ -772,7 +834,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       }
 
       window.dispatchEvent(new CustomEvent('anchorUpdate'));
-      await sendSendCommand('engineResume');
+      await sendCommand('engineResume');
 
       setToast({ message: 'Âncora desativada e removida!', severity: 'success' });
       setLoadingAnchor(false);
@@ -858,6 +920,133 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       setLoadingAnchor(false);
     } else {
       setLoadingAnchor(false);
+    }
+  };
+
+  // Carrega e verifica o status das cercas vinculadas (e reativa se já passaram 12h)
+  const handleOpenGeofences = async () => {
+    setGeofenceModalOpen(true);
+    setLoadingGeofences(true);
+    try {
+      const [devGeoRes, allGeoRes] = await Promise.all([
+        fetchOrThrow(`/api/geofences?deviceId=${deviceId}`),
+        fetchOrThrow('/api/geofences?all=true').catch(() => fetchOrThrow('/api/geofences')),
+      ]);
+
+      const linkedList = await devGeoRes.json();
+      const allGeofences = await allGeoRes.json();
+
+      const linkedMap = new Map();
+      linkedList
+        .filter((g) => !g.name?.startsWith('Âncora -'))
+        .forEach((g) => linkedMap.set(g.id, { ...g, linked: true }));
+
+      // Verifica se há cercas desvinculadas temporariamente
+      const snoozeMap = { ...(device?.attributes?.geofenceSnooze || {}) };
+      const now = Date.now();
+      let hasChanges = false;
+
+      for (const [gIdStr, snoozeUntil] of Object.entries(snoozeMap)) {
+        const gId = Number(gIdStr);
+        if (now >= snoozeUntil) {
+          // Passaram as 12 horas: REATIVA AUTOMATICAMENTE
+          try {
+            await fetch('/api/permissions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'same-origin',
+              body: JSON.stringify({ deviceId: Number(deviceId), geofenceId: gId }),
+            });
+            delete snoozeMap[gIdStr];
+            hasChanges = true;
+
+            const geoObj = allGeofences.find((g) => g.id === gId);
+            if (geoObj) {
+              linkedMap.set(gId, { ...geoObj, linked: true });
+            }
+          } catch (e) {}
+        } else {
+          // Ainda está no período de 12 horas
+          const geoObj = allGeofences.find((g) => g.id === gId);
+          if (geoObj && !linkedMap.has(gId)) {
+            linkedMap.set(gId, { ...geoObj, linked: false, snoozeUntil });
+          }
+        }
+      }
+
+      if (hasChanges && device) {
+        const updatedDevice = {
+          ...device,
+          attributes: { ...device.attributes, geofenceSnooze: snoozeMap },
+        };
+        dispatch(devicesActions.update([updatedDevice]));
+        fetch(`/api/devices/${deviceId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(updatedDevice),
+        }).catch(() => {});
+      }
+
+      setDeviceGeofences(Array.from(linkedMap.values()));
+    } catch (e) {
+      setToast({ message: 'Erro ao buscar cercas virtuais.', severity: 'error' });
+    } finally {
+      setLoadingGeofences(false);
+    }
+  };
+
+  // Desvincular cerca por 12 horas e disparar comando de desbloqueio
+  const handleUnlinkGeofence = async (geofence) => {
+    setUnlinkingId(geofence.id);
+    const snoozeUntil = Date.now() + 12 * 60 * 60 * 1000; // 12 horas
+
+    try {
+      // 1. Remove o vínculo da cerca na API
+      await fetchOrThrow('/api/permissions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deviceId: Number(deviceId),
+          geofenceId: Number(geofence.id),
+        }),
+      });
+
+      // 2. Salva o agendamento de 12h nos atributos do dispositivo
+      const currentSnooze = { ...(device?.attributes?.geofenceSnooze || {}) };
+      currentSnooze[geofence.id] = snoozeUntil;
+
+      if (device) {
+        const updatedDevice = {
+          ...device,
+          attributes: { ...device.attributes, geofenceSnooze: currentSnooze },
+        };
+        dispatch(devicesActions.update([updatedDevice]));
+        await fetch(`/api/devices/${deviceId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(updatedDevice),
+        }).catch(() => {});
+      }
+
+      setDeviceGeofences((prev) =>
+        prev.map((g) => (g.id === geofence.id ? { ...g, linked: false, snoozeUntil } : g))
+      );
+
+      // 3. Executa o desbloqueio (online desbloqueia; offline fica agendado)
+      await sendSendCommand('engineResume');
+
+      // 4. Toast de confirmação
+      setToast({
+        customSuccess: true,
+        title: `${geofence.name} desvinculada!`,
+        subtitle: `Desbloqueio disparado. Cerca reativa em ${formatDateTimeBr(snoozeUntil)}.`,
+      });
+    } catch (e) {
+      setToast({ message: 'Erro ao desvincular cerca.', severity: 'error' });
+    } finally {
+      setUnlinkingId(null);
     }
   };
 
@@ -1027,7 +1216,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         </TableBody>
                       </Table>
 
-                      {/* Descrição do Modelo do Veículo (acima da placa) */}
+                      {/* Descrição do Modelo do Veículo */}
                       {vehicleModel && (
                         <Box className={classes.vehicleModelBadge}>
                           <DirectionsCarIcon sx={{ fontSize: 14, color: '#6b7280' }} />
@@ -1037,7 +1226,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         </Box>
                       )}
 
-                      {/* Placa Mercosul com Letras Finas e Posicionamento Ajustado */}
+                      {/* Placa Mercosul */}
                       <Box className={classes.mercosulPlateContainer}>
                         <Box className={classes.mercosulTopBar}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
@@ -1169,6 +1358,16 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   <Typography className={classes.actionText}>Rota</Typography>
                 </ButtonBase>
 
+                {/* Botão de Cerca */}
+                <ButtonBase
+                  className={classes.actionItemBtn}
+                  onClick={handleOpenGeofences}
+                  disabled={disableActions}
+                >
+                  <FenceIcon sx={{ fontSize: 22, color: '#0d9488' }} />
+                  <Typography className={classes.actionText}>Cerca</Typography>
+                </ButtonBase>
+
                 {admin && (
                   <>
                     <ButtonBase
@@ -1195,6 +1394,231 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
           </Rnd>
         )}
       </div>
+
+      {/* Modal Balão Ultra-Moderno de Cercas Virtuais */}
+      <Dialog
+        open={geofenceModalOpen}
+        onClose={() => setGeofenceModalOpen(false)}
+        PaperProps={{
+          className: classes.geofenceDialogPaper,
+        }}
+      >
+        <Box sx={{ p: { xs: 2, sm: 2.5 } }}>
+          {/* Header do Balão */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              pb: 1.8,
+              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+              mb: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, minWidth: 0 }}>
+              <Box
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(14, 165, 233, 0.05) 100%)',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <FenceIcon sx={{ fontSize: 20, color: '#38bdf8' }} />
+              </Box>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontWeight: 800, fontSize: { xs: '0.92rem', sm: '1rem' }, color: '#ffffff', lineHeight: 1.2 }}>
+                  Cercas Virtuais
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: '0.72rem',
+                    color: '#94a3b8',
+                    fontWeight: 600,
+                    maxWidth: { xs: 180, sm: 240 },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    mt: 0.2,
+                  }}
+                >
+                  {device?.name}
+                </Typography>
+              </Box>
+            </Box>
+            <IconButton
+              size="small"
+              onClick={() => setGeofenceModalOpen(false)}
+              sx={{
+                color: '#64748b',
+                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                borderRadius: '10px',
+                p: 0.6,
+                '&:hover': { color: '#ffffff', backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+              }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+
+          {/* Conteúdo da Lista de Cercas */}
+          {loadingGeofences ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+              <CircularProgress size={30} sx={{ color: '#38bdf8' }} />
+            </Box>
+          ) : deviceGeofences.length === 0 ? (
+            <Box
+              sx={{
+                py: 4,
+                px: 2,
+                textAlign: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                border: '1px dashed rgba(255, 255, 255, 0.12)',
+                borderRadius: '16px',
+              }}
+            >
+              <Typography sx={{ fontSize: '0.84rem', color: '#94a3b8', fontWeight: 600 }}>
+                Nenhuma cerca virtual vinculada a este veículo.
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.4 }}>
+              {deviceGeofences.map((geofence) => {
+                const isPaused = !geofence.linked && geofence.snoozeUntil;
+
+                return (
+                  <Box
+                    key={geofence.id}
+                    sx={{
+                      background: 'linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%)',
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: '18px',
+                      p: { xs: 1.6, sm: 1.8 },
+                      border: isPaused ? '1px solid rgba(234, 179, 8, 0.35)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.25)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.4,
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.4, minWidth: 0, flex: 1 }}>
+                        <Box
+                          sx={{
+                            width: 42,
+                            height: 42,
+                            borderRadius: '12px',
+                            background: isPaused
+                              ? 'linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(202, 138, 4, 0.05) 100%)'
+                              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(79, 70, 229, 0.08) 100%)',
+                            border: isPaused ? '1px solid rgba(234, 179, 8, 0.3)' : '1px solid rgba(99, 102, 241, 0.3)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {isPaused ? (
+                            <SyncIcon sx={{ fontSize: 22, color: '#eab308' }} />
+                          ) : (
+                            <FenceIcon sx={{ fontSize: 20, color: '#818cf8' }} />
+                          )}
+                        </Box>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography
+                            sx={{
+                              fontWeight: 800,
+                              fontSize: { xs: '0.86rem', sm: '0.92rem' },
+                              color: '#f8fafc',
+                              textTransform: 'uppercase',
+                              letterSpacing: 0.3,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {geofence.name}
+                          </Typography>
+                          <Typography sx={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, mt: 0.3 }}>
+                            {geofence.description || 'Polígono'}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Botão Desvincular com efeito gradiente */}
+                      {!isPaused && (
+                        <ButtonBase
+                          onClick={() => handleUnlinkGeofence(geofence)}
+                          disabled={unlinkingId === geofence.id}
+                          sx={{
+                            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                            color: '#ffffff',
+                            borderRadius: '12px',
+                            px: { xs: 1.4, sm: 1.8 },
+                            py: { xs: 0.8, sm: 1 },
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.6,
+                            fontWeight: 700,
+                            fontSize: { xs: '0.74rem', sm: '0.78rem' },
+                            flexShrink: 0,
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: '0 4px 14px rgba(34, 197, 94, 0.35)',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                              transform: 'scale(1.02)',
+                            },
+                            '&:disabled': {
+                              opacity: 0.6,
+                            },
+                          }}
+                        >
+                          {unlinkingId === geofence.id ? (
+                            <CircularProgress size={14} sx={{ color: '#ffffff' }} />
+                          ) : (
+                            <>
+                              <LockOpenOutlinedIcon sx={{ fontSize: 16 }} />
+                              <span>Desvincular</span>
+                            </>
+                          )}
+                        </ButtonBase>
+                      )}
+                    </Box>
+
+                    {/* Card de Aviso 12h Moderno */}
+                    {isPaused && (
+                      <Box
+                        sx={{
+                          background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.12) 0%, rgba(202, 138, 4, 0.04) 100%)',
+                          border: '1px solid rgba(234, 179, 8, 0.25)',
+                          borderRadius: '12px',
+                          p: { xs: 1.2, sm: 1.4 },
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1.2,
+                        }}
+                      >
+                        <QueryBuilderIcon sx={{ color: '#facc15', fontSize: 20, flexShrink: 0 }} />
+                        <Typography sx={{ fontSize: { xs: '0.74rem', sm: '0.78rem' }, color: '#fef08a', fontWeight: 600, lineHeight: 1.3 }}>
+                          Cerca desvinculada! Ficará ativa novamente em{' '}
+                          <strong style={{ color: '#ffffff', fontWeight: 800 }}>{formatDateTimeBr(geofence.snoozeUntil)}</strong>
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                );
+              })}
+            </Box>
+          )}
+        </Box>
+      </Dialog>
 
       <Dialog
         open={confirmLock}
@@ -1267,33 +1691,62 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         </DialogActions>
       </Dialog>
 
+      {/* Snackbar Toast */}
       <Snackbar
         open={Boolean(toast)}
         onClose={() => setToast(null)}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         sx={{
-          top: { xs: 40, sm: 60 },
+          top: { xs: 24, sm: 36 },
           zIndex: 99999,
+          maxWidth: { xs: '92vw', sm: 420 },
         }}
       >
         {toast && (
-          <Alert
-            elevation={10}
-            onClose={() => setToast(null)}
-            severity={toast.severity}
-            variant="filled"
-            sx={{
-              minWidth: 300,
-              fontSize: '1rem',
-              fontWeight: 600,
-              borderRadius: '16px',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
-              backgroundColor: toast.severity === 'success' ? '#16a34a' : toast.severity === 'warning' ? '#d97706' : '#dc2626',
-              color: '#ffffff',
-            }}
-          >
-            {toast.message}
-          </Alert>
+          toast.customSuccess ? (
+            <Box
+              className={classes.customSuccessToast}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                width: '100%',
+              }}
+            >
+              <CheckCircleIcon sx={{ color: '#059669', fontSize: 28, flexShrink: 0 }} />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#065f46', lineHeight: 1.2 }}>
+                  {toast.title}
+                </Typography>
+                <Typography sx={{ fontWeight: 600, fontSize: '0.76rem', color: '#047857', mt: 0.3 }}>
+                  {toast.subtitle}
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <Alert
+              elevation={10}
+              onClose={() => setToast(null)}
+              severity={toast.severity}
+              variant="filled"
+              sx={{
+                width: '100%',
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                borderRadius: '16px',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+                backgroundColor:
+                  toast.severity === 'success'
+                    ? '#16a34a'
+                    : toast.severity === 'warning'
+                    ? '#d97706'
+                    : '#dc2626',
+                color: '#ffffff',
+              }}
+            >
+              {toast.message}
+            </Alert>
+          )
         )}
       </Snackbar>
 
