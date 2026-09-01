@@ -615,10 +615,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       const realStatus = getIsBlockedReal();
       if (isOnline) {
         if (isUnlockPending) {
-          setIsUnlockPending(false);
-          localStorage.removeItem(`device_unlock_pending_${deviceId}`);
-          setIsBlocked(false);
-          localStorage.removeItem(`device_blocked_${deviceId}`);
+          sendSendCommand('engineResume');
         } else if (realStatus) {
           setIsBlocked(true);
         }

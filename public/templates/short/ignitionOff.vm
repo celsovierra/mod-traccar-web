@@ -1,1 +1,3 @@
-🔴🔑 $device.name: Ignição Desligada às $dateTool.format("HH:mm:ss", $event.eventTime, $locale, $timezone)
+🔑 🔴 Ignição Desligada
+$device.name
+⏰ $dateTool.format("dd/MM/yyyy 'às' HH:mm", $event.eventTime, $locale, $timezone)
