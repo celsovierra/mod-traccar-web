@@ -43,7 +43,6 @@ const UserConnectionsPage = () => {
 
   const [user, setUser] = useState(null);
   const [devices, setDevices] = useState([]);
-  const [userExclusiveNotifs, setUserExclusiveNotifs] = useState([]);
   const [deviceNotificationMap, setDeviceNotificationMap] = useState({});
   const [loadingDeviceIds, setLoadingDeviceIds] = useState(new Set());
   const [loadingDevices, setLoadingDevices] = useState(true);
@@ -56,43 +55,16 @@ const UserConnectionsPage = () => {
     const loadInitialData = async () => {
       setLoadingDevices(true);
       try {
-        const [userRes, devicesRes, userNotifsRes] = await Promise.all([
+        const [userRes, devicesRes] = await Promise.all([
           fetchOrThrow(`/api/users/${id}`),
           fetchOrThrow(`/api/devices?userId=${id}&excludeAttributes=true`),
-          fetchOrThrow(`/api/notifications?userId=${id}`),
         ]);
 
         const userData = await userRes.json();
         const devicesData = await devicesRes.json();
-        const existingUserNotifs = await userNotifsRes.json();
-
-        const exclusiveNotifs = [];
-
-        // Garante estritamente apenas 1 notificação exclusiva de cada tipo vinculada a este usuário
-        for (const type of REQUIRED_TYPES) {
-          let notif = existingUserNotifs.find((n) => n.type === type);
-
-          if (!notif) {
-            const createRes = await fetchOrThrow('/api/notifications', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ type, notificators: 'firebase', always: false }),
-            });
-            notif = await createRes.json();
-
-            await fetchOrThrow('/api/permissions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: Number(id), notificationId: notif.id }),
-            });
-          }
-
-          exclusiveNotifs.push(notif);
-        }
 
         setUser(userData);
         setDevices(devicesData);
-        setUserExclusiveNotifs(exclusiveNotifs);
       } finally {
         setLoadingDevices(false);
       }
@@ -106,14 +78,25 @@ const UserConnectionsPage = () => {
 
     setLoadingDeviceIds((prev) => new Set(prev).add(deviceId));
     try {
-      const res = await fetchOrThrow(`/api/notifications?deviceId=${deviceId}`);
-      const linked = await res.json();
-      const targetNotifIds = new Set(userExclusiveNotifs.map((n) => n.id));
-      const filtered = linked.filter((it) => targetNotifIds.has(it.id));
+      const [devNotifsRes, userNotifsRes] = await Promise.all([
+        fetchOrThrow(`/api/notifications?deviceId=${deviceId}`),
+        fetchOrThrow(`/api/notifications?userId=${id}`),
+      ]);
+
+      const devNotifs = await devNotifsRes.json();
+      const userNotifs = await userNotifsRes.json();
+      const userNotifIds = new Set(userNotifs.map((n) => n.id));
+
+      const activeTypes = new Map();
+      devNotifs.forEach((n) => {
+        if (userNotifIds.has(n.id)) {
+          activeTypes.set(n.type, n.id);
+        }
+      });
 
       setDeviceNotificationMap((prev) => ({
         ...prev,
-        [deviceId]: new Set(filtered.map((it) => it.id)),
+        [deviceId]: activeTypes,
       }));
     } finally {
       setLoadingDeviceIds((prev) => {
@@ -141,26 +124,44 @@ const UserConnectionsPage = () => {
     );
   }, [devices, searchFilter]);
 
-  const handleToggleDeviceNotification = async (deviceId, notificationId) => {
-    const currentSet = deviceNotificationMap[deviceId] || new Set();
-    const isLinked = currentSet.has(notificationId);
-    const method = isLinked ? 'DELETE' : 'POST';
+  const handleToggleDeviceNotification = async (deviceId, type) => {
+    const activeMap = new Map(deviceNotificationMap[deviceId] || new Map());
+    const existingNotifId = activeMap.get(type);
 
-    await fetchOrThrow('/api/permissions', {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId, notificationId }),
-    });
+    if (existingNotifId) {
+      // DESLIGOU: Exclui a notificação completamente para não deixar lixo atrelado ao usuário/admin
+      await fetchOrThrow(`/api/notifications/${existingNotifId}`, {
+        method: 'DELETE',
+      });
+      activeMap.delete(type);
+    } else {
+      // LIGOU: Cria uma notificação 100% exclusiva para este usuário e vincula ao veículo
+      const createRes = await fetchOrThrow('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, notificators: 'firebase', always: false }),
+      });
+      const newNotif = await createRes.json();
 
-    setDeviceNotificationMap((prev) => {
-      const updatedSet = new Set(prev[deviceId] || []);
-      if (isLinked) {
-        updatedSet.delete(notificationId);
-      } else {
-        updatedSet.add(notificationId);
-      }
-      return { ...prev, [deviceId]: updatedSet };
-    });
+      await fetchOrThrow('/api/permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: Number(id), notificationId: newNotif.id }),
+      });
+
+      await fetchOrThrow('/api/permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId, notificationId: newNotif.id }),
+      });
+
+      activeMap.set(type, newNotif.id);
+    }
+
+    setDeviceNotificationMap((prev) => ({
+      ...prev,
+      [deviceId]: activeMap,
+    }));
   };
 
   const handleSendTestNotification = useCatch(async (event) => {
@@ -392,7 +393,7 @@ const UserConnectionsPage = () => {
               {filteredDevices.map((device) => {
                 const isPanelOpen = expandedPanel === `device-${device.id}`;
                 const isDeviceLoading = loadingDeviceIds.has(device.id);
-                const linkedNotifs = deviceNotificationMap[device.id] || new Set();
+                const activeMap = deviceNotificationMap[device.id] || new Map();
 
                 return (
                   <Paper
@@ -438,33 +439,37 @@ const UserConnectionsPage = () => {
                           </Box>
                         ) : (
                           <List dense disablePadding>
-                            {userExclusiveNotifs.map((item, index) => (
-                              <Box key={item.id}>
-                                <ListItem disableGutters sx={{ py: 0.6, px: 1 }}>
-                                  <ListItemText
-                                    primary={formatNotificationTitle(t, item, false)}
-                                    primaryTypographyProps={{ variant: 'caption', fontWeight: 600, color: '#334155' }}
-                                  />
-                                  <ListItemSecondaryAction>
-                                    <Switch
-                                      edge="end"
-                                      size="small"
-                                      checked={linkedNotifs.has(item.id)}
-                                      onChange={() => handleToggleDeviceNotification(device.id, item.id)}
-                                      sx={{
-                                        '& .MuiSwitch-switchBase.Mui-checked': {
-                                          color: '#7c3aed',
-                                        },
-                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                          backgroundColor: '#7c3aed',
-                                        },
-                                      }}
+                            {REQUIRED_TYPES.map((type, index) => {
+                              const isChecked = activeMap.has(type);
+
+                              return (
+                                <Box key={type}>
+                                  <ListItem disableGutters sx={{ py: 0.6, px: 1 }}>
+                                    <ListItemText
+                                      primary={formatNotificationTitle(t, { type }, false)}
+                                      primaryTypographyProps={{ variant: 'caption', fontWeight: 600, color: '#334155' }}
                                     />
-                                  </ListItemSecondaryAction>
-                                </ListItem>
-                                {index < userExclusiveNotifs.length - 1 && <Divider sx={{ borderColor: '#f1f5f9' }} />}
-                              </Box>
-                            ))}
+                                    <ListItemSecondaryAction>
+                                      <Switch
+                                        edge="end"
+                                        size="small"
+                                        checked={isChecked}
+                                        onChange={() => handleToggleDeviceNotification(device.id, type)}
+                                        sx={{
+                                          '& .MuiSwitch-switchBase.Mui-checked': {
+                                            color: '#7c3aed',
+                                          },
+                                          '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                            backgroundColor: '#7c3aed',
+                                          },
+                                        }}
+                                      />
+                                    </ListItemSecondaryAction>
+                                  </ListItem>
+                                  {index < REQUIRED_TYPES.length - 1 && <Divider sx={{ borderColor: '#f1f5f9' }} />}
+                                </Box>
+                              );
+                            })}
                           </List>
                         )}
                       </AccordionDetails>
