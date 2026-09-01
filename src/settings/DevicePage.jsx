@@ -41,7 +41,6 @@ const DevicePage = () => {
   const [showQr, setShowQr] = useState(false);
   const [imageFile, setImageFile] = useState(null);
 
-  // Apenas 1 painel aberto por vez
   const [expandedPanel, setExpandedPanel] = useState('required');
 
   const handleChange = (panel) => (event, isExpanded) => {

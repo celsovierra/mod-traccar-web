@@ -431,7 +431,6 @@ const useStyles = makeStyles()((theme) => ({
     display: 'flex',
     gap: theme.spacing(1.5),
   },
-  // Modal Balão Ultra-Moderno Dark
   geofenceDialogPaper: {
     background: 'linear-gradient(180deg, #111827 0%, #0b0f19 100%)',
     borderRadius: '24px !important',
@@ -565,7 +564,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const [loadingAnchor, setLoadingAnchor] = useState(false);
   const autoLockTriggered = useRef(false);
 
-  // Estados do Modal de Cercas
   const [geofenceModalOpen, setGeofenceModalOpen] = useState(false);
   const [deviceGeofences, setDeviceGeofences] = useState([]);
   const [loadingGeofences, setLoadingGeofences] = useState(false);
@@ -750,7 +748,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
         if (distance > (anchor.radius || 50)) {
           autoLockTriggered.current = true;
-          sendCommand('engineStop');
+          sendSendCommand('engineStop');
           setToast({
             message: `ALERTA: Veículo saiu da âncora (${Math.round(distance)}m) e foi bloqueado!`,
             severity: 'error',
@@ -762,7 +760,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
   const handleConfirmLock = () => {
     setConfirmLock(false);
-    sendCommand('engineStop');
+    sendSendCommand('engineStop');
   };
 
   const handleToggleBlock = () => {
@@ -775,7 +773,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     }
 
     if (isBlocked) {
-      sendCommand('engineResume');
+      sendSendCommand('engineResume');
     } else {
       if (!isOnline) {
         setToast({
@@ -834,7 +832,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       }
 
       window.dispatchEvent(new CustomEvent('anchorUpdate'));
-      await sendCommand('engineResume');
+      await sendSendCommand('engineResume');
 
       setToast({ message: 'Âncora desativada e removida!', severity: 'success' });
       setLoadingAnchor(false);
@@ -923,7 +921,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     }
   };
 
-  // Carrega e verifica o status das cercas vinculadas (e reativa se já passaram 12h)
   const handleOpenGeofences = async () => {
     setGeofenceModalOpen(true);
     setLoadingGeofences(true);
@@ -941,7 +938,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         .filter((g) => !g.name?.startsWith('Âncora -'))
         .forEach((g) => linkedMap.set(g.id, { ...g, linked: true }));
 
-      // Verifica se há cercas desvinculadas temporariamente
       const snoozeMap = { ...(device?.attributes?.geofenceSnooze || {}) };
       const now = Date.now();
       let hasChanges = false;
@@ -949,7 +945,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       for (const [gIdStr, snoozeUntil] of Object.entries(snoozeMap)) {
         const gId = Number(gIdStr);
         if (now >= snoozeUntil) {
-          // Passaram as 12 horas: REATIVA AUTOMATICAMENTE
           try {
             await fetch('/api/permissions', {
               method: 'POST',
@@ -966,7 +961,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
             }
           } catch (e) {}
         } else {
-          // Ainda está no período de 12 horas
           const geoObj = allGeofences.find((g) => g.id === gId);
           if (geoObj && !linkedMap.has(gId)) {
             linkedMap.set(gId, { ...geoObj, linked: false, snoozeUntil });
@@ -996,13 +990,11 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     }
   };
 
-  // Desvincular cerca por 12 horas e disparar comando de desbloqueio
   const handleUnlinkGeofence = async (geofence) => {
     setUnlinkingId(geofence.id);
-    const snoozeUntil = Date.now() + 12 * 60 * 60 * 1000; // 12 horas
+    const snoozeUntil = Date.now() + 12 * 60 * 60 * 1000;
 
     try {
-      // 1. Remove o vínculo da cerca na API
       await fetchOrThrow('/api/permissions', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
@@ -1012,7 +1004,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         }),
       });
 
-      // 2. Salva o agendamento de 12h nos atributos do dispositivo
       const currentSnooze = { ...(device?.attributes?.geofenceSnooze || {}) };
       currentSnooze[geofence.id] = snoozeUntil;
 
@@ -1034,10 +1025,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         prev.map((g) => (g.id === geofence.id ? { ...g, linked: false, snoozeUntil } : g))
       );
 
-      // 3. Executa o desbloqueio (online desbloqueia; offline fica agendado)
       await sendSendCommand('engineResume');
 
-      // 4. Toast de confirmação
       setToast({
         customSuccess: true,
         title: `${geofence.name} desvinculada!`,
@@ -1156,7 +1145,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                     </Box>
                   </Box>
 
-                  {/* Badge de velocidade no topo */}
                   <Box className={classes.headerRight}>
                     <Box className={classes.speedBadge}>
                       <SpeedIcon sx={{ fontSize: 16 }} />
@@ -1216,7 +1204,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         </TableBody>
                       </Table>
 
-                      {/* Descrição do Modelo do Veículo */}
                       {vehicleModel && (
                         <Box className={classes.vehicleModelBadge}>
                           <DirectionsCarIcon sx={{ fontSize: 14, color: '#6b7280' }} />
@@ -1226,7 +1213,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         </Box>
                       )}
 
-                      {/* Placa Mercosul */}
                       <Box className={classes.mercosulPlateContainer}>
                         <Box className={classes.mercosulTopBar}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
@@ -1358,7 +1344,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   <Typography className={classes.actionText}>Rota</Typography>
                 </ButtonBase>
 
-                {/* Botão de Cerca */}
                 <ButtonBase
                   className={classes.actionItemBtn}
                   onClick={handleOpenGeofences}
@@ -1395,7 +1380,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         )}
       </div>
 
-      {/* Modal Balão Ultra-Moderno de Cercas Virtuais */}
       <Dialog
         open={geofenceModalOpen}
         onClose={() => setGeofenceModalOpen(false)}
@@ -1404,7 +1388,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         }}
       >
         <Box sx={{ p: { xs: 2, sm: 2.5 } }}>
-          {/* Header do Balão */}
           <Box
             sx={{
               display: 'flex',
@@ -1466,7 +1449,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
             </IconButton>
           </Box>
 
-          {/* Conteúdo da Lista de Cercas */}
           {loadingGeofences ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
               <CircularProgress size={30} sx={{ color: '#38bdf8' }} />
@@ -1552,7 +1534,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         </Box>
                       </Box>
 
-                      {/* Botão Desvincular com efeito gradiente */}
                       {!isPaused && (
                         <ButtonBase
                           onClick={() => handleUnlinkGeofence(geofence)}
@@ -1592,7 +1573,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       )}
                     </Box>
 
-                    {/* Card de Aviso 12h Moderno */}
                     {isPaused && (
                       <Box
                         sx={{
@@ -1691,7 +1671,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar Toast */}
       <Snackbar
         open={Boolean(toast)}
         onClose={() => setToast(null)}
