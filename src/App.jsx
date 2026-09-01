@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
@@ -10,6 +11,7 @@ import MotionController from './main/MotionController';
 import TermsDialog from './common/components/TermsDialog';
 import Loader from './common/components/Loader';
 import fetchOrThrow from './common/util/fetchOrThrow';
+import { ensureDefaultNotifications } from './common/util/ensureDefaultNotifications';
 
 const useStyles = makeStyles()(() => ({
   page: {
@@ -54,6 +56,12 @@ const App = () => {
     },
     [user, dispatch, navigate, newServer],
   );
+
+  useEffect(() => {
+    if (user) {
+      ensureDefaultNotifications();
+    }
+  }, [user]);
 
   if (user == null) {
     return <Loader />;

@@ -26,6 +26,7 @@ import HubIcon from '@mui/icons-material/Hub';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import SendIcon from '@mui/icons-material/Send';
+import PersonIcon from '@mui/icons-material/Person';
 import LinkField from '../common/components/LinkField';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import SettingsMenu from './components/SettingsMenu';
@@ -38,15 +39,14 @@ const UserConnectionsPage = () => {
   const t = useTranslation();
   const { id } = useParams();
 
+  const [user, setUser] = useState(null);
   const [devices, setDevices] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [deviceNotificationMap, setDeviceNotificationMap] = useState({});
-  const [userNotificationIds, setUserNotificationIds] = useState(new Set());
   const [loadingDevices, setLoadingDevices] = useState(true);
   const [loadingTest, setLoadingTest] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
 
-  // Controla apenas 1 acordeão aberto por vez
   const [expandedPanel, setExpandedPanel] = useState('connections');
 
   const handleAccordionChange = (panel) => (event, isExpanded) => {
@@ -57,19 +57,28 @@ const UserConnectionsPage = () => {
     const loadInitialData = async () => {
       setLoadingDevices(true);
       try {
-        const [devicesRes, notificationsRes, userNotifsRes] = await Promise.all([
+        const [userRes, devicesRes, notificationsRes] = await Promise.all([
+          fetchOrThrow(`/api/users/${id}`),
           fetchOrThrow(`/api/devices?userId=${id}&excludeAttributes=true`),
-          fetchOrThrow('/api/notifications?all=true'),
-          fetchOrThrow(`/api/notifications?userId=${id}`),
+          fetchOrThrow('/api/notifications'),
         ]);
 
+        const userData = await userRes.json();
         const devicesData = await devicesRes.json();
         const notificationsData = await notificationsRes.json();
-        const userNotifsData = await userNotifsRes.json();
 
+        const uniqueNotifications = [];
+        const seenTypes = new Set();
+        notificationsData.forEach((item) => {
+          if (!seenTypes.has(item.type)) {
+            seenTypes.add(item.type);
+            uniqueNotifications.push(item);
+          }
+        });
+
+        setUser(userData);
         setDevices(devicesData);
-        setNotifications(notificationsData);
-        setUserNotificationIds(new Set(userNotifsData.map((item) => item.id)));
+        setNotifications(uniqueNotifications);
 
         const links = {};
         await Promise.all(
@@ -108,16 +117,6 @@ const UserConnectionsPage = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deviceId, notificationId }),
     });
-
-    if (!isLinked && !userNotificationIds.has(notificationId)) {
-      await fetchOrThrow('/api/permissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: Number(id), notificationId }),
-      }).catch(() => {});
-
-      setUserNotificationIds((prev) => new Set([...prev, notificationId]));
-    }
 
     setDeviceNotificationMap((prev) => {
       const updatedSet = new Set(prev[deviceId] || []);
@@ -168,7 +167,6 @@ const UserConnectionsPage = () => {
           },
         }}
       >
-        {/* CARD PRINCIPAL CONEXÕES */}
         <Paper
           elevation={0}
           sx={{
@@ -198,8 +196,8 @@ const UserConnectionsPage = () => {
                 transition: 'background-color 0.2s',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', pr: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', pr: 1, gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, flexWrap: 'wrap', minWidth: 0 }}>
                   <Box
                     sx={{
                       width: 36,
@@ -210,13 +208,38 @@ const UserConnectionsPage = () => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       transition: 'all 0.2s',
+                      flexShrink: 0,
                     }}
                   >
                     <HubIcon sx={{ fontSize: 20, color: '#7c3aed' }} />
                   </Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', fontSize: '0.98rem' }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', fontSize: '0.98rem', whiteSpace: 'nowrap' }}>
                     {t('sharedConnections')}
                   </Typography>
+
+                  {user && (
+                    <Box
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.6,
+                        backgroundColor: '#ede9fe',
+                        color: '#7c3aed',
+                        px: 1.2,
+                        py: 0.3,
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        maxWidth: { xs: 130, sm: 180 },
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      <PersonIcon sx={{ fontSize: 16 }} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name || user.email}</span>
+                    </Box>
+                  )}
                 </Box>
 
                 <Tooltip title="Testar Notificação Firebase">
@@ -227,6 +250,7 @@ const UserConnectionsPage = () => {
                     sx={{
                       color: '#7c3aed',
                       backgroundColor: '#ede9fe',
+                      flexShrink: 0,
                       '&:hover': { backgroundColor: '#ddd6fe' },
                     }}
                   >
@@ -259,7 +283,6 @@ const UserConnectionsPage = () => {
           </Accordion>
         </Paper>
 
-        {/* NOTIFICAÇÕES POR VEÍCULO */}
         <Box sx={{ mt: 3 }}>
           <Box
             sx={{
@@ -381,7 +404,7 @@ const UserConnectionsPage = () => {
                             <Box key={item.id}>
                               <ListItem disableGutters sx={{ py: 0.6, px: 1 }}>
                                 <ListItemText
-                                  primary={formatNotificationTitle(t, item, true)}
+                                  primary={formatNotificationTitle(t, item, false)}
                                   primaryTypographyProps={{ variant: 'caption', fontWeight: 600, color: '#334155' }}
                                 />
                                 <ListItemSecondaryAction>
