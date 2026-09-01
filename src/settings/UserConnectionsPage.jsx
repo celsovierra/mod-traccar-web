@@ -35,13 +35,15 @@ import PageLayout from '../common/components/PageLayout';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import { useCatch } from '../reactHelper';
 
+const REQUIRED_TYPES = ['ignitionOn', 'ignitionOff', 'geofenceExit'];
+
 const UserConnectionsPage = () => {
   const t = useTranslation();
   const { id } = useParams();
 
   const [user, setUser] = useState(null);
   const [devices, setDevices] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [userNotifications, setUserNotifications] = useState([]);
   const [deviceNotificationMap, setDeviceNotificationMap] = useState({});
   const [loadingDevices, setLoadingDevices] = useState(true);
   const [loadingTest, setLoadingTest] = useState(false);
@@ -57,29 +59,36 @@ const UserConnectionsPage = () => {
     const loadInitialData = async () => {
       setLoadingDevices(true);
       try {
-        const [userRes, devicesRes, notificationsRes] = await Promise.all([
+        const [userRes, devicesRes, userNotifsRes] = await Promise.all([
           fetchOrThrow(`/api/users/${id}`),
           fetchOrThrow(`/api/devices?userId=${id}&excludeAttributes=true`),
-          fetchOrThrow('/api/notifications'),
+          fetchOrThrow(`/api/notifications?userId=${id}`),
         ]);
 
         const userData = await userRes.json();
         const devicesData = await devicesRes.json();
-        const notificationsData = await notificationsRes.json();
+        let existingUserNotifs = await userNotifsRes.json();
 
-        const uniqueNotifications = [];
-        const seenTypes = new Set();
-        notificationsData.forEach((item) => {
-          if (!seenTypes.has(item.type)) {
-            seenTypes.add(item.type);
-            uniqueNotifications.push(item);
+        // Garante as 3 notificações criadas e vinculadas exclusivamente a este userId
+        const userTypes = new Set(existingUserNotifs.map((n) => n.type));
+        for (const type of REQUIRED_TYPES) {
+          if (!userTypes.has(type)) {
+            const createRes = await fetchOrThrow('/api/notifications', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ type, notificators: 'firebase', always: false }),
+            });
+            const created = await createRes.json();
+            await fetchOrThrow('/api/permissions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: Number(id), notificationId: created.id }),
+            });
+            existingUserNotifs.push(created);
           }
-        });
+        }
 
-        setUser(userData);
-        setDevices(devicesData);
-        setNotifications(uniqueNotifications);
-
+        // Lê vínculos dos veículos apenas com as notificações exclusivas deste usuário
         const links = {};
         await Promise.all(
           devicesData.map(async (device) => {
@@ -88,6 +97,10 @@ const UserConnectionsPage = () => {
             links[device.id] = new Set(linked.map((item) => item.id));
           })
         );
+
+        setUser(userData);
+        setDevices(devicesData);
+        setUserNotifications(existingUserNotifs);
         setDeviceNotificationMap(links);
       } finally {
         setLoadingDevices(false);
@@ -135,10 +148,8 @@ const UserConnectionsPage = () => {
     try {
       await fetchOrThrow('/api/notifications/test/firebase', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: Number(id) }),
       });
-      alert('Notificação de teste enviada com sucesso!');
+      alert('Notificação de teste enviada!');
     } finally {
       setLoadingTest(false);
     }
@@ -400,7 +411,7 @@ const UserConnectionsPage = () => {
                       </AccordionSummary>
                       <AccordionDetails sx={{ p: 1.5, backgroundColor: '#fbfbfe', borderTop: '1px solid #f1f5f9' }}>
                         <List dense disablePadding>
-                          {notifications.map((item, index) => (
+                          {userNotifications.map((item, index) => (
                             <Box key={item.id}>
                               <ListItem disableGutters sx={{ py: 0.6, px: 1 }}>
                                 <ListItemText
@@ -424,7 +435,7 @@ const UserConnectionsPage = () => {
                                   />
                                 </ListItemSecondaryAction>
                               </ListItem>
-                              {index < notifications.length - 1 && <Divider sx={{ borderColor: '#f1f5f9' }} />}
+                              {index < userNotifications.length - 1 && <Divider sx={{ borderColor: '#f1f5f9' }} />}
                             </Box>
                           ))}
                         </List>
