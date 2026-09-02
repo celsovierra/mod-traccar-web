@@ -2,90 +2,109 @@ import { useId, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
 import { map } from './core/MapView';
-import { findFonts, geofenceToFeature } from './core/mapUtil';
-import { useTranslation } from '../common/components/LocalizationProvider';
 
-const MapGeofence = () => {
-  const id = useId();
-
+const MapAnchor = () => {
+  const sourceId = useId();
   const theme = useTheme();
-  const t = useTranslation();
-
-  const geofences = useSelector((state) => state.geofences.items);
+  
+  const devices = useSelector((state) => state.devices.items);
+  const positions = useSelector((state) => state.session.positions);
+  const selectedDeviceId = useSelector((state) => state.devices.selectedId);
 
   useEffect(() => {
-    map.addSource(id, {
-      type: 'geojson',
-      data: {
-        type: 'FeatureCollection',
-        features: [],
-      },
-    });
-    map.addLayer({
-      source: id,
-      id: 'geofences-fill',
-      type: 'fill',
-      filter: ['all', ['==', '$type', 'Polygon']],
-      metadata: { 'traccar:title': t('sharedGeofences') },
-      paint: {
-        'fill-color': ['get', 'color'],
-        'fill-outline-color': ['get', 'color'],
-        'fill-opacity': 0.1,
-      },
-    });
-    map.addLayer({
-      source: id,
-      id: 'geofences-line',
-      type: 'line',
-      metadata: { 'traccar:title': t('sharedGeofences') },
-      paint: {
-        'line-color': ['get', 'color'],
-        'line-width': ['get', 'width'],
-        'line-opacity': ['get', 'opacity'],
-      },
-    });
-    map.addLayer({
-      source: id,
-      id: 'geofences-title',
-      type: 'symbol',
-      metadata: { 'traccar:title': t('sharedGeofences') },
-      layout: {
-        'text-field': '{name}',
-        'text-font': findFonts(map),
-        'text-size': 12,
-      },
-      paint: {
-        'text-halo-color': 'white',
-        'text-halo-width': 1,
-      },
-    });
+    if (!map || !map.isStyleLoaded()) return;
+
+    if (!map.getSource(sourceId)) {
+      map.addSource(sourceId, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+    }
+
+    if (!map.getLayer('anchor-circle-fill')) {
+      map.addLayer({
+        id: 'anchor-circle-fill',
+        type: 'fill',
+        source: sourceId,
+        paint: {
+          'fill-color': theme.palette.error.main,
+          'fill-opacity': 0.25
+        }
+      });
+    }
+
+    if (!map.getLayer('anchor-circle-line')) {
+      map.addLayer({
+        id: 'anchor-circle-line',
+        type: 'line',
+        source: sourceId,
+        paint: {
+          'line-color': theme.palette.error.main,
+          'line-width': 2,
+          'line-opacity': 0.9
+        }
+      });
+    }
 
     return () => {
-      if (map.getLayer('geofences-fill')) {
-        map.removeLayer('geofences-fill');
-      }
-      if (map.getLayer('geofences-line')) {
-        map.removeLayer('geofences-line');
-      }
-      if (map.getLayer('geofences-title')) {
-        map.removeLayer('geofences-title');
-      }
-      if (map.getSource(id)) {
-        map.removeSource(id);
-      }
+      if (!map) return;
+      if (map.getLayer('anchor-circle-line')) map.removeLayer('anchor-circle-line');
+      if (map.getLayer('anchor-circle-fill')) map.removeLayer('anchor-circle-fill');
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
     };
-  }, [id, t]);
+  }, [sourceId, theme]);
 
   useEffect(() => {
-    map.getSource(id)?.setData({
+    if (!map || !map.isStyleLoaded()) return;
+    const source = map.getSource(sourceId);
+    if (!source) return;
+
+    let features = [];
+
+    if (selectedDeviceId) {
+      const device = devices[selectedDeviceId];
+      const position = positions[selectedDeviceId];
+
+      if (device && position && position.longitude !== undefined && position.latitude !== undefined) {
+        const anchor = device.attributes?.anchor;
+        const isAnchored = anchor === true || anchor === 'true' || anchor === 1 || anchor === '1';
+
+        if (isAnchored) {
+          const lng = Number(position.longitude);
+          const lat = Number(position.latitude);
+          const radius = Number(device.attributes?.anchorRadius) || 50;
+
+          const coords = [];
+          const earthRadius = 6378137;
+          const steps = 64;
+          const latRad = (lat * Math.PI) / 180;
+
+          for (let i = 0; i <= steps; i++) {
+            const angle = (i / steps) * Math.PI * 2;
+            const cLat = lat + ((radius / earthRadius) * (180 / Math.PI)) * Math.cos(angle);
+            const cLng = lng + ((radius / earthRadius) * (180 / Math.PI)) * Math.sin(angle) / Math.cos(latRad);
+            coords.push([cLng, cLat]);
+          }
+
+          features.push({
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'Polygon',
+              coordinates: [coords]
+            }
+          });
+        }
+      }
+    }
+
+    source.setData({
       type: 'FeatureCollection',
-      features: Object.values(geofences)
-        .filter((geofence) => !geofence.attributes.hide)
-        .map((geofence) => geofenceToFeature(theme, geofence)),
+      features
     });
-  }, [geofences, id, theme]);
+  }, [devices, positions, selectedDeviceId, sourceId]);
 
   return null;
 };
 
-export default MapGeofence;
+export default MapAnchor;

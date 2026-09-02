@@ -1,5 +1,6 @@
 import { useEffect, useState, createElement as h } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -12,6 +13,7 @@ import { devicesActions } from '../../store';
 
 const MapSelectedDevice = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const theme = useTheme();
 
   const currentTime = useSelector((state) => state.devices.selectTime);
@@ -33,8 +35,8 @@ const MapSelectedDevice = () => {
 
   useEffect(() => {
     if (device) {
-      setModel(device.model || device.attributes?.model || '');
-      setPlate(device.attributes?.plate || device.name || '');
+      setModel(device.model || '');
+      setPlate(device.attributes?.plate || device.attributes?.registration || '');
     }
   }, [device]);
 
@@ -71,31 +73,39 @@ const MapSelectedDevice = () => {
   const handleSave = async () => {
     if (!device) return;
 
-    // Atualiza o name principal (que o Traccar usa na lista) e o model, além do attributes
     const updatedDevice = {
       ...device,
-      name: plate,
       model: model,
       attributes: {
         ...device.attributes,
         plate: plate,
-        model: model,
       },
     };
 
-    // Força a atualização local imediata no Redux
-    dispatch(devicesActions.update({ [device.id]: updatedDevice }));
-    dispatch(devicesActions.update([updatedDevice]));
     setOpenEdit(false);
 
     try {
-      await fetch(`/api/devices/${device.id}`, {
+      const response = await fetch(`/api/devices/${device.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify(updatedDevice),
       });
+
+      if (response.ok) {
+        const result = await response.json();
+        dispatch(devicesActions.update({ [result.id]: result }));
+        dispatch(devicesActions.update([result]));
+      } else {
+        dispatch(devicesActions.update({ [device.id]: updatedDevice }));
+        dispatch(devicesActions.update([updatedDevice]));
+      }
     } catch (e) {
       console.error(e);
+      dispatch(devicesActions.update({ [device.id]: updatedDevice }));
+      dispatch(devicesActions.update([updatedDevice]));
     }
   };
 
@@ -110,12 +120,21 @@ const MapSelectedDevice = () => {
   useEffect(() => {
     const handleClick = (e) => {
       const target = e.target.closest('div, span, img');
-      if (target && (target.textContent?.includes('BR') || target.querySelector('img[alt*="mercosul" i]') || target.className?.includes('mercosul'))) {
-        if (currentId) setOpenEdit(true);
+      if (
+        target &&
+        (target.textContent?.includes('BR') ||
+          target.querySelector('img[alt*="mercosul" i]') ||
+          target.className?.includes('mercosul'))
+      ) {
+        e.stopPropagation();
+        e.preventDefault();
+        if (currentId) {
+          setOpenEdit(true);
+        }
       }
     };
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+    document.addEventListener('click', handleClick, true);
+    return () => document.removeEventListener('click', handleClick, true);
   }, [currentId]);
 
   return h(Dialog, { 
