@@ -79,7 +79,7 @@ const UserConnectionsPage = () => {
     setLoadingDeviceIds((prev) => new Set(prev).add(deviceId));
     try {
       const [devNotifsRes, userNotifsRes] = await Promise.all([
-        fetchOrThrow(`/api/notifications?deviceId=${deviceId}&userId=${id}`),
+        fetchOrThrow(`/api/notifications?deviceId=${deviceId}`),
         fetchOrThrow(`/api/notifications?userId=${id}`),
       ]);
 
