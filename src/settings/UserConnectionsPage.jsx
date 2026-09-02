@@ -201,6 +201,14 @@ const UserConnectionsPage = () => {
                 baseId={id}
                 keyBase="userId"
                 keyLink="notificationId"
+                filter={(items) => {
+                  const seen = new Set();
+                  return items.filter((item) => {
+                    if (seen.has(item.type)) return false;
+                    seen.add(item.type);
+                    return true;
+                  });
+                }}
                 titleGetter={(it) => `${formatNotificationTitle(t, it)} [${it.id}]`}
                 label={t('sharedNotifications')}
                 fullWidth
