@@ -1,30 +1,17 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  Switch,
-  Divider,
   IconButton,
   Tooltip,
   Box,
-  CircularProgress,
-  TextField,
-  InputAdornment,
   Paper,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import DirectionsCarFilledIcon from '@mui/icons-material/DirectionsCarFilled';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import HubIcon from '@mui/icons-material/Hub';
-import SearchIcon from '@mui/icons-material/Search';
-import ClearIcon from '@mui/icons-material/Clear';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
 import LinkField from '../common/components/LinkField';
@@ -35,131 +22,29 @@ import PageLayout from '../common/components/PageLayout';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import { useCatch } from '../reactHelper';
 
-const REQUIRED_TYPES = ['ignitionOn', 'ignitionOff', 'geofenceExit'];
-
 const UserConnectionsPage = () => {
   const t = useTranslation();
   const { id } = useParams();
 
   const [user, setUser] = useState(null);
-  const [devices, setDevices] = useState([]);
-  const [deviceNotificationMap, setDeviceNotificationMap] = useState({});
-  const [loadingDeviceIds, setLoadingDeviceIds] = useState(new Set());
-  const [loadingDevices, setLoadingDevices] = useState(true);
   const [loadingTest, setLoadingTest] = useState(false);
-  const [searchFilter, setSearchFilter] = useState('');
-
   const [expandedPanel, setExpandedPanel] = useState('connections');
 
   useEffect(() => {
     const loadInitialData = async () => {
-      setLoadingDevices(true);
       try {
-        const [userRes, devicesRes] = await Promise.all([
-          fetchOrThrow(`/api/users/${id}`),
-          fetchOrThrow(`/api/devices?userId=${id}&excludeAttributes=true`),
-        ]);
-
+        const userRes = await fetchOrThrow(`/api/users/${id}`);
         const userData = await userRes.json();
-        const devicesData = await devicesRes.json();
-
         setUser(userData);
-        setDevices(devicesData);
-      } finally {
-        setLoadingDevices(false);
+      } catch (e) {
+        // Ignora erro
       }
     };
-
     loadInitialData();
   }, [id]);
 
-  const loadDeviceNotifications = async (deviceId) => {
-    if (deviceNotificationMap[deviceId] || loadingDeviceIds.has(deviceId)) return;
-
-    setLoadingDeviceIds((prev) => new Set(prev).add(deviceId));
-    try {
-      const userNotifsRes = await fetchOrThrow(`/api/notifications?userId=${id}`);
-      const userNotifs = await userNotifsRes.json();
-
-      const activeTypes = new Map();
-      userNotifs.forEach((n) => {
-        if (
-          n.attributes &&
-          String(n.attributes.deviceId) === String(deviceId) &&
-          String(n.attributes.targetUserId) === String(id)
-        ) {
-          activeTypes.set(n.type, n.id);
-        }
-      });
-
-      setDeviceNotificationMap((prev) => ({
-        ...prev,
-        [deviceId]: activeTypes,
-      }));
-    } finally {
-      setLoadingDeviceIds((prev) => {
-        const updated = new Set(prev);
-        updated.delete(deviceId);
-        return updated;
-      });
-    }
-  };
-
-  const handleAccordionChange = (panel, deviceId = null) => (event, isExpanded) => {
+  const handleAccordionChange = (panel) => (event, isExpanded) => {
     setExpandedPanel(isExpanded ? panel : false);
-    if (isExpanded && deviceId) {
-      loadDeviceNotifications(deviceId);
-    }
-  };
-
-  const filteredDevices = useMemo(() => {
-    if (!searchFilter.trim()) return devices;
-    const query = searchFilter.toLowerCase();
-    return devices.filter(
-      (device) =>
-        (device.name && device.name.toLowerCase().includes(query)) ||
-        (device.uniqueId && device.uniqueId.toLowerCase().includes(query))
-    );
-  }, [devices, searchFilter]);
-
-  const handleToggleDeviceNotification = async (deviceId, type) => {
-    const activeMap = new Map(deviceNotificationMap[deviceId] || new Map());
-    const existingNotifId = activeMap.get(type);
-
-    if (existingNotifId) {
-      await fetchOrThrow(`/api/notifications/${existingNotifId}`, {
-        method: 'DELETE',
-      });
-      activeMap.delete(type);
-    } else {
-      const createRes = await fetchOrThrow('/api/notifications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type,
-          notificators: 'firebase',
-          always: false,
-          attributes: {
-            deviceId: Number(deviceId),
-            targetUserId: Number(id),
-          },
-        }),
-      });
-      const newNotif = await createRes.json();
-
-      await fetchOrThrow('/api/permissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: Number(id), notificationId: newNotif.id }),
-      });
-
-      activeMap.set(type, newNotif.id);
-    }
-
-    setDeviceNotificationMap((prev) => ({
-      ...prev,
-      [deviceId]: activeMap,
-    }));
   };
 
   const handleSendTestNotification = useCatch(async (event) => {
@@ -310,174 +195,19 @@ const UserConnectionsPage = () => {
                 label={t('sharedGeofences')}
                 fullWidth
               />
+              <LinkField
+                endpointAll="/api/notifications?all=true"
+                endpointLinked={`/api/notifications?userId=${id}`}
+                baseId={id}
+                keyBase="userId"
+                keyLink="notificationId"
+                titleGetter={(it) => `${formatNotificationTitle(t, it)} [${it.id}]`}
+                label={t('sharedNotifications')}
+                fullWidth
+              />
             </AccordionDetails>
           </Accordion>
         </Paper>
-
-        <Box sx={{ mt: 3 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: { xs: 'flex-start', sm: 'center' },
-              justifyContent: 'space-between',
-              gap: 1.5,
-              mb: 2,
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '8px',
-                  backgroundColor: '#ede9fe',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <NotificationsActiveIcon sx={{ color: '#7c3aed', fontSize: 18 }} />
-              </Box>
-              <Typography sx={{ fontWeight: 800, fontSize: '0.96rem', color: '#1e293b' }}>
-                Notificações por Veículo
-              </Typography>
-            </Box>
-
-            <TextField
-              size="small"
-              placeholder={t('sharedSearch')}
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-              sx={{ width: { xs: '100%', sm: 190 } }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" sx={{ color: '#94a3b8' }} />
-                  </InputAdornment>
-                ),
-                endAdornment: searchFilter ? (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setSearchFilter('')} edge="end">
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ) : null,
-              }}
-            />
-          </Box>
-
-          {loadingDevices ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress size={28} sx={{ color: '#7c3aed' }} />
-            </Box>
-          ) : filteredDevices.length === 0 ? (
-            <Paper
-              elevation={0}
-              sx={{
-                p: 3,
-                textAlign: 'center',
-                borderRadius: '18px',
-                border: '1px solid #edf2f7',
-                backgroundColor: '#f8fafc',
-              }}
-            >
-              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
-                {devices.length === 0 ? 'Nenhum veículo vinculado a este usuário.' : 'Nenhum veículo encontrado.'}
-              </Typography>
-            </Paper>
-          ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {filteredDevices.map((device) => {
-                const isPanelOpen = expandedPanel === `device-${device.id}`;
-                const isDeviceLoading = loadingDeviceIds.has(device.id);
-                const activeMap = deviceNotificationMap[device.id] || new Map();
-
-                return (
-                  <Paper
-                    key={device.id}
-                    elevation={0}
-                    sx={{
-                      borderRadius: '18px',
-                      border: '1px solid #edf2f7',
-                      boxShadow: '0 4px 16px rgba(149, 157, 165, 0.05)',
-                      overflow: 'hidden',
-                      backgroundColor: '#ffffff',
-                    }}
-                  >
-                    <Accordion
-                      expanded={isPanelOpen}
-                      onChange={handleAccordionChange(`device-${device.id}`, device.id)}
-                      sx={{
-                        boxShadow: 'none',
-                        backgroundColor: 'transparent',
-                        '&:before': { display: 'none' },
-                      }}
-                    >
-                      <AccordionSummary
-                        expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
-                        sx={{
-                          px: 2,
-                          py: 0.8,
-                          backgroundColor: isPanelOpen ? '#f5f3ff' : '#ffffff',
-                          transition: 'background-color 0.2s',
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-                          <DirectionsCarFilledIcon sx={{ color: isPanelOpen ? '#7c3aed' : '#64748b', fontSize: 20 }} />
-                          <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
-                            {device.name}
-                          </Typography>
-                        </Box>
-                      </AccordionSummary>
-                      <AccordionDetails sx={{ p: 1.5, backgroundColor: '#fbfbfe', borderTop: '1px solid #f1f5f9' }}>
-                        {isDeviceLoading ? (
-                          <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                            <CircularProgress size={20} sx={{ color: '#7c3aed' }} />
-                          </Box>
-                        ) : (
-                          <List dense disablePadding>
-                            {REQUIRED_TYPES.map((type, index) => {
-                              const isChecked = activeMap.has(type);
-
-                              return (
-                                <Box key={type}>
-                                  <ListItem disableGutters sx={{ py: 0.6, px: 1 }}>
-                                    <ListItemText
-                                      primary={formatNotificationTitle(t, { type }, false)}
-                                      primaryTypographyProps={{ variant: 'caption', fontWeight: 600, color: '#334155' }}
-                                    />
-                                    <ListItemSecondaryAction>
-                                      <Switch
-                                        edge="end"
-                                        size="small"
-                                        checked={isChecked}
-                                        onChange={() => handleToggleDeviceNotification(device.id, type)}
-                                        sx={{
-                                          '& .MuiSwitch-switchBase.Mui-checked': {
-                                            color: '#7c3aed',
-                                          },
-                                          '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                            backgroundColor: '#7c3aed',
-                                          },
-                                        }}
-                                      />
-                                    </ListItemSecondaryAction>
-                                  </ListItem>
-                                  {index < REQUIRED_TYPES.length - 1 && <Divider sx={{ borderColor: '#f1f5f9' }} />}
-                                </Box>
-                              );
-                            })}
-                          </List>
-                        )}
-                      </AccordionDetails>
-                    </Accordion>
-                  </Paper>
-                );
-              })}
-            </Box>
-          )}
-        </Box>
       </Box>
     </PageLayout>
   );
