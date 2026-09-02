@@ -79,7 +79,6 @@ const MapPositions = ({
     return () => window.removeEventListener('anchorUpdate', handleAnchorEvent);
   }, []);
 
-  // Força o zoom 17 ao selecionar qualquer veículo (na lista ou no mapa)
   useEffect(() => {
     if (selectedDeviceId) {
       const posList = positions?.length ? positions : Object.values(reduxPositions || {});
@@ -287,7 +286,6 @@ const MapPositions = ({
       map.on('click', source, onMarkerClickCallback);
     });
 
-    // Círculos com cores por quantidade agrupada
     map.addLayer({
       id: clustersCircle,
       type: 'circle',
@@ -322,7 +320,6 @@ const MapPositions = ({
       },
     });
 
-    // Texto com o número dentro do círculo
     map.addLayer({
       id: clusters,
       type: 'symbol',
@@ -403,19 +400,25 @@ const MapPositions = ({
     anchorLineLayer,
   ]);
 
-  // Atualização do Círculo da Âncora
+  // Limpeza rigorosa e validação de âncoras ativas (remove resíduos antigos do localStorage)
   useEffect(() => {
     const anchorFeatures = [];
     Object.keys(devices).forEach((devId) => {
-      const anchorRaw = localStorage.getItem(`device_anchor_${devId}`);
+      const anchorKey = `device_anchor_${devId}`;
+      const anchorRaw = localStorage.getItem(anchorKey);
       if (anchorRaw) {
         try {
           const anchor = JSON.parse(anchorRaw);
-          const coords = toMapCoordinates(anchor.longitude, anchor.latitude);
-          const circleFeature = createGeoJSONCircle(coords, anchor.radius || 50);
-          anchorFeatures.push(circleFeature);
+          // Verifica se a âncora realmente existe e está ativa
+          if (anchor && anchor.active === true && anchor.latitude && anchor.longitude) {
+            const coords = toMapCoordinates(anchor.longitude, anchor.latitude);
+            const circleFeature = createGeoJSONCircle(coords, anchor.radius || 50);
+            anchorFeatures.push(circleFeature);
+          } else {
+            localStorage.removeItem(anchorKey);
+          }
         } catch (e) {
-          // ignore error
+          localStorage.removeItem(anchorKey);
         }
       }
     });
