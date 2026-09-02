@@ -78,18 +78,12 @@ const UserConnectionsPage = () => {
 
     setLoadingDeviceIds((prev) => new Set(prev).add(deviceId));
     try {
-      const [devNotifsRes, userNotifsRes] = await Promise.all([
-        fetchOrThrow(`/api/notifications?deviceId=${deviceId}`),
-        fetchOrThrow(`/api/notifications?userId=${id}`),
-      ]);
-
-      const devNotifs = await devNotifsRes.json();
+      const userNotifsRes = await fetchOrThrow(`/api/notifications?userId=${id}`);
       const userNotifs = await userNotifsRes.json();
-      const userNotifIds = new Set(userNotifs.map((n) => n.id));
 
       const activeTypes = new Map();
-      devNotifs.forEach((n) => {
-        if (userNotifIds.has(n.id)) {
+      userNotifs.forEach((n) => {
+        if (n.attributes && String(n.attributes.deviceId) === String(deviceId)) {
           activeTypes.set(n.type, n.id);
         }
       });
@@ -137,7 +131,12 @@ const UserConnectionsPage = () => {
       const createRes = await fetchOrThrow('/api/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, notificators: 'firebase', always: false }),
+        body: JSON.stringify({
+          type,
+          notificators: 'firebase',
+          always: false,
+          attributes: { deviceId: Number(deviceId) }
+        }),
       });
       const newNotif = await createRes.json();
 
@@ -145,12 +144,6 @@ const UserConnectionsPage = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: Number(id), notificationId: newNotif.id }),
-      });
-
-      await fetchOrThrow('/api/permissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deviceId, notificationId: newNotif.id }),
       });
 
       activeMap.set(type, newNotif.id);
