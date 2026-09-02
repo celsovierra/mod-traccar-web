@@ -79,7 +79,7 @@ const UserConnectionsPage = () => {
     setLoadingDeviceIds((prev) => new Set(prev).add(deviceId));
     try {
       const [devNotifsRes, userNotifsRes] = await Promise.all([
-        fetchOrThrow(`/api/notifications?deviceId=${deviceId}`),
+        fetchOrThrow(`/api/notifications?deviceId=${deviceId}&userId=${id}`),
         fetchOrThrow(`/api/notifications?userId=${id}`),
       ]);
 
@@ -129,13 +129,11 @@ const UserConnectionsPage = () => {
     const existingNotifId = activeMap.get(type);
 
     if (existingNotifId) {
-      // DESLIGOU: Exclui a notificação completamente para não deixar lixo atrelado ao usuário/admin
       await fetchOrThrow(`/api/notifications/${existingNotifId}`, {
         method: 'DELETE',
       });
       activeMap.delete(type);
     } else {
-      // LIGOU: Cria uma notificação 100% exclusiva para este usuário e vincula ao veículo
       const createRes = await fetchOrThrow('/api/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
