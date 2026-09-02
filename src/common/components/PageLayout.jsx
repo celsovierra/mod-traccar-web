@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   AppBar,
+  Box,
   Breadcrumbs,
   Divider,
   Drawer,
@@ -178,6 +179,22 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
             <PageTitle breadcrumbs={breadcrumbs} />
           </Toolbar>
         </AppBar>
+      )}
+
+      {!desktop && hasMenu && (
+        <Box sx={{ p: 1, display: 'flex', alignItems: 'center', backgroundColor: '#ffffff', borderBottom: '1px solid #f1f5f9' }}>
+          <IconButton
+            color="inherit"
+            edge="start"
+            sx={{ mr: 1, color: '#6d28d9' }}
+            onClick={() => navigate(-1)}
+          >
+            <BackIcon />
+          </IconButton>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+            Voltar
+          </Typography>
+        </Box>
       )}
 
       <div className={classes.content}>{children}</div>

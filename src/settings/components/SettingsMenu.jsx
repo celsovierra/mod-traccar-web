@@ -72,28 +72,45 @@ const SettingsMenu = () => {
         {!readonly && (
           <>
             <MenuItem
-              title={t('sharedNotifications')}
-              link="/settings/notifications"
-              icon={<NotificationsIcon fontSize="small" />}
-              selected={location.pathname.startsWith('/settings/notification')}
-            />
-            <MenuItem
-              title={t('settingsUser')}
-              link={`/settings/user/${userId}`}
-              icon={<PersonIcon fontSize="small" />}
-              selected={location.pathname === `/settings/user/${userId}`}
-            />
-            <MenuItem
               title={t('deviceTitle')}
               link="/settings/devices"
               icon={<DnsIcon fontSize="small" />}
               selected={location.pathname.startsWith('/settings/device')}
+            />
+            {manager && (
+              <MenuItem
+                title="Contas"
+                link="/settings/users"
+                icon={<PeopleIcon fontSize="small" />}
+                selected={
+                  location.pathname.startsWith('/settings/user') &&
+                  location.pathname !== `/settings/user/${userId}`
+                }
+              />
+            )}
+            <MenuItem
+              title="Usuário"
+              link={`/settings/user/${userId}`}
+              icon={<PersonIcon fontSize="small" />}
+              selected={location.pathname === `/settings/user/${userId}`}
             />
             <MenuItem
               title={t('sharedGeofences')}
               link="/geofences"
               icon={<DrawIcon fontSize="small" />}
               selected={location.pathname.startsWith('/settings/geofence')}
+            />
+            <MenuItem
+              title={t('sharedNotifications')}
+              link="/settings/notifications"
+              icon={<NotificationsIcon fontSize="small" />}
+              selected={location.pathname.startsWith('/settings/notification')}
+            />
+            <MenuItem
+              title="Conta"
+              link="/settings/account"
+              icon={<PersonIcon fontSize="small" />}
+              selected={location.pathname === '/settings/account'}
             />
             {!features.disableSavedCommands && (
               <MenuItem
@@ -122,15 +139,6 @@ const SettingsMenu = () => {
               link="/settings/announcement"
               icon={<CampaignIcon fontSize="small" />}
               selected={location.pathname === '/settings/announcement'}
-            />
-            <MenuItem
-              title={t('settingsUsers')}
-              link="/settings/users"
-              icon={<PeopleIcon fontSize="small" />}
-              selected={
-                location.pathname.startsWith('/settings/user') &&
-                location.pathname !== `/settings/user/${userId}`
-              }
             />
             <MenuItem
               title="Ferramentas"

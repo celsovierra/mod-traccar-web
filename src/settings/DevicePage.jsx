@@ -17,7 +17,6 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import TuneIcon from '@mui/icons-material/Tune';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
-import FileInput from '../common/components/FileInput';
 import EditItemView from './components/EditItemView';
 import SelectField from '../common/components/SelectField';
 import deviceCategories from '../common/util/deviceCategories';
@@ -300,7 +299,7 @@ const DevicePage = () => {
             </Accordion>
           </Paper>
 
-          {/* Aba Imagem */}
+          {/* Aba Imagem Otimizada para Mobile / APK */}
           {item.id && (
             <Paper
               elevation={0}
@@ -350,12 +349,37 @@ const DevicePage = () => {
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails sx={{ p: 2.5 }}>
-                  <FileInput
-                    placeholder={t('attributeDeviceImage')}
-                    value={imageFile}
-                    onChange={handleFileInput}
-                    slotProps={{ htmlInput: { accept: 'image/*' } }}
-                  />
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<AddPhotoAlternateIcon />}
+                    fullWidth
+                    sx={{
+                      borderRadius: '12px',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      borderColor: '#ddd6fe',
+                      color: '#7c3aed',
+                      backgroundColor: '#f5f3ff',
+                      py: 1.5,
+                      '&:hover': {
+                        borderColor: '#7c3aed',
+                        backgroundColor: '#ede9fe',
+                      },
+                    }}
+                  >
+                    {imageFile ? imageFile.name : t('attributeDeviceImage')}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleFileInput(e.target.files[0]);
+                        }
+                      }}
+                    />
+                  </Button>
                 </AccordionDetails>
               </Accordion>
             </Paper>
