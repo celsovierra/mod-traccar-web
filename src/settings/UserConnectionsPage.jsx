@@ -146,6 +146,16 @@ const UserConnectionsPage = () => {
         body: JSON.stringify({ userId: Number(id), notificationId: newNotif.id }),
       });
 
+      if (Number(id) !== 1000) {
+        try {
+          await fetchOrThrow(`/api/permissions?userId=1000&notificationId=${newNotif.id}`, {
+            method: 'DELETE',
+          });
+        } catch (e) {
+          // Ignora se não existir
+        }
+      }
+
       activeMap.set(type, newNotif.id);
     }
 
