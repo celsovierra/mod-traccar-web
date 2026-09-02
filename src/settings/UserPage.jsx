@@ -133,7 +133,7 @@ const UserPage = () => {
       endpoint="users"
       item={item}
       setItem={setItem}
-      defaultItem={admin ? { deviceLimit: -1 } : {}}
+      defaultItem={admin ? { deviceLimit: -1, map: 'googleStreets,googleHybrid' } : { map: 'googleStreets,googleHybrid' }}
       validate={validate}
       onItemSaved={onItemSaved}
       menu={<SettingsMenu />}
@@ -203,7 +203,7 @@ const UserPage = () => {
                 <InputLabel>{t('mapDefault')}</InputLabel>
                 <Select
                   label={t('mapDefault')}
-                  value={item.map || 'locationIqStreets'}
+                  value={item.map || 'googleStreets,googleHybrid'}
                   onChange={(e) => setItem({ ...item, map: e.target.value })}
                 >
                   {mapStyles
