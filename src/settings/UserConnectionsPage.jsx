@@ -83,7 +83,11 @@ const UserConnectionsPage = () => {
 
       const activeTypes = new Map();
       userNotifs.forEach((n) => {
-        if (n.attributes && String(n.attributes.deviceId) === String(deviceId)) {
+        if (
+          n.attributes &&
+          String(n.attributes.deviceId) === String(deviceId) &&
+          String(n.attributes.targetUserId) === String(id)
+        ) {
           activeTypes.set(n.type, n.id);
         }
       });
@@ -135,7 +139,10 @@ const UserConnectionsPage = () => {
           type,
           notificators: 'firebase',
           always: false,
-          attributes: { deviceId: Number(deviceId) }
+          attributes: {
+            deviceId: Number(deviceId),
+            targetUserId: Number(id),
+          },
         }),
       });
       const newNotif = await createRes.json();
@@ -145,16 +152,6 @@ const UserConnectionsPage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: Number(id), notificationId: newNotif.id }),
       });
-
-      if (Number(id) !== 1000) {
-        try {
-          await fetchOrThrow(`/api/permissions?userId=1000&notificationId=${newNotif.id}`, {
-            method: 'DELETE',
-          });
-        } catch (e) {
-          // Ignora se não existir
-        }
-      }
 
       activeMap.set(type, newNotif.id);
     }
