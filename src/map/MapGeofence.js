@@ -1,90 +1,42 @@
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useTheme } from '@mui/material/styles';
-import { map } from './core/MapView';
+python3 -c '
+path = "src/map/MapGeofence.js"
+clean_content = """import { useEffect } from \"react\";
+import { useSelector } from \"react-redux\";
+import { useTheme } from \"@mui/material/styles\";
+import { map } from \"./core/MapView\";
 
 const MapGeofence = () => {
   const theme = useTheme();
   const geofences = useSelector((state) => state.geofences.items);
-  const positions = useSelector((state) => state.session.positions);
-  const [localFeatures, setLocalFeatures] = useState([]);
-
-  useEffect(() => {
-      const features = [];
-      const earthRadius = 6378137;
-      const steps = 64;
-
-
-
-        if ((lat == null || lng == null) && positions[devId]) {
-          lat = positions[devId].latitude;
-          lng = positions[devId].longitude;
-        }
-
-        if (lat != null && lng != null) {
-          const numLat = Number(lat);
-          const numLng = Number(lng);
-
-          const coords = [];
-          const latRad = (numLat * Math.PI) / 180;
-
-          for (let i = 0; i <= steps; i++) {
-            const angle = (i / steps) * Math.PI * 2;
-            const cLat = numLat + ((radius / earthRadius) * (180 / Math.PI)) * Math.cos(angle);
-            const cLng = numLng + ((radius / earthRadius) * (180 / Math.PI)) * Math.sin(angle) / Math.cos(latRad);
-            coords.push([cLng, cLat]);
-          }
-
-          features.push({
-            type: 'Feature',
-            properties: {
-              name: `ANCORA_LOCAL_${devId}`,
-              color: theme.palette.error.main,
-            },
-            geometry: {
-              type: 'Polygon',
-              coordinates: [coords],
-            },
-          });
-        }
-      });
-      setLocalFeatures(features);
-    };
-
-    return () => clearInterval(interval);
-  }, [positions, theme]);
 
   useEffect(() => {
     if (!map || !map.isStyleLoaded()) return;
 
-    const sourceId = 'geofences-source';
-    const fillLayerId = 'geofences-fill';
-    const lineLayerId = 'geofences-line';
+    const sourceId = \"geofences-source\";
+    const fillLayerId = \"geofences-fill\";
+    const lineLayerId = \"geofences-line\";
 
-    // Cria as feições padrão de cercas de forma segura
     const serverFeatures = Object.values(geofences).map((g) => ({
-      type: 'Feature',
+      type: \"Feature\",
       properties: {
         id: g.id,
         name: g.name,
-        color: g.attributes?.color || theme.palette.geometry?.main || '#3b82f6',
+        color: g.attributes?.color || theme.palette.geometry?.main || \"#3b82f6\",
       },
       geometry: {
-        type: 'Polygon',
-        coordinates: [], // fallback seguro caso a área WKT precise de conversão, mas as nativas já entram aqui
+        type: \"Polygon\",
+        coordinates: [],
       },
     }));
 
-    const allFeatures = [...localFeatures];
-
     const data = {
-      type: 'FeatureCollection',
-      features: allFeatures,
+      type: \"FeatureCollection\",
+      features: serverFeatures,
     };
 
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: 'geojson',
+        type: \"geojson\",
         data,
       });
     } else {
@@ -94,11 +46,11 @@ const MapGeofence = () => {
     if (!map.getLayer(fillLayerId)) {
       map.addLayer({
         id: fillLayerId,
-        type: 'fill',
+        type: \"fill\",
         source: sourceId,
         paint: {
-          'fill-color': ['get', 'color'],
-          'fill-opacity': 0.25,
+          \"fill-color\": [\"get\", \"color\"],
+          \"fill-opacity\": 0.25,
         },
       });
     }
@@ -106,18 +58,29 @@ const MapGeofence = () => {
     if (!map.getLayer(lineLayerId)) {
       map.addLayer({
         id: lineLayerId,
-        type: 'line',
+        type: \"line\",
         source: sourceId,
         paint: {
-          'line-color': ['get', 'color'],
-          'line-width': 2,
-          'line-opacity': 0.9,
+          \"line-color\": [\"get\", \"color\"],
+          \"line-width\": 2,
+          \"line-opacity\": 0.9,
         },
       });
     }
-  }, [geofences, localFeatures, theme]);
+  }, [geofences, theme]);
 
   return null;
 };
 
 export default MapGeofence;
+"""
+
+with open(path, "w") as f:
+    f.write(clean_content)
+print("MapGeofence.js totalmente limpo e restaurado.")
+'
+
+git add .
+git commit -m "Limpeza total do MapGeofence removendo restos da ancora"
+git push origin main
+npm run build && rm -rf /opt/traccar/web && cp -r build /opt/traccar/web && systemctl restart traccar

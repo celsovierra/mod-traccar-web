@@ -65,15 +65,10 @@ const initMap = async () => {
   }
 };
 
-const MapAnchorInternal = () => {
   const sourceId = useId();
   const theme = useTheme();
-  const [anchorVersion, setAnchorVersion] = useState(0);
 
   useEffect(() => {
-    const handleAnchorChange = () => setAnchorVersion(v => v + 1);
-    window.addEventListener('anchor-changed', handleAnchorChange);
-    return () => window.removeEventListener('anchor-changed', handleAnchorChange);
   }, []);
   
   const devices = useSelector((state) => state.devices.items);
@@ -93,9 +88,7 @@ const MapAnchorInternal = () => {
         });
       }
 
-      if (!map.getLayer('anchor-circle-fill')) {
         map.addLayer({
-          id: 'anchor-circle-fill',
           type: 'fill',
           source: sourceId,
           paint: {
@@ -105,9 +98,7 @@ const MapAnchorInternal = () => {
         });
       }
 
-      if (!map.getLayer('anchor-circle-line')) {
         map.addLayer({
-          id: 'anchor-circle-line',
           type: 'line',
           source: sourceId,
           paint: {
@@ -135,8 +126,6 @@ const MapAnchorInternal = () => {
       if (!map) return;
       map.off('styledata', handleStyleData);
       try {
-        if (map.getLayer('anchor-circle-line')) map.removeLayer('anchor-circle-line');
-        if (map.getLayer('anchor-circle-fill')) map.removeLayer('anchor-circle-fill');
         if (map.getSource(sourceId)) map.removeSource(sourceId);
       } catch (e) {
         // Ignora erros de limpeza caso o mapa esteja desmontando
@@ -150,19 +139,11 @@ const MapAnchorInternal = () => {
     if (!source) return;
 
     let features = [];
-    const allAnchors = getAllAnchors();
-    console.log("DEBUG ANCHORS STORE:", allAnchors, "SELECTED:", selectedDeviceId);
     
     // Itera por todas as âncoras salvas no storage, permitindo exibir mesmo se o deviceId vier como string/número
-    Object.entries(allAnchors).forEach(([devId, anchor]) => {
       // Se houver um dispositivo selecionado, opcionalmente podemos dar preferência ou exibir todas as ativas
 
       const position = positions[devId];
-      if (anchor && anchor.active) {
-        const lat = Number(anchor.lat) || (position ? Number(position.latitude) : undefined);
-        const lng = Number(anchor.lon) || (position ? Number(position.longitude) : undefined);
-        const radius = Number(anchor.radius) || 50;
-        console.log("DEBUG ANCHOR COORDS:", devId, lat, lng, radius);
         if (lat !== undefined && lng !== undefined && !isNaN(lat) && !isNaN(lng)) {
           const coords = [];
           const earthRadius = 6378137;
@@ -191,7 +172,6 @@ const MapAnchorInternal = () => {
       type: 'FeatureCollection',
       features
     });
-  }, [positions, selectedDeviceId, sourceId, anchorVersion]);
 
   return null;
 };
@@ -288,7 +268,6 @@ const MapView = ({ children }) => {
       {mapReady && (
         <>
           {children}
-          <MapAnchorInternal />
         </>
       )}
     </div>
