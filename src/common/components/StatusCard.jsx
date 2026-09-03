@@ -563,7 +563,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const { isAnchorActive, toggleAnchor, loadingAnchor } = useAnchor(deviceId, device, position);
   const prevDeviceIdRef = useRef(null);
   const [loadingCommand, setLoadingCommand] = useState(false);
-  const [loadingAnchor, setLoadingAnchor] = useState(false);
+
   const autoLockTriggered = useRef(false);
 
   const [geofenceModalOpen, setGeofenceModalOpen] = useState(false);
@@ -595,8 +595,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     return localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true';
   });
 
-  const [isAnchorActive, setIsAnchorActive] = useState(() => {
-  });
+
 
   const positionAttributes = usePositionAttributes(t);
   const positionItems = 'fixTime,address';
