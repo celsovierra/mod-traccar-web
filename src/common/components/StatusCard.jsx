@@ -1310,11 +1310,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   {loadingAnchor ? (
                     <CircularProgress size={20} sx={{ color: '#0284c7' }} />
                   ) : (
-                      sx={{ fontSize: 22, color: isAnchorActive ? '#dc2626' : '#0284c7' }}
                     />
                   )}
                   <Typography
-                    sx={{ color: isAnchorActive ? '#dc2626' : undefined }}
                   >
                   </Typography>
                 </ButtonBase>
