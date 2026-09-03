@@ -8,19 +8,19 @@ export const useAnchor = (deviceId, device, position) => {
   
   const checkIsActive = () => {
     if (!deviceId) return false;
-    const localAnchor = localStorage.getItem(`device_anchor_${deviceId}`);
+    const localState = localStorage.getItem(`device_anchor_state_${deviceId}`);
     
-    // Regra de ouro: se o localStorage foi explicitamente marcado como 'false', está desativado ponto final.
-    if (localAnchor === 'false') return false;
-    if (localAnchor && localAnchor !== 'false') return true;
+    // Se o usuário marcou explicitamente como desativado, retorna false sem olhar o servidor
+    if (localState === 'inactive') return false;
+    if (localState === 'active') return true;
 
-    // Se não tem no localStorage, verifica o atributo do device (mas se o device ainda tiver o atributo antigo e o user desativou, limpamos via PUT abaixo)
-    const attrAnchor = device?.attributes?.anchor;
-    if (attrAnchor && typeof attrAnchor === 'object' && attrAnchor.active !== false) {
-      return true;
+    // Fallback caso não tenha o state explícito
+    const localAnchor = localStorage.getItem(`device_anchor_${deviceId}`);
+    if (localAnchor === 'false' || !localAnchor) {
+      return false;
     }
 
-    return false;
+    return true;
   };
 
   const [isAnchorActive, setIsAnchorActive] = useState(checkIsActive);
@@ -35,8 +35,9 @@ export const useAnchor = (deviceId, device, position) => {
 
     try {
       if (isAnchorActive) {
-        // Desativar: Grava 'false' no localStorage e remove do device no backend
-        localStorage.setItem(`device_anchor_${deviceId}`, 'false');
+        // Desativar: marca explicitamente como inactive no localStorage
+        localStorage.setItem(`device_anchor_state_${deviceId}`, 'inactive');
+        localStorage.removeItem(`device_anchor_${deviceId}`);
         setIsAnchorActive(false);
 
         if (device) {
@@ -53,8 +54,8 @@ export const useAnchor = (deviceId, device, position) => {
         }
         window.dispatchEvent(new CustomEvent('anchorUpdate'));
       } else if (position) {
-        // Ativar: Remove o 'false' do localStorage e salva os dados reais
-        localStorage.removeItem(`device_anchor_${deviceId}`);
+        // Ativar: marca explicitamente como active e salva os dados
+        localStorage.setItem(`device_anchor_state_${deviceId}`, 'active');
         const anchorData = {
           deviceId: Number(deviceId),
           latitude: position.latitude,
