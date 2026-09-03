@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { devicesActions } from '../../store';
+import { devicesActions, sessionActions } from '../../store';
 
 export const useDeviceEdit = (item, setItem) => {
   const dispatch = useDispatch();
@@ -50,23 +50,32 @@ export const useDeviceEdit = (item, setItem) => {
           ...(saved.attributes || {}),
           plate: localPlate,
         },
+        _updatedAt: Date.now(),
       };
 
-      // Busca a lista atualizada de dispositivos do servidor para garantir sincronia total no Redux
+      // 1. Atualiza diretamente via dispatch de devicesActions
+      dispatch(devicesActions.update([finalDevice]));
+
+      // 2. Busca nova lista do servidor e injeta no store para garantir sincronia absoluta
       const listRes = await fetch('/api/devices', { credentials: 'same-origin' });
       if (listRes.ok) {
         const allDevices = await listRes.json();
-        // Substitui o device alterado na lista fresca
-        const updatedList = allDevices.map(d => d.id === finalDevice.id ? finalDevice : d);
-        
-        // Atualiza o estado global do Redux com a nova lista/mapa
-        dispatch(devicesActions.refresh(
-          updatedList.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {})
-        ));
+        const devicesMap = {};
+        allDevices.forEach((d) => {
+          if (d.id === finalDevice.id) {
+            devicesMap[d.id] = finalDevice;
+          } else {
+            devicesMap[d.id] = d;
+          }
+        });
+        dispatch(devicesActions.refresh(devicesMap));
       }
 
       setItem(finalDevice);
-      window.dispatchEvent(new CustomEvent('deviceUpdate', { detail: finalDevice }));
+      
+      // 3. Dispara evento global para forçar qualquer componente escutando a atualizar
+      window.dispatchEvent(new CustomEvent('deviceDataUpdated', { detail: finalDevice }));
+
       setSaving(false);
       return true;
     } catch (error) {
