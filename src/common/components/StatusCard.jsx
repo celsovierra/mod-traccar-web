@@ -736,26 +736,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     }
   };
 
-  useEffect(() => {
-    if (isAnchorActive && position && !isBlocked && !autoLockTriggered.current) {
-      if (anchor) {
-        const distance = calculateDistanceMeters(
-          anchor.latitude,
-          anchor.longitude,
-          position.latitude,
-          position.longitude,
-        );
-
-        if (distance > (anchor.radius || 50)) {
-          autoLockTriggered.current = true;
-          sendSendCommand('engineStop');
-          setToast({
-            severity: 'error',
-          });
-        }
-      }
-    }
-  }, [position, isAnchorActive, isBlocked, deviceId, device]);
 
   const handleConfirmLock = () => {
     setConfirmLock(false);
