@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useMediaQuery, Button, TextField, Typography, Box } from '@mui/material';
+import { useMediaQuery, Button, TextField, Typography, Box, IconButton } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 import { useTranslation } from '../../common/components/LocalizationProvider';
 import { devicesActions } from '../../store';
 import { useCatch } from '../../reactHelper';
@@ -36,41 +37,27 @@ const MapSelectedDevice = ({ device, onClose }) => {
       const saved = await response.json();
       dispatch(devicesActions.update([saved]));
       setIsEditing(false);
-      if (onClose && !isEditing) onClose();
     }
     setLoading(false);
   });
 
   return (
-    <Box sx={{ padding: '12px', minWidth: '260px' }}>
+    <Box sx={{ padding: '8px 12px', minWidth: '240px' }}>
       {!isEditing ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-          <Typography variant="subtitle1" fontWeight="bold">{model || 'Sem Modelo'}</Typography>
-          {/* Clicar na placa ativa o modo de edição */}
-          <Box 
-            onClick={() => setIsEditing(true)} 
-            sx={{ cursor: 'pointer', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.03)' } }}
-            title="Clique para editar"
-          >
-            <div style={{
-              border: '2px solid #1e3a8a',
-              borderRadius: '6px',
-              padding: '4px 12px',
-              backgroundColor: '#fff',
-              textAlign: 'center',
-              fontWeight: 'bold',
-              fontFamily: 'monospace',
-              fontSize: '18px',
-              letterSpacing: '2px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }} onClick={() => setIsEditing(true)}>
+            <Typography variant="subtitle2" fontWeight="bold">{model || 'Sem Modelo'}</Typography>
+            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#1e3a8a' }}>
               {plate || 'SEM PLACA'}
-            </div>
+            </Typography>
           </Box>
+          <IconButton size="small" color="primary" onClick={() => setIsEditing(true)} title="Editar dados">
+            <EditIcon fontSize="small" />
+          </IconButton>
         </Box>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <Typography variant="h6" fontSize="16px">{t('sharedEdit')}</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <Typography variant="caption" fontWeight="bold">{t('sharedEdit')}</Typography>
           <TextField
             label={t('deviceModel')}
             value={model}
@@ -85,7 +72,7 @@ const MapSelectedDevice = ({ device, onClose }) => {
             size="small"
             fullWidth
           />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '6px', marginTop: '8px' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', marginTop: '4px' }}>
             <Button onClick={() => setIsEditing(false)} size="small" variant="outlined">{t('sharedCancel')}</Button>
             <Button onClick={handleSave} size="small" variant="contained" disabled={loading}>{t('sharedSave')}</Button>
           </Box>
