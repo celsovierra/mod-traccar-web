@@ -31,7 +31,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import AnchorIcon from '@mui/icons-material/Anchor';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -594,7 +593,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   });
 
   const [isAnchorActive, setIsAnchorActive] = useState(() => {
-    return Boolean(device?.attributes?.anchor || localStorage.getItem(`device_anchor_${deviceId}`));
   });
 
   const positionAttributes = usePositionAttributes(t);
@@ -609,7 +607,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       setExpanded(false);
       prevDeviceIdRef.current = deviceId;
       autoLockTriggered.current = false;
-      setIsAnchorActive(Boolean(device?.attributes?.anchor || localStorage.getItem(`device_anchor_${deviceId}`)));
       setIsBlocked(getIsBlockedReal());
       setIsUnlockPending(localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true');
     }
@@ -739,7 +736,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
   useEffect(() => {
     if (isAnchorActive && position && !isBlocked && !autoLockTriggered.current) {
-      const anchor = device?.attributes?.anchor || (localStorage.getItem(`device_anchor_${deviceId}`) ? JSON.parse(localStorage.getItem(`device_anchor_${deviceId}`)) : null);
       if (anchor) {
         const distance = calculateDistanceMeters(
           anchor.latitude,
@@ -752,7 +748,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
           autoLockTriggered.current = true;
           sendSendCommand('engineStop');
           setToast({
-            message: `ALERTA: Veículo saiu da âncora (${Math.round(distance)}m) e foi bloqueado!`,
             severity: 'error',
           });
         }
@@ -793,7 +788,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       const geoRes = await fetch('/api/geofences', { credentials: 'same-origin' });
       if (geoRes.ok) {
         const list = await geoRes.json();
-        const prefix = `Âncora - ${device?.name || deviceId}`;
         const toDelete = list.filter((g) => g.name && g.name.includes(prefix));
 
         await Promise.all(
@@ -813,7 +807,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     setLoadingAnchor(true);
 
     if (isAnchorActive) {
-      localStorage.removeItem(`device_anchor_${deviceId}`);
       setIsAnchorActive(false);
       autoLockTriggered.current = false;
 
@@ -836,7 +829,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       window.dispatchEvent(new CustomEvent('anchorUpdate'));
       await sendSendCommand('engineResume');
 
-      setToast({ message: 'Âncora desativada e removida!', severity: 'success' });
       setLoadingAnchor(false);
     } else if (position) {
       await removeAllAnchorGeofences();
@@ -850,8 +842,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'same-origin',
           body: JSON.stringify({
-            name: `Âncora - ${device?.name || deviceId}`,
-            description: `Âncora do veículo ${device?.name || deviceId}`,
             area: wktArea,
             attributes: { color: '#ef4444' },
           }),
@@ -893,7 +883,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         geofenceId: createdGeofenceId,
       };
 
-      localStorage.setItem(`device_anchor_${deviceId}`, JSON.stringify(anchorData));
 
       if (device) {
         const updatedDevice = {
@@ -916,7 +905,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       autoLockTriggered.current = false;
       setIsAnchorActive(true);
       window.dispatchEvent(new CustomEvent('anchorUpdate'));
-      setToast({ message: 'Âncora criada e salva com sucesso!', severity: 'success' });
       setLoadingAnchor(false);
     } else {
       setLoadingAnchor(false);
@@ -937,7 +925,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
       const linkedMap = new Map();
       linkedList
-        .filter((g) => !g.name?.startsWith('Âncora -'))
         .forEach((g) => linkedMap.set(g.id, { ...g, linked: true }));
 
       const snoozeMap = { ...(device?.attributes?.geofenceSnooze || {}) };
@@ -1067,7 +1054,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
           50% { opacity: 0.2; transform: scale(1.25); filter: drop-shadow(0 0 10px #dc2626); }
           100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #dc2626); }
         }
-        .blinking-anchor-active {
           animation: superBlinkRed 0.7s infinite ease-in-out !important;
           color: #dc2626 !important;
         }
@@ -1324,16 +1310,12 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   {loadingAnchor ? (
                     <CircularProgress size={20} sx={{ color: '#0284c7' }} />
                   ) : (
-                    <AnchorIcon
-                      className={isAnchorActive ? 'blinking-anchor-active' : ''}
                       sx={{ fontSize: 22, color: isAnchorActive ? '#dc2626' : '#0284c7' }}
                     />
                   )}
                   <Typography
-                    className={`${classes.actionText} ${isAnchorActive ? 'blinking-anchor-active' : ''}`}
                     sx={{ color: isAnchorActive ? '#dc2626' : undefined }}
                   >
-                    {isAnchorActive ? 'Ancorado' : 'Âncora'}
                   </Typography>
                 </ButtonBase>
 
