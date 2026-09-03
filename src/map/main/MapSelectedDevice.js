@@ -91,21 +91,38 @@ const MapSelectedDevice = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
+        credentials: 'same-origin',
         body: JSON.stringify(updatedDevice),
       });
 
       if (response.ok) {
         const result = await response.json();
-        dispatch(devicesActions.update({ [result.id]: result }));
-        dispatch(devicesActions.update([result]));
-      } else {
-        dispatch(devicesActions.update({ [device.id]: updatedDevice }));
-        dispatch(devicesActions.update([updatedDevice]));
+        const finalDevice = {
+          ...result,
+          model: model,
+          attributes: {
+            ...(result.attributes || {}),
+            plate: plate,
+          },
+        };
+        
+        // Atualiza o store do Redux buscando a lista fresca da API
+        const listRes = await fetch('/api/devices', { credentials: 'same-origin' });
+        if (listRes.ok) {
+          const allDevices = await listRes.json();
+          const refreshedMap = {};
+          allDevices.forEach((d) => {
+            refreshedMap[d.id] = (d.id === finalDevice.id) ? finalDevice : d;
+          });
+          dispatch(devicesActions.refresh(refreshedMap));
+        } else {
+          dispatch(devicesActions.update([finalDevice]));
+        }
+        
+        window.dispatchEvent(new CustomEvent('deviceDataUpdated', { detail: finalDevice }));
       }
     } catch (e) {
-      console.error(e);
-      dispatch(devicesActions.update({ [device.id]: updatedDevice }));
-      dispatch(devicesActions.update([updatedDevice]));
+      console.error("Erro ao salvar dispositivo:", e);
     }
   };
 
