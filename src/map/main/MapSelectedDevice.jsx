@@ -33,7 +33,6 @@ const MapSelectedDevice = ({ device, onClose }) => {
 
     if (response.ok) {
       const saved = await response.json();
-      // Atualiza o store do Redux imediatamente para refletir no card e no mapa
       dispatch(devicesActions.update([saved]));
       if (onClose) onClose();
     }
