@@ -9,24 +9,29 @@ export const useAnchor = (deviceId, device, position) => {
   const checkIsActive = () => {
     if (!deviceId) return false;
     const localAnchor = localStorage.getItem(`device_anchor_${deviceId}`);
+    
+    // Se explicitamente marcado como 'false' no localStorage, respeita imediatamente
+    if (localAnchor === 'false') return false;
+    if (localAnchor && localAnchor !== 'false') return true;
+
+    // Caso contrário, olha os atributos do device
     const attrAnchor = device?.attributes?.anchor;
-    
-    if (localAnchor === 'false' || localAnchor === null) {
-      if (localAnchor === 'false') return false;
-    }
-    
-    if (attrAnchor) {
-      if (typeof attrAnchor === 'object' && attrAnchor.active === false) return false;
+    if (attrAnchor && typeof attrAnchor === 'object' && attrAnchor.active !== false) {
       return true;
     }
-    
-    return Boolean(localAnchor && localAnchor !== 'false');
+
+    return false;
   };
 
   const [isAnchorActive, setIsAnchorActive] = useState(checkIsActive);
 
   useEffect(() => {
-    setIsAnchorActive(checkIsActive());
+    const localAnchor = localStorage.getItem(`device_anchor_${deviceId}`);
+    if (localAnchor === 'false') {
+      setIsAnchorActive(false);
+    } else {
+      setIsAnchorActive(checkIsActive());
+    }
   }, [deviceId, device]);
 
   const toggleAnchor = async () => {
@@ -35,10 +40,10 @@ export const useAnchor = (deviceId, device, position) => {
 
     try {
       if (isAnchorActive) {
-        // Desativar âncora rigorosamente
-        localStorage.removeItem(`device_anchor_${deviceId}`);
+        // Desativar âncora instantaneamente
         localStorage.setItem(`device_anchor_${deviceId}`, 'false');
-        
+        setIsAnchorActive(false);
+
         if (device) {
           const updatedAttributes = { ...device.attributes };
           delete updatedAttributes.anchor;
@@ -51,11 +56,9 @@ export const useAnchor = (deviceId, device, position) => {
             body: JSON.stringify(updatedDevice),
           }).catch(() => {});
         }
-        setIsAnchorActive(false);
         window.dispatchEvent(new CustomEvent('anchorUpdate'));
       } else if (position) {
-        // Ativar âncora
-        localStorage.removeItem(`device_anchor_${deviceId}`);
+        // Ativar âncora instantaneamente
         const anchorData = {
           deviceId: Number(deviceId),
           latitude: position.latitude,
@@ -64,6 +67,7 @@ export const useAnchor = (deviceId, device, position) => {
           active: true,
         };
         localStorage.setItem(`device_anchor_${deviceId}`, JSON.stringify(anchorData));
+        setIsAnchorActive(true);
         
         if (device) {
           const updatedDevice = {
@@ -81,7 +85,6 @@ export const useAnchor = (deviceId, device, position) => {
             body: JSON.stringify(updatedDevice),
           }).catch(() => {});
         }
-        setIsAnchorActive(true);
         window.dispatchEvent(new CustomEvent('anchorUpdate'));
       }
     } finally {
