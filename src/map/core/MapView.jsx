@@ -1,3 +1,4 @@
+import { getAllAnchors } from "../../common/util/anchorStore";
 import 'maplibre-gl/dist/maplibre-gl.css';
 import * as maplibregl from 'maplibre-gl';
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
@@ -68,6 +69,13 @@ const initMap = async () => {
 const MapAnchorInternal = () => {
   const sourceId = useId();
   const theme = useTheme();
+  const [anchorVersion, setAnchorVersion] = useState(0);
+
+  useEffect(() => {
+    const handleAnchorChange = () => setAnchorVersion(v => v + 1);
+    window.addEventListener('anchor-changed', handleAnchorChange);
+    return () => window.removeEventListener('anchor-changed', handleAnchorChange);
+  }, []);
   
   const devices = useSelector((state) => state.devices.items);
   const positions = useSelector((state) => state.session.positions);
@@ -143,43 +151,48 @@ const MapAnchorInternal = () => {
     if (!source) return;
 
     let features = [];
+    const allAnchors = getAllAnchors();
+    console.log("DEBUG ANCHORS STORE:", allAnchors, "SELECTED:", selectedDeviceId);
+    
+    // Itera por todas as âncoras salvas no storage, permitindo exibir mesmo se o deviceId vier como string/número
+    Object.entries(allAnchors).forEach(([devId, anchor]) => {
+      // Se houver um dispositivo selecionado, opcionalmente podemos dar preferência ou exibir todas as ativas
 
-    if (selectedDeviceId) {
-      const device = devices[selectedDeviceId];
-      const position = positions[selectedDeviceId];
+      const position = positions[devId];
+      if (anchor && anchor.active) {
+        const lat = Number(anchor.lat) || (position ? Number(position.latitude) : undefined);
+        const lng = Number(anchor.lon) || (position ? Number(position.longitude) : undefined);
+        const radius = Number(anchor.radius) || 50;
+        console.log("DEBUG ANCHOR COORDS:", devId, lat, lng, radius);
+        if (lat !== undefined && lng !== undefined && !isNaN(lat) && !isNaN(lng)) {
+          const coords = [];
+          const earthRadius = 6378137;
+          const latRad = (lat * Math.PI) / 180;
 
-      if (position && position.longitude !== undefined && position.latitude !== undefined) {
-        const lng = Number(position.longitude);
-        const lat = Number(position.latitude);
-        const radius = Number(device?.attributes?.anchorRadius || device?.anchorRadius) || 50;
-
-        const coords = [];
-        const earthRadius = 6378137;
-        const latRad = (lat * Math.PI) / 180;
-
-        for (let i = 0; i <= 64; i++) {
-          const angle = (i / 64) * Math.PI * 2;
-          const cLat = lat + ((radius / earthRadius) * (180 / Math.PI)) * Math.cos(angle);
-          const cLng = lng + ((radius / earthRadius) * (180 / Math.PI)) * Math.sin(angle) / Math.cos(latRad);
-          coords.push([cLng, cLat]);
-        }
-
-        features.push({
-          type: 'Feature',
-          properties: {},
-          geometry: {
-            type: 'Polygon',
-            coordinates: [coords]
+          for (let i = 0; i <= 64; i++) {
+            const angle = (i / 64) * Math.PI * 2;
+            const cLat = lat + ((radius / earthRadius) * (180 / Math.PI)) * Math.cos(angle);
+            const cLng = lng + ((radius / earthRadius) * (180 / Math.PI)) * Math.sin(angle) / Math.cos(latRad);
+            coords.push([cLng, cLat]);
           }
-        });
+
+          features.push({
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'Polygon',
+              coordinates: [coords]
+            }
+          });
+        }
       }
-    }
+    });
 
     source.setData({
       type: 'FeatureCollection',
       features
     });
-  }, [devices, positions, selectedDeviceId, sourceId]);
+  }, [positions, selectedDeviceId, sourceId, anchorVersion]);
 
   return null;
 };

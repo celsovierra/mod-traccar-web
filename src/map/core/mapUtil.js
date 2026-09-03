@@ -146,6 +146,7 @@ export const geofenceToFeature = (theme, item) => {
     type: 'Feature',
     geometry,
     properties: {
+      isAnchor: geofence.name?.startsWith("ANCORA_") || false,
       name: item.name,
       color: item.attributes.color || theme.palette.geometry.main,
       width: item.attributes.mapLineWidth || 2,

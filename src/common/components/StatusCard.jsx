@@ -583,7 +583,12 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     return local === 'true';
   };
 
-  const [isBlocked, setIsBlocked] = useState(() => getIsBlockedReal());
+  const [isBlocked, setIsBlocked] = useState(() => {
+    const local = localStorage.getItem(`device_blocked_${deviceId}`);
+    if (local === "false") return false;
+    if (local === "true") return true;
+    return getIsBlockedReal();
+  });
   const [isUnlockPending, setIsUnlockPending] = useState(() => {
     return localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true';
   });

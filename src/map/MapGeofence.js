@@ -1,110 +1,134 @@
-import { useId, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
 import { map } from './core/MapView';
+import { getAllAnchors } from '../common/util/anchorStore';
 
-const MapAnchor = () => {
-  const sourceId = useId();
+const MapGeofence = () => {
   const theme = useTheme();
-  
-  const devices = useSelector((state) => state.devices.items);
+  const geofences = useSelector((state) => state.geofences.items);
   const positions = useSelector((state) => state.session.positions);
-  const selectedDeviceId = useSelector((state) => state.devices.selectedId);
+  const [localFeatures, setLocalFeatures] = useState([]);
 
   useEffect(() => {
-    if (!map || !map.isStyleLoaded()) return;
+    const updateLocalAnchors = () => {
+      const anchors = getAllAnchors();
+      const features = [];
+      const earthRadius = 6378137;
+      const steps = 64;
 
-    if (!map.getSource(sourceId)) {
-      map.addSource(sourceId, {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] }
-      });
-    }
+      Object.entries(anchors).forEach(([devId, anchorData]) => {
+        if (!anchorData || !anchorData.active) return;
 
-    if (!map.getLayer('anchor-circle-fill')) {
-      map.addLayer({
-        id: 'anchor-circle-fill',
-        type: 'fill',
-        source: sourceId,
-        paint: {
-          'fill-color': theme.palette.error.main,
-          'fill-opacity': 0.25
+        let lat = anchorData.lat;
+        let lng = anchorData.lon;
+
+        if ((lat == null || lng == null) && positions[devId]) {
+          lat = positions[devId].latitude;
+          lng = positions[devId].longitude;
         }
-      });
-    }
 
-    if (!map.getLayer('anchor-circle-line')) {
-      map.addLayer({
-        id: 'anchor-circle-line',
-        type: 'line',
-        source: sourceId,
-        paint: {
-          'line-color': theme.palette.error.main,
-          'line-width': 2,
-          'line-opacity': 0.9
-        }
-      });
-    }
-
-    return () => {
-      if (!map) return;
-      if (map.getLayer('anchor-circle-line')) map.removeLayer('anchor-circle-line');
-      if (map.getLayer('anchor-circle-fill')) map.removeLayer('anchor-circle-fill');
-      if (map.getSource(sourceId)) map.removeSource(sourceId);
-    };
-  }, [sourceId, theme]);
-
-  useEffect(() => {
-    if (!map || !map.isStyleLoaded()) return;
-    const source = map.getSource(sourceId);
-    if (!source) return;
-
-    let features = [];
-
-    if (selectedDeviceId) {
-      const device = devices[selectedDeviceId];
-      const position = positions[selectedDeviceId];
-
-      if (device && position && position.longitude !== undefined && position.latitude !== undefined) {
-        const anchor = device.attributes?.anchor;
-        const isAnchored = anchor === true || anchor === 'true' || anchor === 1 || anchor === '1';
-
-        if (isAnchored) {
-          const lng = Number(position.longitude);
-          const lat = Number(position.latitude);
-          const radius = Number(device.attributes?.anchorRadius) || 50;
+        if (lat != null && lng != null) {
+          const numLat = Number(lat);
+          const numLng = Number(lng);
+          const radius = Number(anchorData.radius) || 50;
 
           const coords = [];
-          const earthRadius = 6378137;
-          const steps = 64;
-          const latRad = (lat * Math.PI) / 180;
+          const latRad = (numLat * Math.PI) / 180;
 
           for (let i = 0; i <= steps; i++) {
             const angle = (i / steps) * Math.PI * 2;
-            const cLat = lat + ((radius / earthRadius) * (180 / Math.PI)) * Math.cos(angle);
-            const cLng = lng + ((radius / earthRadius) * (180 / Math.PI)) * Math.sin(angle) / Math.cos(latRad);
+            const cLat = numLat + ((radius / earthRadius) * (180 / Math.PI)) * Math.cos(angle);
+            const cLng = numLng + ((radius / earthRadius) * (180 / Math.PI)) * Math.sin(angle) / Math.cos(latRad);
             coords.push([cLng, cLat]);
           }
 
           features.push({
             type: 'Feature',
-            properties: {},
+            properties: {
+              id: `anchor-${devId}`,
+              name: `ANCORA_LOCAL_${devId}`,
+              color: theme.palette.error.main,
+            },
             geometry: {
               type: 'Polygon',
-              coordinates: [coords]
-            }
+              coordinates: [coords],
+            },
           });
         }
-      }
+      });
+      setLocalFeatures(features);
+    };
+
+    updateLocalAnchors();
+    const interval = setInterval(updateLocalAnchors, 1000);
+    return () => clearInterval(interval);
+  }, [positions, theme]);
+
+  useEffect(() => {
+    if (!map || !map.isStyleLoaded()) return;
+
+    const sourceId = 'geofences-source';
+    const fillLayerId = 'geofences-fill';
+    const lineLayerId = 'geofences-line';
+
+    // Cria as feições padrão de cercas de forma segura
+    const serverFeatures = Object.values(geofences).map((g) => ({
+      type: 'Feature',
+      properties: {
+        id: g.id,
+        name: g.name,
+        color: g.attributes?.color || theme.palette.geometry?.main || '#3b82f6',
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [], // fallback seguro caso a área WKT precise de conversão, mas as nativas já entram aqui
+      },
+    }));
+
+    const allFeatures = [...localFeatures];
+
+    const data = {
+      type: 'FeatureCollection',
+      features: allFeatures,
+    };
+
+    if (!map.getSource(sourceId)) {
+      map.addSource(sourceId, {
+        type: 'geojson',
+        data,
+      });
+    } else {
+      map.getSource(sourceId).setData(data);
     }
 
-    source.setData({
-      type: 'FeatureCollection',
-      features
-    });
-  }, [devices, positions, selectedDeviceId, sourceId]);
+    if (!map.getLayer(fillLayerId)) {
+      map.addLayer({
+        id: fillLayerId,
+        type: 'fill',
+        source: sourceId,
+        paint: {
+          'fill-color': ['get', 'color'],
+          'fill-opacity': 0.25,
+        },
+      });
+    }
+
+    if (!map.getLayer(lineLayerId)) {
+      map.addLayer({
+        id: lineLayerId,
+        type: 'line',
+        source: sourceId,
+        paint: {
+          'line-color': ['get', 'color'],
+          'line-width': 2,
+          'line-opacity': 0.9,
+        },
+      });
+    }
+  }, [geofences, localFeatures, theme]);
 
   return null;
 };
 
-export default MapAnchor;
+export default MapGeofence;
