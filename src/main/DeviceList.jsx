@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { useDispatch } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 import { List } from 'react-window';
@@ -44,7 +44,7 @@ const DeviceList = ({ devices }) => {
       className={classes.list}
       rowComponent={DeviceRow}
       rowCount={devices.length}
-      rowHeight={72}
+      rowHeight={60}
       rowProps={{ devices }}
       overscanCount={5}
     />
