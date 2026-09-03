@@ -1304,21 +1304,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
                 <ButtonBase
                   className={classes.actionItemBtn}
-                  onClick={handleToggleAnchor}
-                  disabled={disableActions || !position || loadingAnchor}
-                >
-                  {loadingAnchor ? (
-                    <CircularProgress size={20} sx={{ color: '#0284c7' }} />
-                  ) : (
-                    />
-                  )}
-                  <Typography
-                  >
-                  </Typography>
-                </ButtonBase>
-
-                <ButtonBase
-                  className={classes.actionItemBtn}
                   onClick={() => navigate(`/replay?deviceId=${deviceId}`)}
                   disabled={disableActions || !position}
                 >
