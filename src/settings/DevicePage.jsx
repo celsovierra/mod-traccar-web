@@ -50,12 +50,11 @@ const DevicePage = () => {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    if (item && !initialized) {
-      setLocalPlate(item.attributes?.plate || "");
+    if (item) {
+      setLocalPlate(item.attributes?.plate || item.attributes?.placa || "");
       setLocalModel(item.model || "");
-      setInitialized(true);
     }
-  }, [item, initialized]);
+  }, [item?.id, item?.model, item?.attributes?.plate, item?.attributes?.placa]);
 
   const [expandedPanel, setExpandedPanel] = useState("required");
 
