@@ -90,6 +90,11 @@ const DevicePage = () => {
 
   const { saveDeviceEdits } = useDeviceEdit(item, setItem);
   const handleCustomSave = useCatch(async () => {
+    const success = await saveDeviceEdits();
+    if (!success) {
+      throw new Error("Falha ao salvar dispositivo.");
+    }
+    navigate(-1);
     // Usa o módulo isolado de edição para garantir salvamento seguro para admin e usuário comum
     const success = await saveDeviceEdits({ name: item.name, uniqueId: item.uniqueId });
     if (!success) {
