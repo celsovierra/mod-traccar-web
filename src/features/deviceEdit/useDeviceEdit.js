@@ -20,7 +20,6 @@ export const useDeviceEdit = (item, setItem) => {
     setSaving(true);
 
     try {
-      // Monta o objeto atualizado garantindo que model e attributes.plate estejam nivelados
       const updatedDevice = {
         ...item,
         ...additionalData,
@@ -44,7 +43,6 @@ export const useDeviceEdit = (item, setItem) => {
 
       const saved = await response.json();
       
-      // Garante que o objeto retornado do servidor contenha os dados atualizados explicitamente
       const finalDevice = {
         ...saved,
         model: localModel,
@@ -52,26 +50,19 @@ export const useDeviceEdit = (item, setItem) => {
           ...(saved.attributes || {}),
           plate: localPlate,
         },
-        _t: Date.now(), // Força nova referência para o Redux disparar re-render
       };
 
-      // Atualiza o Redux e o estado local
-      dispatch(devicesActions.update([finalDevice]));
-      dispatch(devicesActions.refresh({ [finalDevice.id]: finalDevice }));
-      
-      // Busca a lista completa de dispositivos para sincronizar admin e usuário
+      // Busca a lista atualizada de dispositivos do servidor para garantir sincronia total no Redux
       const listRes = await fetch('/api/devices', { credentials: 'same-origin' });
       if (listRes.ok) {
         const allDevices = await listRes.json();
-        const refreshedMap = {};
-        allDevices.forEach((d) => {
-          if (d.id === finalDevice.id) {
-            refreshedMap[d.id] = finalDevice; // Garante prioridade ao dado recém editado
-          } else {
-            refreshedMap[d.id] = d;
-          }
-        });
-        dispatch(devicesActions.refresh(refreshedMap));
+        // Substitui o device alterado na lista fresca
+        const updatedList = allDevices.map(d => d.id === finalDevice.id ? finalDevice : d);
+        
+        // Atualiza o estado global do Redux com a nova lista/mapa
+        dispatch(devicesActions.refresh(
+          updatedList.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {})
+        ));
       }
 
       setItem(finalDevice);
