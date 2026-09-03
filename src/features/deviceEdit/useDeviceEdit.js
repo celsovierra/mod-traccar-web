@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { devicesActions, sessionActions } from '../../store';
+import { devicesActions } from '../../store';
 
 export const useDeviceEdit = (item, setItem) => {
   const dispatch = useDispatch();
@@ -20,6 +20,7 @@ export const useDeviceEdit = (item, setItem) => {
     setSaving(true);
 
     try {
+      // Monta o payload completo combinando o item atual com as alterações de modelo e placa
       const updatedDevice = {
         ...item,
         ...additionalData,
@@ -32,13 +33,17 @@ export const useDeviceEdit = (item, setItem) => {
 
       const response = await fetch(`/api/devices/${item.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         credentials: 'same-origin',
         body: JSON.stringify(updatedDevice),
       });
 
       if (!response.ok) {
-        throw new Error('Falha ao salvar dispositivo');
+        const errorText = await response.text();
+        throw new Error(`Erro ao salvar dispositivo: ${errorText}`);
       }
 
       const saved = await response.json();
@@ -50,36 +55,28 @@ export const useDeviceEdit = (item, setItem) => {
           ...(saved.attributes || {}),
           plate: localPlate,
         },
-        _updatedAt: Date.now(),
       };
 
-      // 1. Atualiza diretamente via dispatch de devicesActions
-      dispatch(devicesActions.update([finalDevice]));
-
-      // 2. Busca nova lista do servidor e injeta no store para garantir sincronia absoluta
+      // Atualiza o Redux buscando a lista fresca diretamente da API para garantir consistência
       const listRes = await fetch('/api/devices', { credentials: 'same-origin' });
       if (listRes.ok) {
         const allDevices = await listRes.json();
-        const devicesMap = {};
+        const refreshedMap = {};
         allDevices.forEach((d) => {
-          if (d.id === finalDevice.id) {
-            devicesMap[d.id] = finalDevice;
-          } else {
-            devicesMap[d.id] = d;
-          }
+          refreshedMap[d.id] = (d.id === finalDevice.id) ? finalDevice : d;
         });
-        dispatch(devicesActions.refresh(devicesMap));
+        dispatch(devicesActions.refresh(refreshedMap));
+      } else {
+        dispatch(devicesActions.update([finalDevice]));
       }
 
-      setItem(finalDevice);
-      
-      // 3. Dispara evento global para forçar qualquer componente escutando a atualizar
+      if (setItem) setItem(finalDevice);
       window.dispatchEvent(new CustomEvent('deviceDataUpdated', { detail: finalDevice }));
-
+      
       setSaving(false);
       return true;
     } catch (error) {
-      console.error('Erro ao editar veículo:', error);
+      console.error('Erro no módulo deviceEdit:', error);
       setSaving(false);
       return false;
     }
