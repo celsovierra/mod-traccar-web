@@ -20,6 +20,7 @@ export const useDeviceEdit = (item, setItem) => {
     setSaving(true);
 
     try {
+      // Monta o objeto atualizado garantindo que model e attributes.plate estejam nivelados
       const updatedDevice = {
         ...item,
         ...additionalData,
@@ -42,8 +43,39 @@ export const useDeviceEdit = (item, setItem) => {
       }
 
       const saved = await response.json();
-      dispatch(devicesActions.update([saved]));
-      setItem(saved);
+      
+      // Garante que o objeto retornado do servidor contenha os dados atualizados explicitamente
+      const finalDevice = {
+        ...saved,
+        model: localModel,
+        attributes: {
+          ...(saved.attributes || {}),
+          plate: localPlate,
+        },
+        _t: Date.now(), // Força nova referência para o Redux disparar re-render
+      };
+
+      // Atualiza o Redux e o estado local
+      dispatch(devicesActions.update([finalDevice]));
+      dispatch(devicesActions.refresh({ [finalDevice.id]: finalDevice }));
+      
+      // Busca a lista completa de dispositivos para sincronizar admin e usuário
+      const listRes = await fetch('/api/devices', { credentials: 'same-origin' });
+      if (listRes.ok) {
+        const allDevices = await listRes.json();
+        const refreshedMap = {};
+        allDevices.forEach((d) => {
+          if (d.id === finalDevice.id) {
+            refreshedMap[d.id] = finalDevice; // Garante prioridade ao dado recém editado
+          } else {
+            refreshedMap[d.id] = d;
+          }
+        });
+        dispatch(devicesActions.refresh(refreshedMap));
+      }
+
+      setItem(finalDevice);
+      window.dispatchEvent(new CustomEvent('deviceUpdate', { detail: finalDevice }));
       setSaving(false);
       return true;
     } catch (error) {
