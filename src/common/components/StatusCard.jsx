@@ -1,3 +1,5 @@
+import { AnchorButton } from "../../features/anchor/AnchorButton";
+import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -558,6 +560,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const dotColor = isOnline ? '#16a34a' : '#dc2626';
 
   const [expanded, setExpanded] = useState(false);
+  const { isAnchorActive, toggleAnchor, loadingAnchor } = useAnchor(deviceId, device, position);
   const prevDeviceIdRef = useRef(null);
   const [loadingCommand, setLoadingCommand] = useState(false);
   const [loadingAnchor, setLoadingAnchor] = useState(false);
@@ -1301,6 +1304,14 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                     </>
                   )}
                 </ButtonBase>
+
+                {/* Botão de Âncora do Módulo Isolado */}
+                <AnchorButton
+                  isAnchorActive={isAnchorActive}
+                  onClick={toggleAnchor}
+                  disabled={disableActions || !position || loadingAnchor}
+                  classes={classes}
+                />
 
                 <ButtonBase
                   className={classes.actionItemBtn}
