@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
 import { map } from './core/MapView';
-import { getAllAnchors } from '../common/util/anchorStore';
 
 const MapGeofence = () => {
   const theme = useTheme();
@@ -11,17 +10,11 @@ const MapGeofence = () => {
   const [localFeatures, setLocalFeatures] = useState([]);
 
   useEffect(() => {
-    const updateLocalAnchors = () => {
-      const anchors = getAllAnchors();
       const features = [];
       const earthRadius = 6378137;
       const steps = 64;
 
-      Object.entries(anchors).forEach(([devId, anchorData]) => {
-        if (!anchorData || !anchorData.active) return;
 
-        let lat = anchorData.lat;
-        let lng = anchorData.lon;
 
         if ((lat == null || lng == null) && positions[devId]) {
           lat = positions[devId].latitude;
@@ -31,7 +24,6 @@ const MapGeofence = () => {
         if (lat != null && lng != null) {
           const numLat = Number(lat);
           const numLng = Number(lng);
-          const radius = Number(anchorData.radius) || 50;
 
           const coords = [];
           const latRad = (numLat * Math.PI) / 180;
@@ -46,7 +38,6 @@ const MapGeofence = () => {
           features.push({
             type: 'Feature',
             properties: {
-              id: `anchor-${devId}`,
               name: `ANCORA_LOCAL_${devId}`,
               color: theme.palette.error.main,
             },
@@ -60,8 +51,6 @@ const MapGeofence = () => {
       setLocalFeatures(features);
     };
 
-    updateLocalAnchors();
-    const interval = setInterval(updateLocalAnchors, 1000);
     return () => clearInterval(interval);
   }, [positions, theme]);
 

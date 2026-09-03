@@ -1,4 +1,3 @@
-import { getAllAnchors } from "../../common/util/anchorStore";
 import 'maplibre-gl/dist/maplibre-gl.css';
 import * as maplibregl from 'maplibre-gl';
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
