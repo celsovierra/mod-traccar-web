@@ -78,6 +78,7 @@ const MapSelectedDevice = () => {
       model: model,
       attributes: {
         ...device.attributes,
+        model: model,
         plate: plate,
       },
     };
