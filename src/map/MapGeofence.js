@@ -1,9 +1,7 @@
-python3 -c '
-path = "src/map/MapGeofence.js"
-clean_content = """import { useEffect } from \"react\";
-import { useSelector } from \"react-redux\";
-import { useTheme } from \"@mui/material/styles\";
-import { map } from \"./core/MapView\";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useTheme } from "@mui/material/styles";
+import { map } from "./core/MapView";
 
 const MapGeofence = () => {
   const theme = useTheme();
@@ -12,31 +10,31 @@ const MapGeofence = () => {
   useEffect(() => {
     if (!map || !map.isStyleLoaded()) return;
 
-    const sourceId = \"geofences-source\";
-    const fillLayerId = \"geofences-fill\";
-    const lineLayerId = \"geofences-line\";
+    const sourceId = "geofences-source";
+    const fillLayerId = "geofences-fill";
+    const lineLayerId = "geofences-line";
 
     const serverFeatures = Object.values(geofences).map((g) => ({
-      type: \"Feature\",
+      type: "Feature",
       properties: {
         id: g.id,
         name: g.name,
-        color: g.attributes?.color || theme.palette.geometry?.main || \"#3b82f6\",
+        color: g.attributes?.color || theme.palette.geometry?.main || "#3b82f6",
       },
       geometry: {
-        type: \"Polygon\",
+        type: "Polygon",
         coordinates: [],
       },
     }));
 
     const data = {
-      type: \"FeatureCollection\",
+      type: "FeatureCollection",
       features: serverFeatures,
     };
 
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: \"geojson\",
+        type: "geojson",
         data,
       });
     } else {
@@ -46,11 +44,11 @@ const MapGeofence = () => {
     if (!map.getLayer(fillLayerId)) {
       map.addLayer({
         id: fillLayerId,
-        type: \"fill\",
+        type: "fill",
         source: sourceId,
         paint: {
-          \"fill-color\": [\"get\", \"color\"],
-          \"fill-opacity\": 0.25,
+          "fill-color": ["get", "color"],
+          "fill-opacity": 0.25,
         },
       });
     }
@@ -58,12 +56,12 @@ const MapGeofence = () => {
     if (!map.getLayer(lineLayerId)) {
       map.addLayer({
         id: lineLayerId,
-        type: \"line\",
+        type: "line",
         source: sourceId,
         paint: {
-          \"line-color\": [\"get\", \"color\"],
-          \"line-width\": 2,
-          \"line-opacity\": 0.9,
+          "line-color": ["get", "color"],
+          "line-width": 2,
+          "line-opacity": 0.9,
         },
       });
     }
@@ -73,14 +71,3 @@ const MapGeofence = () => {
 };
 
 export default MapGeofence;
-"""
-
-with open(path, "w") as f:
-    f.write(clean_content)
-print("MapGeofence.js totalmente limpo e restaurado.")
-'
-
-git add .
-git commit -m "Limpeza total do MapGeofence removendo restos da ancora"
-git push origin main
-npm run build && rm -rf /opt/traccar/web && cp -r build /opt/traccar/web && systemctl restart traccar
