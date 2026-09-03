@@ -1,3 +1,4 @@
+import { useDeviceEdit } from "../features/deviceEdit/useDeviceEdit";
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -87,7 +88,14 @@ const DevicePage = () => {
 
   const validate = () => item && item.name && item.uniqueId;
 
+  const { saveDeviceEdits } = useDeviceEdit(item, setItem);
   const handleCustomSave = useCatch(async () => {
+    // Usa o módulo isolado de edição para garantir salvamento seguro para admin e usuário comum
+    const success = await saveDeviceEdits({ name: item.name, uniqueId: item.uniqueId });
+    if (!success) {
+      throw new Error("Erro ao salvar alterações do veículo.");
+    }
+    navigate(-1);
     const payload = {
       ...item,
       model: localModel,
