@@ -19,10 +19,15 @@ export const AnchorMapLayer = () => {
 
     Object.values(devices).forEach((device) => {
       const devId = device.id;
-      const anchorRaw = device?.attributes?.anchor || localStorage.getItem(`device_anchor_${devId}`);
+      const localAnchor = localStorage.getItem(`device_anchor_${devId}`);
+      
+      // Se foi explicitamente marcado como 'false' no localStorage, ignora totalmente o device
+      if (localAnchor === 'false') return;
+
+      let anchorRaw = localAnchor || device?.attributes?.anchor;
       let anchor = null;
 
-      if (typeof anchorRaw === 'string') {
+      if (typeof anchorRaw === 'string' && anchorRaw !== 'false') {
         try { anchor = JSON.parse(anchorRaw); } catch (e) {}
       } else {
         anchor = anchorRaw;

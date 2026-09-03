@@ -10,11 +10,11 @@ export const useAnchor = (deviceId, device, position) => {
     if (!deviceId) return false;
     const localAnchor = localStorage.getItem(`device_anchor_${deviceId}`);
     
-    // Se explicitamente marcado como 'false' no localStorage, respeita imediatamente
+    // Regra de ouro: se o localStorage foi explicitamente marcado como 'false', está desativado ponto final.
     if (localAnchor === 'false') return false;
     if (localAnchor && localAnchor !== 'false') return true;
 
-    // Caso contrário, olha os atributos do device
+    // Se não tem no localStorage, verifica o atributo do device (mas se o device ainda tiver o atributo antigo e o user desativou, limpamos via PUT abaixo)
     const attrAnchor = device?.attributes?.anchor;
     if (attrAnchor && typeof attrAnchor === 'object' && attrAnchor.active !== false) {
       return true;
@@ -26,12 +26,7 @@ export const useAnchor = (deviceId, device, position) => {
   const [isAnchorActive, setIsAnchorActive] = useState(checkIsActive);
 
   useEffect(() => {
-    const localAnchor = localStorage.getItem(`device_anchor_${deviceId}`);
-    if (localAnchor === 'false') {
-      setIsAnchorActive(false);
-    } else {
-      setIsAnchorActive(checkIsActive());
-    }
+    setIsAnchorActive(checkIsActive());
   }, [deviceId, device]);
 
   const toggleAnchor = async () => {
@@ -40,12 +35,12 @@ export const useAnchor = (deviceId, device, position) => {
 
     try {
       if (isAnchorActive) {
-        // Desativar âncora instantaneamente
+        // Desativar: Grava 'false' no localStorage e remove do device no backend
         localStorage.setItem(`device_anchor_${deviceId}`, 'false');
         setIsAnchorActive(false);
 
         if (device) {
-          const updatedAttributes = { ...device.attributes };
+          const updatedAttributes = { ...(device.attributes || {}) };
           delete updatedAttributes.anchor;
           const updatedDevice = { ...device, attributes: updatedAttributes };
           dispatch(devicesActions.update([updatedDevice]));
@@ -58,7 +53,8 @@ export const useAnchor = (deviceId, device, position) => {
         }
         window.dispatchEvent(new CustomEvent('anchorUpdate'));
       } else if (position) {
-        // Ativar âncora instantaneamente
+        // Ativar: Remove o 'false' do localStorage e salva os dados reais
+        localStorage.removeItem(`device_anchor_${deviceId}`);
         const anchorData = {
           deviceId: Number(deviceId),
           latitude: position.latitude,
@@ -73,7 +69,7 @@ export const useAnchor = (deviceId, device, position) => {
           const updatedDevice = {
             ...device,
             attributes: {
-              ...device.attributes,
+              ...(device.attributes || {}),
               anchor: anchorData,
             },
           };
