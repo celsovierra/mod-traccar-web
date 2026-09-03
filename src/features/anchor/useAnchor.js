@@ -6,16 +6,27 @@ export const useAnchor = (deviceId, device, position) => {
   const dispatch = useDispatch();
   const [loadingAnchor, setLoadingAnchor] = useState(false);
   
-  const [isAnchorActive, setIsAnchorActive] = useState(() => {
-    const attrAnchor = device?.attributes?.anchor;
+  const checkIsActive = () => {
+    if (!deviceId) return false;
     const localAnchor = localStorage.getItem(`device_anchor_${deviceId}`);
-    return Boolean(attrAnchor || localAnchor);
-  });
+    const attrAnchor = device?.attributes?.anchor;
+    
+    if (localAnchor === 'false' || localAnchor === null) {
+      if (localAnchor === 'false') return false;
+    }
+    
+    if (attrAnchor) {
+      if (typeof attrAnchor === 'object' && attrAnchor.active === false) return false;
+      return true;
+    }
+    
+    return Boolean(localAnchor && localAnchor !== 'false');
+  };
+
+  const [isAnchorActive, setIsAnchorActive] = useState(checkIsActive);
 
   useEffect(() => {
-    const attrAnchor = device?.attributes?.anchor;
-    const localAnchor = localStorage.getItem(`device_anchor_${deviceId}`);
-    setIsAnchorActive(Boolean(attrAnchor || localAnchor));
+    setIsAnchorActive(checkIsActive());
   }, [deviceId, device]);
 
   const toggleAnchor = async () => {
@@ -24,7 +35,10 @@ export const useAnchor = (deviceId, device, position) => {
 
     try {
       if (isAnchorActive) {
+        // Desativar âncora rigorosamente
         localStorage.removeItem(`device_anchor_${deviceId}`);
+        localStorage.setItem(`device_anchor_${deviceId}`, 'false');
+        
         if (device) {
           const updatedAttributes = { ...device.attributes };
           delete updatedAttributes.anchor;
@@ -40,6 +54,8 @@ export const useAnchor = (deviceId, device, position) => {
         setIsAnchorActive(false);
         window.dispatchEvent(new CustomEvent('anchorUpdate'));
       } else if (position) {
+        // Ativar âncora
+        localStorage.removeItem(`device_anchor_${deviceId}`);
         const anchorData = {
           deviceId: Number(deviceId),
           latitude: position.latitude,
