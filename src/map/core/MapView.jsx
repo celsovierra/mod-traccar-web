@@ -3,9 +3,8 @@ import * as maplibregl from 'maplibre-gl';
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { googleProtocol } from 'maplibre-google-maps';
 import { Protocol } from 'pmtiles';
-import { useRef, useLayoutEffect, useEffect, useState, useMemo, useId } from 'react';
+import { useRef, useLayoutEffect, useEffect, useState, useMemo } from 'react';
 import { useTheme } from '@mui/material';
-import { useSelector } from 'react-redux';
 import MapSwitcher from '../control/MapSwitcher';
 import { useAttributePreference, usePreference } from '../../common/util/preferences';
 import usePersistedState from '../../common/util/usePersistedState';
@@ -63,117 +62,6 @@ const initMap = async () => {
       }
     });
   }
-};
-
-  const sourceId = useId();
-  const theme = useTheme();
-
-  useEffect(() => {
-  }, []);
-  
-  const devices = useSelector((state) => state.devices.items);
-  const positions = useSelector((state) => state.session.positions);
-  const selectedDeviceId = useSelector((state) => state.devices.selectedId);
-
-  useEffect(() => {
-    if (!map) return;
-
-    const setupLayer = () => {
-      if (!map.loaded()) return;
-
-      if (!map.getSource(sourceId)) {
-        map.addSource(sourceId, {
-          type: 'geojson',
-          data: { type: 'FeatureCollection', features: [] }
-        });
-      }
-
-        map.addLayer({
-          type: 'fill',
-          source: sourceId,
-          paint: {
-            'fill-color': theme.palette.error.main,
-            'fill-opacity': 0.4
-          }
-        });
-      }
-
-        map.addLayer({
-          type: 'line',
-          source: sourceId,
-          paint: {
-            'line-color': theme.palette.error.main,
-            'line-width': 4,
-            'line-opacity': 1.0
-          }
-        });
-      }
-    };
-
-    if (map.loaded()) {
-      setupLayer();
-    } else {
-      map.once('load', setupLayer);
-    }
-
-    const handleStyleData = () => {
-      setupLayer();
-    };
-
-    map.on('styledata', handleStyleData);
-
-    return () => {
-      if (!map) return;
-      map.off('styledata', handleStyleData);
-      try {
-        if (map.getSource(sourceId)) map.removeSource(sourceId);
-      } catch (e) {
-        // Ignora erros de limpeza caso o mapa esteja desmontando
-      }
-    };
-  }, [sourceId, theme]);
-
-  useEffect(() => {
-    if (!map || !map.loaded()) return;
-    const source = map.getSource(sourceId);
-    if (!source) return;
-
-    let features = [];
-    
-    // Itera por todas as âncoras salvas no storage, permitindo exibir mesmo se o deviceId vier como string/número
-      // Se houver um dispositivo selecionado, opcionalmente podemos dar preferência ou exibir todas as ativas
-
-      const position = positions[devId];
-        if (lat !== undefined && lng !== undefined && !isNaN(lat) && !isNaN(lng)) {
-          const coords = [];
-          const earthRadius = 6378137;
-          const latRad = (lat * Math.PI) / 180;
-
-          for (let i = 0; i <= 64; i++) {
-            const angle = (i / 64) * Math.PI * 2;
-            const cLat = lat + ((radius / earthRadius) * (180 / Math.PI)) * Math.cos(angle);
-            const cLng = lng + ((radius / earthRadius) * (180 / Math.PI)) * Math.sin(angle) / Math.cos(latRad);
-            coords.push([cLng, cLat]);
-          }
-
-          features.push({
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'Polygon',
-              coordinates: [coords]
-            }
-          });
-        }
-      }
-    });
-
-    source.setData({
-      type: 'FeatureCollection',
-      features
-    });
-
-  return null;
 };
 
 const MapView = ({ children }) => {
