@@ -8,14 +8,12 @@ export const useAnchor = (deviceId, device, position) => {
   
   const checkIsActive = () => {
     if (!deviceId) return false;
-    const localState = localStorage.getItem(`device_anchor_state_${deviceId}`);
+    const localState = localStorage.getItem(\device_anchor_state_\\);
     
-    // Se o usuário marcou explicitamente como desativado, retorna false sem olhar o servidor
     if (localState === 'inactive') return false;
     if (localState === 'active') return true;
 
-    // Fallback caso não tenha o state explícito
-    const localAnchor = localStorage.getItem(`device_anchor_${deviceId}`);
+    const localAnchor = localStorage.getItem(\device_anchor_\\);
     if (localAnchor === 'false' || !localAnchor) {
       return false;
     }
@@ -29,15 +27,28 @@ export const useAnchor = (deviceId, device, position) => {
     setIsAnchorActive(checkIsActive());
   }, [deviceId, device]);
 
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (deviceId && e.key === \device_anchor_state_\\) {
+        if (e.newValue === 'active') {
+          setIsAnchorActive(true);
+        } else if (e.newValue === 'inactive') {
+          setIsAnchorActive(false);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [deviceId]);
+
   const toggleAnchor = async () => {
     if (loadingAnchor) return;
     setLoadingAnchor(true);
 
     try {
       if (isAnchorActive) {
-        // Desativar: marca explicitamente como inactive no localStorage
-        localStorage.setItem(`device_anchor_state_${deviceId}`, 'inactive');
-        localStorage.removeItem(`device_anchor_${deviceId}`);
+        localStorage.setItem(\device_anchor_state_\\, 'inactive');
+        localStorage.removeItem(\device_anchor_\\);
         setIsAnchorActive(false);
 
         if (device) {
@@ -45,7 +56,7 @@ export const useAnchor = (deviceId, device, position) => {
           delete updatedAttributes.anchor;
           const updatedDevice = { ...device, attributes: updatedAttributes };
           dispatch(devicesActions.update([updatedDevice]));
-          await fetch(`/api/devices/${deviceId}`, {
+          await fetch(\/api/devices/\\, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
@@ -54,8 +65,7 @@ export const useAnchor = (deviceId, device, position) => {
         }
         window.dispatchEvent(new CustomEvent('anchorUpdate'));
       } else if (position) {
-        // Ativar: marca explicitamente como active e salva os dados
-        localStorage.setItem(`device_anchor_state_${deviceId}`, 'active');
+        localStorage.setItem(\device_anchor_state_\\, 'active');
         const anchorData = {
           deviceId: Number(deviceId),
           latitude: position.latitude,
@@ -63,7 +73,7 @@ export const useAnchor = (deviceId, device, position) => {
           radius: 50,
           active: true,
         };
-        localStorage.setItem(`device_anchor_${deviceId}`, JSON.stringify(anchorData));
+        localStorage.setItem(\device_anchor_\\, JSON.stringify(anchorData));
         setIsAnchorActive(true);
         
         if (device) {
@@ -75,7 +85,7 @@ export const useAnchor = (deviceId, device, position) => {
             },
           };
           dispatch(devicesActions.update([updatedDevice]));
-          await fetch(`/api/devices/${deviceId}`, {
+          await fetch(\/api/devices/\\, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
