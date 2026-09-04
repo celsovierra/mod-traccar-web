@@ -636,6 +636,20 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   }, [deviceId, position, device, isOnline, isUnlockPending]);
 
   useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'device_blocked_' + deviceId) {
+        if (e.newValue === 'true') {
+          setIsBlocked(true);
+        } else {
+          setIsBlocked(false);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [deviceId]);
+
+  useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => {
         setToast(null);
