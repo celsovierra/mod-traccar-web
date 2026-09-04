@@ -8,12 +8,12 @@ export const useAnchor = (deviceId, device, position) => {
   
   const checkIsActive = () => {
     if (!deviceId) return false;
-    const localState = localStorage.getItem(\device_anchor_state_\\);
+    const localState = localStorage.getItem('device_anchor_state_' + deviceId);
     
     if (localState === 'inactive') return false;
     if (localState === 'active') return true;
 
-    const localAnchor = localStorage.getItem(\device_anchor_\\);
+    const localAnchor = localStorage.getItem('device_anchor_' + deviceId);
     if (localAnchor === 'false' || !localAnchor) {
       return false;
     }
@@ -29,7 +29,7 @@ export const useAnchor = (deviceId, device, position) => {
 
   useEffect(() => {
     const handleStorageChange = (e) => {
-      if (deviceId && e.key === \device_anchor_state_\\) {
+      if (deviceId && e.key === 'device_anchor_state_' + deviceId) {
         if (e.newValue === 'active') {
           setIsAnchorActive(true);
         } else if (e.newValue === 'inactive') {
@@ -47,8 +47,8 @@ export const useAnchor = (deviceId, device, position) => {
 
     try {
       if (isAnchorActive) {
-        localStorage.setItem(\device_anchor_state_\\, 'inactive');
-        localStorage.removeItem(\device_anchor_\\);
+        localStorage.setItem('device_anchor_state_' + deviceId, 'inactive');
+        localStorage.removeItem('device_anchor_' + deviceId);
         setIsAnchorActive(false);
 
         if (device) {
@@ -56,7 +56,7 @@ export const useAnchor = (deviceId, device, position) => {
           delete updatedAttributes.anchor;
           const updatedDevice = { ...device, attributes: updatedAttributes };
           dispatch(devicesActions.update([updatedDevice]));
-          await fetch(\/api/devices/\\, {
+          await fetch('/api/devices/' + deviceId, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
@@ -65,7 +65,7 @@ export const useAnchor = (deviceId, device, position) => {
         }
         window.dispatchEvent(new CustomEvent('anchorUpdate'));
       } else if (position) {
-        localStorage.setItem(\device_anchor_state_\\, 'active');
+        localStorage.setItem('device_anchor_state_' + deviceId, 'active');
         const anchorData = {
           deviceId: Number(deviceId),
           latitude: position.latitude,
@@ -73,7 +73,7 @@ export const useAnchor = (deviceId, device, position) => {
           radius: 50,
           active: true,
         };
-        localStorage.setItem(\device_anchor_\\, JSON.stringify(anchorData));
+        localStorage.setItem('device_anchor_' + deviceId, JSON.stringify(anchorData));
         setIsAnchorActive(true);
         
         if (device) {
@@ -85,7 +85,7 @@ export const useAnchor = (deviceId, device, position) => {
             },
           };
           dispatch(devicesActions.update([updatedDevice]));
-          await fetch(\/api/devices/\\, {
+          await fetch('/api/devices/' + deviceId, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
