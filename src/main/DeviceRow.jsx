@@ -18,7 +18,6 @@ import BatteryCharging60Icon from '@mui/icons-material/BatteryCharging60';
 import Battery20Icon from '@mui/icons-material/Battery20';
 import BatteryCharging20Icon from '@mui/icons-material/BatteryCharging20';
 import ErrorIcon from '@mui/icons-material/Error';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import duration from 'dayjs/plugin/duration';
@@ -38,6 +37,7 @@ import { useAttributePreference } from '../common/util/preferences';
 import GeofencesValue from '../common/components/GeofencesValue';
 import DriverValue from '../common/components/DriverValue';
 import MotionBar from './components/MotionBar';
+import { getStoppedTimeStatus, StoppedTimeDisplay } from '../features/stoppedTime';
 
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
@@ -102,19 +102,6 @@ const useStyles = makeStyles()((theme) => ({
   selected: {
     backgroundColor: theme.palette.action.selected,
   },
-  stoppedBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '3px',
-    marginTop: '0px',
-    fontSize: '0.65rem',
-    color: '#b78103',
-    fontWeight: 700,
-    backgroundColor: 'rgba(255, 152, 0, 0.15)',
-    padding: '0px 4px',
-    borderRadius: '4px',
-    width: 'fit-content',
-  },
 }));
 
 const getImageUrl = (item) => {
@@ -165,32 +152,7 @@ const DeviceRow = ({ devices, index, style }) => {
   const primaryValue = resolveFieldValue(devicePrimary);
   const secondaryValue = resolveFieldValue(deviceSecondary);
 
-  const getStoppedTime = () => {
-    if (!position) return null;
-    const isMoving = position.attributes.motion || (position.speed > 1);
-    if (isMoving) return null;
-
-    const stopTimeStr = position.attributes.stopStart || position.deviceTime || position.fixTime;
-    if (!stopTimeStr) return null;
-
-    const diffMs = dayjs().diff(dayjs(stopTimeStr));
-    if (diffMs < 0) return null;
-
-    const dur = dayjs.duration(diffMs);
-    const days = dur.days();
-    const hours = dur.hours();
-    const minutes = dur.minutes();
-
-    if (days > 0) {
-      return `Parado ${days}d ${hours}h`;
-    } else if (hours > 0) {
-      return `Parado ${hours}h ${minutes}min`;
-    } else {
-      return `Parado ${minutes}min`;
-    }
-  };
-
-  const stoppedText = getStoppedTime();
+  const stoppedStatus = position ? getStoppedTimeStatus(item.id, position) : null;
 
   const secondaryText = () => {
     let status;
@@ -212,12 +174,7 @@ const DeviceRow = ({ devices, index, style }) => {
             {status}
           </span>
         </Box>
-        {stoppedText && (
-          <span className={classes.stoppedBadge}>
-            <AccessTimeIcon sx={{ fontSize: '10px' }} />
-            {stoppedText}
-          </span>
-        )}
+        {stoppedStatus && <StoppedTimeDisplay stoppedSince={stoppedStatus.stoppedSince} />}
       </Box>
     );
   };
