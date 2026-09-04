@@ -159,7 +159,7 @@ const DeviceRow = ({ devices, index, style }) => {
     if (item.status === 'online' || !item.lastUpdate) {
       status = formatStatus(item.status, t);
     } else {
-      status = dayjs(item.lastUpdate).fromNow();
+      status = 'Modo de economia';
     }
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
