@@ -575,23 +575,26 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const [unlinkingId, setUnlinkingId] = useState(null);
 
   const getIsBlockedReal = (pos = position, dev = device) => {
+    const currentDevId = deviceId || dev?.id;
+    if (currentDevId) {
+      const val = localStorage.getItem('device_blocked_' + currentDevId);
+      if (val === 'true') return true;
+      if (val === 'false') return false;
+    }
     const posAttr = pos?.attributes || {};
     const devAttr = dev?.attributes || {};
-    const local = localStorage.getItem(`device_blocked_${deviceId}`);
-
-    if (devAttr.blocked !== undefined) return Boolean(devAttr.blocked);
-    if (posAttr.blocked !== undefined) return Boolean(posAttr.blocked);
-    if (posAttr.out1 !== undefined) return Boolean(posAttr.out1);
-    if (posAttr.output1 !== undefined) return Boolean(posAttr.output1);
-    if (posAttr.relay !== undefined) return Boolean(posAttr.relay);
-
-    return local === 'true';
+    if (devAttr.blocked === true) return true;
+    if (posAttr.blocked === true) return true;
+    if (posAttr.out1 === true) return true;
+    if (posAttr.output1 === true) return true;
+    if (posAttr.relay === true) return true;
+    return false;
   };
 
-  const [isBlocked, setIsBlocked] = useState(() => {
-    const local = localStorage.getItem(`device_blocked_${deviceId}`);
-    if (local === "false") return false;
-    if (local === "true") return true;
+    const [isBlocked, setIsBlocked] = useState(() => {
+    const val = localStorage.getItem('device_blocked_' + deviceId);
+    if (val === 'true') return true;
+    if (val === 'false') return false;
     return getIsBlockedReal();
   });
   const [isUnlockPending, setIsUnlockPending] = useState(() => {
