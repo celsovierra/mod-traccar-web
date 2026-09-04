@@ -57,6 +57,7 @@ import { usePreference } from '../util/preferences';
 import fetchOrThrow from '../util/fetchOrThrow';
 import { mapIconKey, mapIcons } from '../../map/core/preloadImages';
 import { formatStatus, formatSpeed } from '../util/formatter';
+import { getStoppedTimeStatus, StoppedTimeDisplay } from '../../features/stoppedTime';
 
 // Ícone SVG Cerca
 const FenceIcon = ({ sx = {}, className = '' }) => (
@@ -542,9 +543,11 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const vehiclePlate = device?.attributes?.plate || '';
   const vehicleModel = device?.model || '';
 
-  const isIgnitionOn = Boolean(
-    position?.attributes?.ignition ?? position?.attributes?.acc ?? false
-  );
+  const positions = useSelector((state) => state.session.positions);
+  const currentPosition = position || positions[deviceId];
+  const stoppedStatus = currentPosition ? getStoppedTimeStatus(deviceId, currentPosition) : null;
+
+  const isIgnitionOn = Boolean(position?.attributes?.ignition ?? position?.attributes?.acc ?? false);
   const ignitionColor = isIgnitionOn ? '#16a34a' : '#dc2626';
 
   const isTrulyCommunicating = () => {
@@ -1108,9 +1111,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                               color: ignitionColor,
                             }}
                           >
-                            {isIgnitionOn ? 'Ignição ligada' : 'Ignição desligada'}
-                          </Typography>
+                            {isIgnitionOn ? 'Ignição ligada' : 'Ignição desligada'}</Typography>
                         </Box>
+                        {stoppedStatus && (
+                          <Box sx={{ mt: '2px' }}>
+                            <StoppedTimeDisplay stoppedSince={stoppedStatus.stoppedSince} />
+                          </Box>
+                        )}
                       </Box>
                     </Box>
                   </Box>
