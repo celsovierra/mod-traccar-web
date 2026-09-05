@@ -1,4 +1,6 @@
-import React from 'react';
+import SmsMarketModal from '../smsMarket/SmsMarketModal';
+import SmsIcon from '@mui/icons-material/Sms';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 import {
@@ -119,6 +121,7 @@ const getImageUrl = (item) => {
 };
 
 const DeviceRow = ({ devices, index, style }) => {
+  const [showSmsModal, setShowSmsModal] = useState(false);
   const { classes } = useStyles();
   const dispatch = useDispatch();
   const t = useTranslation();
@@ -261,11 +264,11 @@ const DeviceRow = ({ devices, index, style }) => {
                 </IconButton>
               </Tooltip>
             )}
-          </Box>
-        )}
-      </ListItemButton>
+          <IconButton size='small' onClick={(e) => { e.stopPropagation(); setShowSmsModal(true); }} sx={{ color: '#ff5722', ml: 0.5, p: 0.5 }}><SmsIcon fontSize='small' /></IconButton></Box>)}</ListItemButton>{showSmsModal && <SmsMarketModal device={item} onClose={() => setShowSmsModal(false)} />}
     </div>
   );
 };
 
 export default DeviceRow;
+
+
