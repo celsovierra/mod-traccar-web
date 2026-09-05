@@ -1,0 +1,543 @@
+﻿import React, { useState, useEffect, useRef } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  Box,
+  Typography,
+  IconButton,
+  Tabs,
+  Tab,
+  TextField,
+  Button,
+  Paper,
+  Collapse,
+  Chip,
+} from '@mui/material';
+
+import CloseIcon from '@mui/icons-material/Close';
+import SendIcon from '@mui/icons-material/Send';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import EditIcon from '@mui/icons-material/Edit';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
+import SmartphoneIcon from '@mui/icons-material/Smartphone';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
+import SettingsIcon from '@mui/icons-material/Settings';
+import WifiIcon from '@mui/icons-material/Wifi';
+import WifiOffIcon from '@mui/icons-material/WifiOff';
+import SyncIcon from '@mui/icons-material/Sync';
+
+import {
+  getCredentials,
+  saveCredentials,
+  getBalance,
+  sendSms,
+  getMessageStatus,
+  getStatusInfo,
+} from './smsMarketService';
+
+const POLLING_INTERVAL_MS = 10000;
+
+const SmsMarketModal = ({ device, onClose }) => {
+  const [tabValue, setTabValue] = useState(0);
+  const [message, setMessage] = useState('');
+  const [balance, setBalance] = useState('Carregando...');
+  const [isConnected, setIsConnected] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [creds, setCreds] = useState(getCredentials());
+  const [reports, setReports] = useState([]);
+  const [sending, setSending] = useState(false);
+
+  const reportsRef = useRef([]);
+  const phone = device?.phone || '';
+
+  const updateReports = (updater) => {
+    setReports((previous) => {
+      const next =
+        typeof updater === 'function' ? updater(previous) : updater;
+      reportsRef.current = next;
+      return next;
+    });
+  };
+
+  const updateConnection = async () => {
+    const currentBalance = await getBalance();
+    setBalance(currentBalance);
+    setIsConnected(
+      currentBalance !== 'Configure login' &&
+        currentBalance !== 'Erro' &&
+        currentBalance !== 'Erro API'
+    );
+  };
+
+  useEffect(() => {
+    updateConnection();
+  }, []);
+
+  // Consulta periodicamente SOMENTE mensagens que ainda nÃ£o chegaram a status final.
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const pendingReports = reportsRef.current.filter(
+        (report) =>
+          report.apiId &&
+          !getStatusInfo(report.apiStatus).terminal
+      );
+
+      await Promise.all(
+        pendingReports.map(async (report) => {
+          try {
+            const current = await getMessageStatus({
+              id: report.apiId,
+              campaignId: report.campaignId,
+            });
+
+            updateReports((previous) =>
+              previous.map((item) =>
+                item.localId === report.localId
+                  ? {
+                      ...item,
+                      apiId: current.id || item.apiId,
+                      apiStatus: current.status,
+                      status: current.statusInfo.label,
+                      carrier: current.carrier || item.carrier,
+                      time: current.sentDate || new Date().toLocaleTimeString(),
+                    }
+                  : item
+              )
+            );
+          } catch (error) {
+      updateReports((previous) =>
+        previous.map((report) =>
+          report.localId === localId
+            ? {
+                ...report,
+                apiStatus: '-2',
+                status: 'FALHA',
+                error: error.message || 'Erro desconhecido',
+                time: new Date().toLocaleTimeString(),
+              }
+            : report
+        )
+      );
+    }
+        })
+      );
+    }, POLLING_INTERVAL_MS);
+
+    const handleCardClick = \(report\) => {
+    const details = \CHECKLIST DE DIAGNÓSTICO DO ERRO:\n- Status: \\n- API ID: \\n- Campanha ID: \\n- Erro: \\n- Telefone: \\n- Mensagem: \\n- Horário: \\;
+    alert(details);
+  };
+
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: '16px',
+          p: { xs: 1, sm: 2 },
+          m: { xs: 1, sm: 2 },
+          maxHeight: '90vh',
+        },
+      }}
+    >
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        px={1}
+        pt={1}
+      >
+        <Box display="flex" alignItems="center" gap={1}>
+          <FlashOnIcon color="primary" />
+          <Box>
+            <Chip
+              icon={
+                isConnected ? (
+                  <WifiIcon style={{ fontSize: '11px' }} />
+                ) : (
+                  <WifiOffIcon style={{ fontSize: '11px' }} />
+                )
+              }
+              label={
+                isConnected
+                  ? 'Conectado SMSMarket'
+                  : 'Desconectado'
+              }
+              size="small"
+              color={isConnected ? 'success' : 'error'}
+              sx={{
+                height: '18px',
+                fontSize: '9px',
+                fontWeight: 'bold',
+                mb: 0.5,
+              }}
+            />
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              color="#1976d2"
+              sx={{
+                fontSize: { xs: '16px', sm: '20px' },
+                lineHeight: 1,
+              }}
+            >
+              SMS MARKET
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box display="flex" alignItems="center" gap={1}>
+          <Paper
+            variant="outlined"
+            sx={{
+              px: 1.5,
+              py: 0.3,
+              bgcolor: '#e3f2fd',
+              borderColor: '#90caf9',
+              borderRadius: '8px',
+            }}
+          >
+            <Typography
+              variant="body2"
+              color={balance === 'Configure login' ? 'error' : 'primary'}
+              fontWeight="bold"
+            >
+              SMS: {balance}
+            </Typography>
+          </Paper>
+
+          <IconButton
+            onClick={updateConnection}
+            size="small"
+            color="primary"
+            title="Atualizar saldo"
+          >
+            <SyncIcon fontSize="small" />
+          </IconButton>
+
+          <IconButton
+            onClick={() => setShowSettings(!showSettings)}
+            size="small"
+            color="primary"
+          >
+            <SettingsIcon />
+          </IconButton>
+
+          <IconButton onClick={onClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </Box>
+
+      <Collapse in={showSettings}>
+        <Box
+          p={2}
+          mb={2}
+          bgcolor="#f1f8e9"
+          borderRadius="8px"
+          border="1px solid #c8e6c9"
+        >
+          <Typography
+            variant="subtitle2"
+            fontWeight="bold"
+            color="success.dark"
+            mb={1}
+          >
+            Configurar credenciais SMSMarket
+          </Typography>
+
+          <TextField
+            size="small"
+            fullWidth
+            label="UsuÃ¡rio / Login"
+            value={creds.user}
+            onChange={(event) =>
+              setCreds({ ...creds, user: event.target.value })
+            }
+            sx={{ mb: 1, bgcolor: '#fff' }}
+          />
+
+          <TextField
+            size="small"
+            fullWidth
+            type="password"
+            label="Senha"
+            value={creds.pass}
+            onChange={(event) =>
+              setCreds({ ...creds, pass: event.target.value })
+            }
+            sx={{ mb: 1, bgcolor: '#fff' }}
+          />
+
+          <Button
+            variant="contained"
+            size="small"
+            color="success"
+            onClick={handleSaveCreds}
+            fullWidth
+          >
+            Salvar e testar credenciais
+          </Button>
+        </Box>
+      </Collapse>
+
+      <Tabs
+        value={tabValue}
+        onChange={(event, value) => setTabValue(value)}
+        variant="fullWidth"
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          px: 1,
+          pt: 1,
+          '& .MuiTab-root': {
+            textTransform: 'none',
+            fontWeight: 'bold',
+            fontSize: { xs: '11px', sm: '13px' },
+            minWidth: 'auto',
+            px: 1,
+          },
+        }}
+      >
+        <Tab icon={<EditIcon />} label="Personalizado" iconPosition="top" />
+        <Tab icon={<FlashOnIcon />} label="Cmd Pronto" iconPosition="top" />
+        <Tab icon={<Inventory2Icon />} label="Grupo" iconPosition="top" />
+        <Tab icon={<SmartphoneIcon />} label="SMS Avulso" iconPosition="top" />
+      </Tabs>
+
+      <DialogContent sx={{ px: { xs: 1, sm: 2 }, py: 2 }}>
+        <Box
+          mb={2}
+          p={1.5}
+          bgcolor="#f8f9fa"
+          borderRadius="8px"
+          border="1px solid #e0e0e0"
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Typography variant="body2" color="textSecondary" fontWeight="medium">
+            Tel: {phone || 'NÃ£o cadastrado'}
+          </Typography>
+          <Typography
+            variant="caption"
+            fontWeight="bold"
+            color={phone ? 'primary.main' : 'error.main'}
+          >
+            {phone ? 'DisponÃ­vel' : 'Cadastre no veÃ­culo'}
+          </Typography>
+        </Box>
+
+        <TextField
+          fullWidth
+          multiline
+          rows={3}
+          placeholder="Digite o comando ou mensagem..."
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          variant="outlined"
+          sx={{ mb: 2, bgcolor: '#f8f9fa' }}
+        />
+
+        <Box display="flex" gap={1.5} mb={3}>
+          <Button
+            variant="contained"
+            startIcon={<SendIcon />}
+            onClick={() => handleSend('GPRS')}
+            disabled={sending}
+            fullWidth
+            sx={{
+              py: 1.2,
+              fontWeight: 'bold',
+              fontSize: { xs: '12px', sm: '14px' },
+              bgcolor: '#90caf9',
+              color: '#fff',
+              '&:hover': { bgcolor: '#64b5f6' },
+            }}
+          >
+            {sending ? 'Enviando...' : 'GPRS'}
+          </Button>
+
+          <Button
+            variant="contained"
+            startIcon={<SendIcon />}
+            onClick={() => handleSend('SMS')}
+            disabled={sending}
+            fullWidth
+            sx={{
+              py: 1.2,
+              fontWeight: 'bold',
+              fontSize: { xs: '12px', sm: '14px' },
+              bgcolor: '#ffe0b2',
+              color: '#e65100',
+              '&:hover': { bgcolor: '#ffcc80' },
+            }}
+          >
+            {sending ? 'Enviando...' : 'SMS'}
+          </Button>
+        </Box>
+
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="subtitle2" fontWeight="bold" color="#1976d2">
+              RELATÃ“RIO
+            </Typography>
+            <Paper
+              sx={{
+                px: 1,
+                py: 0.1,
+                bgcolor: '#1976d2',
+                color: '#fff',
+                fontSize: '11px',
+                borderRadius: '10px',
+                fontWeight: 'bold',
+              }}
+            >
+              {reports.length}
+            </Paper>
+          </Box>
+
+          <Typography
+            variant="caption"
+            color="error"
+            sx={{ cursor: 'pointer', fontWeight: 'bold' }}
+            onClick={() => updateReports([])}
+          >
+            LIMPAR
+          </Typography>
+        </Box>
+
+        <Typography
+          variant="caption"
+          display="block"
+          color="text.secondary"
+          sx={{ mb: 1 }}
+        >
+          Mensagens pendentes sÃ£o atualizadas automaticamente a cada 10 segundos.
+        </Typography>
+
+        <Box display="flex" flexDirection="column" gap={1.5}>
+          {reports.map((report) => {
+            const colors = getReportColors(report);
+
+            return (
+              <Paper
+                key={report.localId}
+                variant="outlined"
+                onClick={() => handleCardClick(report)}
+                sx={{
+                  p: 2,
+                  borderRadius: '12px',
+                  borderColor: colors.border,
+                  bgcolor: colors.background,
+                }}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={0.5}
+                >
+                  <Box display="flex" alignItems="center" gap={1}>
+                    {isSuccess(report) ? (
+                      <CheckCircle color="success" fontSize="small" />
+                    ) : isPending(report) ? (
+                      <SyncIcon color="warning" fontSize="small" />
+                    ) : (
+                      <ErrorIcon color="error" fontSize="small" />
+                    )}
+
+                    <Typography
+                      variant="body2"
+                      fontWeight="bold"
+                      color={colors.text}
+                    >
+                      {report.status}
+                    </Typography>
+
+                    <Typography
+                      variant="caption"
+                      bgcolor="#e0e0e0"
+                      px={1}
+                      py={0.2}
+                      borderRadius="4px"
+                      fontWeight="bold"
+                    >
+                      {report.type}
+                    </Typography>
+                  </Box>
+
+                  <Box display="flex" alignItems="center" gap={0.5}>
+                    <Typography variant="caption" color="textSecondary">
+                      {report.time}
+                    </Typography>
+
+                    {report.apiId && (
+                      <IconButton
+                        size="small"
+                        onClick={() => refreshOneReport(report)}
+                        title="Consultar status agora"
+                      >
+                        <SyncIcon fontSize="inherit" />
+                      </IconButton>
+                    )}
+                  </Box>
+                </Box>
+
+                <Typography variant="body2" fontFamily="monospace" fontWeight="bold">
+                  {report.text}
+                </Typography>
+
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  display="block"
+                  mt={0.5}
+                >
+                  ðŸš— {report.deviceName} ({report.phone})
+                </Typography>
+
+                {report.apiId && (
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    display="block"
+                    mt={0.5}
+                  >
+                    ID SMSMarket: {report.apiId}
+                    {report.carrier ? ` â€¢ ${report.carrier}` : ''}
+                  </Typography>
+                )}
+
+                {report.error && (
+                  <Typography
+                    variant="caption"
+                    color="error.main"
+                    display="block"
+                    mt={0.5}
+                  >
+                    Erro: {report.error}
+                  </Typography>
+                )}
+              </Paper>
+            );
+          })}
+        </Box>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default SmsMarketModal;
+
+
+
+
+
+
+
+
