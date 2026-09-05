@@ -32,7 +32,7 @@ import {
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { mapIconKey, mapIcons } from '../map/core/preloadImages';
 import { useAdministrator } from '../common/util/permissions';
-import EngineIcon from '../resources/images/data/engine.svg?react';
+
 import { useAttributePreference } from '../common/util/preferences';
 import GeofencesValue from '../common/components/GeofencesValue';
 import DriverValue from '../common/components/DriverValue';
@@ -229,20 +229,13 @@ const DeviceRow = ({ devices, index, style }) => {
                   <ErrorIcon fontSize="small" className={classes.error} />
                 </IconButton>
               </Tooltip>
-            )}
-            {position.attributes.hasOwnProperty('ignition') && (
-              <Tooltip
-                title={`${t('positionIgnition')}: ${formatBoolean(position.attributes.ignition, t)}`}
-              >
-                <IconButton size="small">
-                  {position.attributes.ignition ? (
-                    <EngineIcon width={14} height={14} className={classes.success} />
-                  ) : (
-                    <EngineIcon width={14} height={14} className={classes.neutral} />
-                  )}
-                </IconButton>
-              </Tooltip>
-            )}
+            )}          {position.attributes.hasOwnProperty("power") && (
+            <Tooltip title={`Tensão da Bateria: ${position.attributes.power}V`}>
+              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", px: "5px", py: "1px", borderRadius: "4px", bgcolor: "action.hover", border: "1px solid", borderColor: "divider", fontSize: "0.65rem", fontWeight: 700, color: "text.secondary", ml: 0.5, letterSpacing: "0.2px" }}>
+                {Number(position.attributes.power).toFixed(1)}V
+              </Box>
+            </Tooltip>
+          )}
             {position.attributes.hasOwnProperty('batteryLevel') && (
               <Tooltip
                 title={`${t('positionBatteryLevel')}: ${formatPercentage(position.attributes.batteryLevel)}`}
