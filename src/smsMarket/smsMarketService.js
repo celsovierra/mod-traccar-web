@@ -1,4 +1,4 @@
-﻿const BASE_URL = 'https://api.smsmarket.com.br/webservice-rest';
+﻿const BASE_URL = '/api-smsmarket';
 const STORAGE_KEY = 'smsmarket_credentials';
 
 const STATUS = {
@@ -1154,4 +1154,6 @@ export const SMSMARKET_BASE_URL =
 
 export const SMSMARKET_STORAGE_KEY =
   STORAGE_KEY;
+
+
 

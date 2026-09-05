@@ -12,10 +12,6 @@ export default defineConfig(() => ({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api-smsmarket/, ''),
       },
-    },
-    hmr: { overlay: false },
-    port: 3000,
-    proxy: {
       '/api/socket': {
         target: 'wss://gpscell.site',
         ws: true,
@@ -26,6 +22,8 @@ export default defineConfig(() => ({
         changeOrigin: true,
       },
     },
+    hmr: { overlay: false },
+    port: 3000,
   },
   build: {
     outDir: 'build',
@@ -41,9 +39,9 @@ export default defineConfig(() => ({
         globPatterns: ['**/*.{js,css,html,woff,woff2,mp3}'],
       },
       manifest: {
-        short_name: '${title}',
-        name: '${description}',
-        theme_color: '${colorPrimary}',
+        short_name: 'Traccar',
+        name: 'Traccar Web',
+        theme_color: '#1976d2',
         icons: [
           {
             src: 'pwa-64x64.png',
@@ -71,4 +69,3 @@ export default defineConfig(() => ({
     }),
   ],
 }));
-
