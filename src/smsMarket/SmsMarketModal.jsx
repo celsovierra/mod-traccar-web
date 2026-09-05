@@ -1,927 +1,286 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
   Box,
   Typography,
+  TextField,
+  Button,
   IconButton,
   Tabs,
   Tab,
-  TextField,
-  Button,
-  Paper,
   Collapse,
-  CircularProgress,
+  Paper,
+  CircularProgress
 } from '@mui/material';
-
-import CloseIcon from '@mui/icons-material/Close';
-import SendIcon from '@mui/icons-material/Send';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
+import CloseIcon from '@mui/icons-material/Close';
+import SettingsIcon from '@mui/icons-material/Settings';
 import EditIcon from '@mui/icons-material/Edit';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import SmartphoneIcon from '@mui/icons-material/Smartphone';
+import SendIcon from '@mui/icons-material/Send';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
-import SettingsIcon from '@mui/icons-material/Settings';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import ErrorIcon from '@mui/icons-material/Error';
 
 import {
-  getCredentials,
-  saveCredentials,
-  getBalance,
   sendSms,
+  getBalance,
+  saveCredentials,
+  getCredentials,
+  normalizeBrazilPhone,
+  getStatusInfo,
+  getMessageStatus
 } from './smsMarketService';
 
-
 const SmsMarketModal = ({ device, onClose }) => {
-
   const [tabValue, setTabValue] = useState(0);
-
   const [message, setMessage] = useState('');
-
+  const [phone, setPhone] = useState(device?.phone || '');
+  const [sending, setSending] = useState(false);
   const [balance, setBalance] = useState(null);
-
+  const [loadingBalance, setLoadingBalance] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-
-  const [creds, setCreds] = useState({
-    user: '',
-    pass: '',
-  });
-
+  const [creds, setCreds] = useState({ user: '', pass: '' });
   const [reports, setReports] = useState([]);
 
-  const [loadingBalance, setLoadingBalance] = useState(false);
-
-  const [sending, setSending] = useState(false);
-
-  const phone = device?.phone || '';
-
-
-  /* ============================================================
-     CARREGA CREDENCIAIS
-     ============================================================ */
-
   useEffect(() => {
-
-    try {
-
-      const saved = getCredentials();
-
-      if (saved) {
-
-        setCreds({
-          user: saved.user || '',
-          pass: saved.pass || '',
-        });
-
-      }
-
-    } catch (error) {
-
-      console.error(
-        'Erro ao carregar credenciais SMS Market:',
-        error
-      );
-
+    const loadedCreds = getCredentials();
+    setCreds(loadedCreds);
+    if (loadedCreds.user && loadedCreds.pass) {
+      loadBalance();
     }
-
   }, []);
 
-
-  /* ============================================================
-     ATUALIZA SALDO
-     ============================================================ */
-
   const loadBalance = async () => {
-    if (!creds?.user || !creds?.pass) {
-      setBalance(null);
-      return;
-    }
+    setLoadingBalance(true);
     try {
-      setLoadingBalance(true);
-      const res = await fetch('/api-smsmarket/balance', {
-        headers: {
-          'Authorization': 'Basic ' + btoa(creds.user + ':' + creds.pass),
-          'Accept': 'application/json'
-        }
-      });
-      const data = await res.json();
-      const val = data?.balance_1 ?? data?.sms ?? data?.balance ?? data?.saldo ?? data?.quantidade ?? data?.creditos ?? (typeof data === 'number' ? data : null);
-      setBalance(val !== null && val !== undefined ? val : JSON.stringify(data));
-    } catch (error) {
-      console.error('Erro ao consultar saldo:', error);
+      const bal = await getBalance();
+      setBalance(bal);
+    } catch (e) {
       setBalance('Erro');
     } finally {
       setLoadingBalance(false);
     }
   };
 
-
-  /* ============================================================
-     CONSULTA SALDO AO ABRIR
-     ============================================================ */
-
-  useEffect(() => {
-
-    if (creds?.user && creds?.pass) {
-      loadBalance();
-    }
-
-  }, [creds?.user, creds?.pass]);
-
-
-  /* ============================================================
-     SALVAR CREDENCIAIS
-     ============================================================ */
-
   const handleSaveCreds = async () => {
-
-    if (!creds.user?.trim()) {
-
-      alert('Informe o usuÃ¡rio do SMS Market.');
-
-      return;
-    }
-
-    if (!creds.pass?.trim()) {
-
-      alert('Informe a senha do SMS Market.');
-
-      return;
-    }
-
     try {
-
       setLoadingBalance(true);
-
-      const result = await saveCredentials({
-        user: creds.user.trim(),
-        pass: creds.pass,
-      });
-
-      /*
-       * O service pode retornar diretamente o saldo
-       * ou o objeto completo da API.
-       */
-
-      if (typeof result === 'number') {
-
-        setBalance(result);
-
-      } else if (typeof result === 'string') {
-
-        setBalance(result);
-
-      } else if (result?.sms !== undefined) {
-
-        setBalance(result.sms);
-
-      } else if (result?.balance !== undefined) {
-
-        setBalance(result.balance);
-
-      } else {
-
-        /*
-         * Se saveCredentials apenas salvar e nÃ£o
-         * retornar saldo, fazemos uma consulta real.
-         */
-
-        await loadBalance();
-
-      }
-
+      const bal = await saveCredentials(creds);
+      setBalance(bal);
       setShowSettings(false);
-
-      alert(
-        'Credenciais salvas com sucesso.'
-      );
-
+      alert('Credenciais salvas e testadas com sucesso!');
     } catch (error) {
-
-      console.error(
-        'Erro ao salvar credenciais SMS Market:',
-        error
-      );
-
-      alert(
-        error?.message ||
-        'NÃ£o foi possÃ­vel validar as credenciais do SMS Market.'
-      );
-
+      alert(error?.message || 'Erro ao salvar credenciais.');
     } finally {
-
       setLoadingBalance(false);
-
     }
-
   };
-
-
-  /* ============================================================
-     NORMALIZA TELEFONE
-     ============================================================ */
-
-  const normalizePhone = (value) => {
-
-    if (!value) {
-      return '';
-    }
-
-    return String(value).replace(/\D/g, '');
-
-  };
-
-
-  /* ============================================================
-     TEXTO DO STATUS
-     ============================================================ */
-
-  const getStatusLabel = (status) => {
-
-    switch (String(status)) {
-
-      case '-9':
-        return 'BLOQUEADO';
-
-      case '-8':
-        return 'BLOQUEADO';
-
-      case '-7':
-        return 'SEM WHATSAPP';
-
-      case '-6':
-        return 'CANCELADA';
-
-      case '-5':
-        return 'LISTA NEGRA';
-
-      case '-4':
-        return 'NÃšMERO FIXO';
-
-      case '-3':
-        return 'NÃšMERO INVÃLIDO';
-
-      case '-2':
-        return 'FALHA';
-
-      case '-1':
-        return 'ENFILEIRADA';
-
-      case '0':
-        return 'ENVIADA';
-
-      case '1':
-        return 'ENTREGUE';
-
-      case '2':
-        return 'LIDA';
-
-      case '3':
-        return 'PREPARANDO';
-
-      case '4':
-        return 'RECEBIDA';
-
-      case '6':
-        return 'PAUSADA';
-
-      case '7':
-        return 'EXPIRADA';
-
-      case '8':
-        return 'REJEITADA';
-
-      case '9':
-        return 'NÃƒO RECEBIDA';
-
-      default:
-        return status || 'AGUARDANDO';
-
-    }
-
-  };
-
-
-  /* ============================================================
-     ENVIO
-     ============================================================ */
 
   const handleSend = async (type) => {
-
-    /*
-     * Verifica credenciais
-     */
-
-    if (
-      !creds?.user?.trim() ||
-      !creds?.pass?.trim()
-    ) {
-
-      alert(
-        'Configure o usuÃ¡rio e a senha do SMS Market na engrenagem.'
-      );
-
+    if (!creds?.user?.trim() || !creds?.pass?.trim()) {
+      alert('Configure o usuário e a senha do SMS Market na engrenagem.');
       setShowSettings(true);
-
       return;
-
     }
 
-
-    /*
-     * Verifica telefone
-     */
-
-    const normalizedPhone = normalizePhone(phone);
-
-    if (!normalizedPhone) {
-
-      alert(
-        'VeÃ­culo sem nÃºmero de telefone cadastrado.'
-      );
-
+    let normalizedPhone = '';
+    try {
+      normalizedPhone = normalizeBrazilPhone(phone);
+    } catch (err) {
+      alert(err?.message || 'Telefone inválido.');
       return;
-
     }
-
-
-    /*
-     * Verifica mensagem
-     */
 
     if (!message.trim()) {
-
-      alert(
-        'Digite uma mensagem ou comando antes de enviar.'
-      );
-
+      alert('Digite uma mensagem ou comando antes de enviar.');
       return;
-
     }
-
 
     try {
-
       setSending(true);
-
-
-      /*
-       * Envia para o service.
-       *
-       * O service Ã© responsÃ¡vel por conversar
-       * diretamente com a API SMSMarket.
-       */
-
-      const res = await sendSms(
-        normalizedPhone,
-        message.trim()
-      );
-
-
-      /*
-       * ID retornado pela SMSMarket.
-       *
-       * Esse ID serÃ¡ utilizado depois para
-       * consultar o status real da mensagem.
-       */
-
-      const messageId =
-        res?.id ||
-        res?.messageId ||
-        null;
-
-
-      /*
-       * Status inicial correto.
-       *
-       * A SMSMarket primeiro aceita/enfileira.
-       * NÃ£o podemos chamar de ENTREGUE ainda.
-       */
-
-      const responseCode =
-        res?.responseCode || '000';
-
-      const initialStatus =
-        responseCode === '000'
-          ? 'ENFILEIRADA'
-          : 'ACEITA';
-
+      const res = await sendSms(normalizedPhone, message.trim());
+      const messageId = res?.id || null;
+      const responseCode = res?.responseCode || '000';
+      const initialStatus = responseCode === '000' ? 'ENFILEIRADA' : 'ACEITA';
+      const statusInfo = getStatusInfo(initialStatus === 'ENFILEIRADA' ? '-1' : '0');
 
       const report = {
-
         id: Date.now(),
-
         smsMarketId: messageId,
-
+        campaignId: res?.campaignId || null,
         responseCode,
-
         status: initialStatus,
-
+        statusCode: initialStatus === 'ENFILEIRADA' ? '-1' : '0',
+        terminal: false,
         type,
-
-        time:
-          new Date().toLocaleTimeString('pt-BR'),
-
-        text:
-          message.trim(),
-
-        phone:
-          normalizedPhone,
-
-        deviceName:
-          device?.name || 'VeÃ­culo',
-
-        response:
-          res,
-
+        time: new Date().toLocaleTimeString('pt-BR'),
+        text: message.trim(),
+        phone: normalizedPhone,
+        deviceName: device?.name || 'Veículo',
+        response: res
       };
 
-
-      /*
-       * Coloca no inÃ­cio do relatÃ³rio
-       */
-
-      setReports((prev) => [
-        report,
-        ...prev,
-      ]);
-
-
-      /*
-       * Limpa mensagem
-       */
-
+      setReports((prev) => [report, ...prev]);
       setMessage('');
-
-
-      /*
-       * Atualiza saldo real depois do envio
-       */
-
       await loadBalance();
 
-
-      /*
-       * NÃ£o mostramos "entregue".
-       *
-       * Apenas informamos que a API aceitou.
-       */
-
       if (responseCode === '000') {
-
-        alert(
-          messageId
-            ? `Mensagem aceita pela SMSMarket.\nID: ${messageId}\nAguardando status de entrega.`
-            : 'Mensagem aceita pela SMSMarket e colocada na fila.'
-        );
-
+        alert(messageId ? `Mensagem aceita.\nID: ${messageId}` : 'Mensagem enfileirada.');
       } else {
-
-        alert(
-          res?.responseDescription ||
-          'A SMSMarket retornou uma resposta inesperada.'
-        );
-
+        alert('A SMSMarket retornou uma resposta inesperada.');
       }
-
     } catch (error) {
-
-      console.error(
-        'Erro ao enviar SMS:',
-        error
-      );
-
-
-      /*
-       * Registra falha no relatÃ³rio
-       */
+      console.error('Erro ao enviar SMS:', error);
+      const errStatus = '-11';
+      const errInfo = getStatusInfo(errStatus);
 
       setReports((prev) => [
-
         {
           id: Date.now(),
-
           smsMarketId: null,
-
-          responseCode:
-            error?.responseCode || null,
-
-          status: 'FALHA',
-
+          campaignId: null,
+          responseCode: error?.responseCode || null,
+          status: errInfo.label,
+          statusCode: errStatus,
+          terminal: errInfo.terminal,
           type,
-
-          time:
-            new Date().toLocaleTimeString('pt-BR'),
-
-          text:
-            message.trim(),
-
-          phone:
-            normalizedPhone,
-
-          deviceName:
-            device?.name || 'VeÃ­culo',
-
-          error:
-            error?.message ||
-            'Erro desconhecido',
-
+          time: new Date().toLocaleTimeString('pt-BR'),
+          text: message.trim(),
+          phone,
+          deviceName: device?.name || 'Veículo',
+          error: error?.message || 'Erro desconhecido'
         },
-
-        ...prev,
-
+        ...prev
       ]);
-
-
-      alert(
-        error?.message ||
-        'Erro ao enviar mensagem pelo SMS Market.'
-      );
-
+      alert(error?.message || 'Erro ao enviar mensagem.');
     } finally {
-
       setSending(false);
-
     }
-
   };
-
-
-  /* ============================================================
-     STATUS VISUAL
-     ============================================================ */
 
   const isSuccessStatus = (status) => {
-
-    return [
-      'ENTREGUE',
-      'LIDA',
-      'ENVIADA',
-    ].includes(status);
-
+    return ['ENTREGUE', 'LIDA', 'ENVIADA', 'RESPONDIDA'].includes(status);
   };
-
 
   const isPendingStatus = (status) => {
-
-    return [
-      'ENFILEIRADA',
-      'ACEITA',
-      'AGUARDANDO',
-      'PREPARANDO',
-      'PAUSADA',
-    ].includes(status);
-
+    return ['ENFILEIRADA', 'ACEITA', 'AGUARDANDO', 'PREPARANDO', 'PAUSADA'].includes(status);
   };
 
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (!reports || reports.length === 0) return;
 
-  /* ============================================================
-     SALDO PARA EXIBIÃ‡ÃƒO
-     ============================================================ */
+      const hasPending = reports.some(r => r.smsMarketId && (!r.terminal && r.status !== 'ENTREGUE' && r.status !== 'LIDA'));
+      if (!hasPending) return;
 
-  const displayBalance =
-    balance === null ||
-    balance === undefined ||
-    balance === ''
-      ? '--'
-      : balance;
+      const updatedReports = await Promise.all(
+        reports.map(async (rep) => {
+          if (rep.terminal || !rep.smsMarketId || rep.status === 'ENTREGUE' || rep.status === 'LIDA') {
+            return rep;
+          }
 
+          try {
+            console.log('CONSULTANDO STATUS PARA ID:', rep.smsMarketId);
+            const statusRes = await getMessageStatus({
+              id: rep.smsMarketId,
+              campaignId: rep.campaignId
+            });
 
-  /* ============================================================
-     RENDER
-     ============================================================ */
+            if (statusRes && statusRes.statusInfo) {
+              return {
+                ...rep,
+                status: statusRes.statusInfo.label,
+                statusCode: statusRes.status,
+                terminal: statusRes.statusInfo.terminal,
+                carrier: statusRes.carrier || rep.carrier
+              };
+            }
+          } catch (e) {
+            // Mantém o estado atual se falhar temporariamente
+          }
+          return rep;
+        })
+      );
+
+      setReports(updatedReports);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [reports]);
+
+  const displayBalance = balance === null || balance === undefined || balance === '' ? '--' : balance;
 
   return (
-
-    <Dialog
-      open={true}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: '16px',
-          p: {
-            xs: 1,
-            sm: 2,
-          },
-          m: {
-            xs: 1,
-            sm: 2,
-          },
-          maxHeight: '90vh',
-        },
-      }}
-    >
-
-      {/* ======================================================
-          CABEÃ‡ALHO
-          ====================================================== */}
-
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        px={1}
-        pt={1}
-      >
-
-        <Box
-          display="flex"
-          alignItems="center"
-          gap={1}
-        >
-
+    <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '16px', p: 2, m: 1, maxHeight: '90vh' } }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" px={1} pt={1}>
+        <Box display="flex" alignItems="center" gap={1}>
           <FlashOnIcon color="primary" />
-
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            color="#1976d2"
-            sx={{
-              fontSize: {
-                xs: '16px',
-                sm: '20px',
-              },
-            }}
-          >
+          <Typography variant="h6" fontWeight="bold" color="#1976d2">
             SMS MARKET
           </Typography>
-
         </Box>
-
-
-        <Box
-          display="flex"
-          alignItems="center"
-          gap={1}
-        >
-
-          {/* SALDO */}
-
-          <Paper
-            variant="outlined"
-            sx={{
-              px: 1.5,
-              py: 0.3,
-              bgcolor: '#e3f2fd',
-              borderColor: '#90caf9',
-              borderRadius: '8px',
-              minWidth: '75px',
-              textAlign: 'center',
-            }}
-          >
-
-            <Typography
-              variant="body2"
-              color={
-                balance === null
-                  ? 'error'
-                  : 'primary'
-              }
-              fontWeight="bold"
-            >
-
-              {loadingBalance ? (
-                <CircularProgress
-                  size={14}
-                  thickness={5}
-                />
-              ) : (
-                `SMS: ${displayBalance}`
-              )}
-
+        <Box display="flex" alignItems="center" gap={1}>
+          <Paper variant="outlined" sx={{ px: 1.5, py: 0.3, bgcolor: '#e3f2fd', borderColor: '#90caf9', borderRadius: '8px', minWidth: '75px', textAlign: 'center' }}>
+            <Typography variant="body2" color={balance === null ? 'error' : 'primary'} fontWeight="bold">
+              {loadingBalance ? <CircularProgress size={14} thickness={5} /> : `SMS: ${displayBalance}`}
             </Typography>
-
           </Paper>
-
-
-          {/* CONFIGURAÃ‡Ã•ES */}
-
-          <IconButton
-            onClick={() =>
-              setShowSettings(!showSettings)
-            }
-            size="small"
-            color="primary"
-          >
-
+          <IconButton onClick={() => setShowSettings(!showSettings)} size="small" color="primary">
             <SettingsIcon />
-
           </IconButton>
-
-
-          {/* FECHAR */}
-
-          <IconButton
-            onClick={onClose}
-            size="small"
-          >
-
+          <IconButton onClick={onClose} size="small">
             <CloseIcon />
-
           </IconButton>
-
         </Box>
-
       </Box>
 
-
-      {/* ======================================================
-          CONFIGURAÃ‡Ã•ES
-          ====================================================== */}
-
       <Collapse in={showSettings}>
-
-        <Box
-          p={2}
-          mb={2}
-          bgcolor="#f1f8e9"
-          borderRadius="8px"
-          border="1px solid #c8e6c9"
-        >
-
-          <Typography
-            variant="subtitle2"
-            fontWeight="bold"
-            color="success.dark"
-            mb={1}
-          >
+        <Box p={2} mb={2} bgcolor="#f1f8e9" borderRadius="8px" border="1px solid #c8e6c9">
+          <Typography variant="subtitle2" fontWeight="bold" color="success.dark" mb={1}>
             Configurar Credenciais SMS Market
           </Typography>
-
-
           <TextField
             size="small"
             fullWidth
-            label="UsuÃ¡rio / Login"
+            label="Usuário / Login"
             value={creds.user}
-            onChange={(e) =>
-              setCreds({
-                ...creds,
-                user: e.target.value,
-              })
-            }
-            sx={{
-              mb: 1,
-              bgcolor: '#fff',
-            }}
+            onChange={(e) => setCreds({ ...creds, user: e.target.value })}
+            sx={{ mb: 1, bgcolor: '#fff' }}
           />
-
-
           <TextField
             size="small"
             fullWidth
             type="password"
             label="Senha"
             value={creds.pass}
-            onChange={(e) =>
-              setCreds({
-                ...creds,
-                pass: e.target.value,
-              })
-            }
-            sx={{
-              mb: 1,
-              bgcolor: '#fff',
-            }}
+            onChange={(e) => setCreds({ ...creds, pass: e.target.value })}
+            sx={{ mb: 1, bgcolor: '#fff' }}
           />
-
-
-          <Button
-            variant="contained"
-            size="small"
-            color="success"
-            onClick={handleSaveCreds}
-            disabled={loadingBalance}
-            fullWidth
-          >
-
-            {loadingBalance
-              ? 'VALIDANDO...'
-              : 'SALVAR CREDENCIAIS'}
-
+          <Button variant="contained" size="small" color="success" onClick={handleSaveCreds} disabled={loadingBalance} fullWidth>
+            {loadingBalance ? 'VALIDANDO...' : 'SALVAR CREDENCIAIS'}
           </Button>
-
         </Box>
-
       </Collapse>
 
-
-      {/* ======================================================
-          ABAS
-          ====================================================== */}
-
-      <Tabs
-        value={tabValue}
-        onChange={(e, value) =>
-          setTabValue(value)
-        }
-        variant="fullWidth"
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          px: 1,
-          pt: 1,
-
-          '& .MuiTab-root': {
-            textTransform: 'none',
-            fontWeight: 'bold',
-            fontSize: {
-              xs: '11px',
-              sm: '13px',
-            },
-            minWidth: 'auto',
-            px: 1,
-          },
-        }}
-      >
-
-        <Tab
-          icon={<EditIcon />}
-          label="Personalizado"
-          iconPosition="top"
-        />
-
-        <Tab
-          icon={<FlashOnIcon />}
-          label="Cmd Pronto"
-          iconPosition="top"
-        />
-
-        <Tab
-          icon={<Inventory2Icon />}
-          label="Grupo"
-          iconPosition="top"
-        />
-
-        <Tab
-          icon={<SmartphoneIcon />}
-          label="SMS Avulso"
-          iconPosition="top"
-        />
-
+      <Tabs value={tabValue} onChange={(e, value) => setTabValue(value)} variant="fullWidth" sx={{ borderBottom: 1, borderColor: 'divider', px: 1, pt: 1 }}>
+        <Tab icon={<EditIcon />} label="Personalizado" iconPosition="top" />
+        <Tab icon={<FlashOnIcon />} label="Cmd Pronto" iconPosition="top" />
+        <Tab icon={<Inventory2Icon />} label="Grupo" iconPosition="top" />
+        <Tab icon={<SmartphoneIcon />} label="SMS Avulso" iconPosition="top" />
       </Tabs>
 
-
-      {/* ======================================================
-          CONTEÃšDO
-          ====================================================== */}
-
-      <DialogContent
-        sx={{
-          px: {
-            xs: 1,
-            sm: 2,
-          },
-          py: 2,
-        }}
-      >
-
-        {/* TELEFONE */}
-
-        <Box
-          mb={2}
-          p={1.5}
-          bgcolor="#f8f9fa"
-          borderRadius="8px"
-          border="1px solid #e0e0e0"
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-
-          <Typography
-            variant="body2"
-            color="textSecondary"
-            fontWeight="medium"
-          >
-            Tel:{' '}
-            {phone || 'NÃ£o cadastrado'}
+      <DialogContent sx={{ px: 2, py: 2 }}>
+        <Box mb={2} p={1.5} bgcolor="#f8f9fa" borderRadius="8px" border="1px solid #e0e0e0" display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="body2" color="textSecondary" fontWeight="medium">
+            Tel: {phone || 'Não cadastrado'}
           </Typography>
-
-
-          <Typography
-            variant="caption"
-            fontWeight="bold"
-            color={
-              phone
-                ? 'primary.main'
-                : 'error.main'
-            }
-          >
-
-            {phone
-              ? 'DisponÃ­vel'
-              : 'Cadastre no veÃ­culo'}
-
+          <Typography variant="caption" fontWeight="bold" color={phone ? 'primary.main' : 'error.main'}>
+            {phone ? 'Disponível' : 'Cadastre no veículo'}
           </Typography>
-
         </Box>
-
-
-        {/* MENSAGEM */}
 
         <TextField
           fullWidth
@@ -929,397 +288,118 @@ const SmsMarketModal = ({ device, onClose }) => {
           rows={3}
           placeholder="Digite o comando ou mensagem..."
           value={message}
-          onChange={(e) =>
-            setMessage(e.target.value)
-          }
+          onChange={(e) => setMessage(e.target.value)}
           variant="outlined"
           disabled={sending}
-          sx={{
-            mb: 2,
-            bgcolor: '#f8f9fa',
-          }}
+          sx={{ mb: 2, bgcolor: '#f8f9fa' }}
         />
 
-
-        {/* BOTÃ•ES */}
-
-        <Box
-          display="flex"
-          gap={1.5}
-          mb={3}
-        >
-
+        <Box display="flex" gap={1.5} mb={3}>
           <Button
             variant="contained"
-            startIcon={
-              sending
-                ? (
-                  <CircularProgress
-                    size={18}
-                    color="inherit"
-                  />
-                )
-                : <SendIcon />
-            }
-            onClick={() =>
-              handleSend('GPRS')
-            }
+            startIcon={sending ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+            onClick={() => handleSend('GPRS')}
             disabled={sending}
             fullWidth
-            sx={{
-              py: 1.2,
-              fontWeight: 'bold',
-              fontSize: {
-                xs: '12px',
-                sm: '14px',
-              },
-              bgcolor: '#90caf9',
-              color: '#fff',
-              '&:hover': {
-                bgcolor: '#64b5f6',
-              },
-            }}
+            sx={{ py: 1.2, fontWeight: 'bold', bgcolor: '#90caf9', color: '#fff', '&:hover': { bgcolor: '#64b5f6' } }}
           >
-
             GPRS
-
           </Button>
-
-
           <Button
             variant="contained"
-            startIcon={
-              sending
-                ? (
-                  <CircularProgress
-                    size={18}
-                    color="inherit"
-                  />
-                )
-                : <SendIcon />
-            }
-            onClick={() =>
-              handleSend('SMS')
-            }
+            startIcon={sending ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+            onClick={() => handleSend('SMS')}
             disabled={sending}
             fullWidth
-            sx={{
-              py: 1.2,
-              fontWeight: 'bold',
-              fontSize: {
-                xs: '12px',
-                sm: '14px',
-              },
-              bgcolor: '#ffe0b2',
-              color: '#e65100',
-              '&:hover': {
-                bgcolor: '#ffe0b2',
-              },
-            }}
+            sx={{ py: 1.2, fontWeight: 'bold', bgcolor: '#ffe0b2', color: '#e65100', '&:hover': { bgcolor: '#ffe0b2' } }}
           >
-
             SMS
-
           </Button>
-
         </Box>
 
-
-        {/* ====================================================
-            RELATÃ“RIO
-            ==================================================== */}
-
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={1}
-        >
-
-          <Box
-            display="flex"
-            alignItems="center"
-            gap={1}
-          >
-
-            <Typography
-              variant="subtitle2"
-              fontWeight="bold"
-              color="#1976d2"
-            >
-              RELATÃ“RIO
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="subtitle2" fontWeight="bold" color="#1976d2">
+              RELATÓRIO
             </Typography>
-
-
-            <Paper
-              sx={{
-                px: 1,
-                py: 0.1,
-                bgcolor: '#1976d2',
-                color: '#fff',
-                fontSize: '11px',
-                borderRadius: '10px',
-                fontWeight: 'bold',
-              }}
-            >
-
+            <Paper sx={{ px: 1, py: 0.1, bgcolor: '#1976d2', color: '#fff', fontSize: '11px', borderRadius: '10px', fontWeight: 'bold' }}>
               {reports.length}
-
             </Paper>
-
           </Box>
-
-
-          <Typography
-            variant="caption"
-            color="error"
-            sx={{
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
-            onClick={() =>
-              setReports([])
-            }
-          >
-
+          <Typography variant="caption" color="error" sx={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setReports([])}>
             LIMPAR
-
           </Typography>
-
         </Box>
 
-
-        {/* ====================================================
-            LISTA DE RELATÃ“RIOS
-            ==================================================== */}
-
-        <Box
-          display="flex"
-          flexDirection="column"
-          gap={1.5}
-        >
-
+        <Box display="flex" flexDirection="column" gap={1.5}>
           {reports.map((rep) => {
-
-            const success =
-              isSuccessStatus(
-                rep.status
-              );
-
-            const pending =
-              isPendingStatus(
-                rep.status
-              );
-
+            const success = isSuccessStatus(rep.status);
+            const pending = isPendingStatus(rep.status);
 
             return (
-
               <Paper
                 key={rep.id}
                 variant="outlined"
                 sx={{
                   p: 2,
                   borderRadius: '12px',
-
-                  borderColor:
-                    success
-                      ? '#a5d6a7'
-                      : pending
-                        ? '#90caf9'
-                        : '#ef9a9a',
-
-                  bgcolor:
-                    success
-                      ? '#f1f8e9'
-                      : pending
-                        ? '#e3f2fd'
-                        : '#ffebee',
+                  borderColor: success ? '#a5d6a7' : pending ? '#90caf9' : '#ef9a9a',
+                  bgcolor: success ? '#f1f8e9' : pending ? '#e3f2fd' : '#ffebee'
                 }}
               >
-
-                {/* CABEÃ‡ALHO DO RELATÃ“RIO */}
-
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  mb={0.5}
-                >
-
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    gap={1}
-                  >
-
-                    {success ? (
-
-                      <CheckCircleIcon
-                        color="success"
-                        fontSize="small"
-                      />
-
-                    ) : pending ? (
-
-                      <ScheduleIcon
-                        color="primary"
-                        fontSize="small"
-                      />
-
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    {pending ? (
+                      <CircularProgress size={14} thickness={5} color="primary" />
+                    ) : success ? (
+                      <CheckCircleIcon color="success" fontSize="small" />
                     ) : (
-
-                      <ErrorIcon
-                        color="error"
-                        fontSize="small"
-                      />
-
+                      <ErrorIcon color="error" fontSize="small" />
                     )}
-
-
-                    <Typography
-                      variant="body2"
-                      fontWeight="bold"
-                      color={
-                        success
-                          ? 'success.main'
-                          : pending
-                            ? 'primary.main'
-                            : 'error.main'
-                      }
-                    >
-
+                    <Typography variant="body2" fontWeight="bold" color={success ? 'success.main' : pending ? 'primary.main' : 'error.main'}>
                       {rep.status}
-
                     </Typography>
-
-
-                    <Typography
-                      variant="caption"
-                      bgcolor="#e0e0e0"
-                      px={1}
-                      py={0.2}
-                      borderRadius="4px"
-                      fontWeight="bold"
-                    >
-
+                    <Typography variant="caption" bgcolor="#e0e0e0" px={1} py={0.2} borderRadius="4px" fontWeight="bold">
                       {rep.type}
-
                     </Typography>
-
                   </Box>
-
-
-                  <Typography
-                    variant="caption"
-                    color="textSecondary"
-                  >
-
+                  <Typography variant="caption" color="textSecondary">
                     {rep.time}
-
                   </Typography>
-
                 </Box>
 
-
-                {/* MENSAGEM */}
-
-                <Typography
-                  variant="body2"
-                  fontFamily="monospace"
-                  fontWeight="bold"
-                >
-
+                <Typography variant="body2" fontFamily="monospace" fontWeight="bold">
                   {rep.text}
-
                 </Typography>
 
-
-                {/* VEÃCULO */}
-
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  display="flex"
-                  alignItems="center"
-                  gap={0.5}
-                  mt={0.5}
-                >
-
-                  ðŸš— {rep.deviceName} ({rep.phone})
-
+                <Typography variant="caption" color="textSecondary" display="flex" alignItems="center" gap={0.5} mt={0.5}>
+                  🚗 {rep.deviceName} ({rep.phone})
                 </Typography>
-
-
-                {/* ID SMSMARKET */}
 
                 {rep.smsMarketId && (
-
-                  <Typography
-                    variant="caption"
-                    color="textSecondary"
-                    display="block"
-                    mt={0.5}
-                  >
-
+                  <Typography variant="caption" color="textSecondary" display="block" mt={0.5}>
                     ID SMSMarket: {rep.smsMarketId}
-
                   </Typography>
-
                 )}
-
-
-                {/* CÃ“DIGO DE RESPOSTA */}
 
                 {rep.responseCode && (
-
-                  <Typography
-                    variant="caption"
-                    color="textSecondary"
-                    display="block"
-                    mt={0.3}
-                  >
-
-                    CÃ³digo: {rep.responseCode}
-
+                  <Typography variant="caption" color="textSecondary" display="block" mt={0.3}>
+                    Código: {rep.responseCode}
                   </Typography>
-
                 )}
-
-
-                {/* ERRO */}
 
                 {rep.error && (
-
-                  <Typography
-                    variant="caption"
-                    color="error"
-                    display="block"
-                    mt={0.5}
-                  >
-
+                  <Typography variant="caption" color="error" display="block" mt={0.5}>
                     {rep.error}
-
                   </Typography>
-
                 )}
-
               </Paper>
-
             );
-
           })}
-
         </Box>
-
       </DialogContent>
-
     </Dialog>
-
   );
-
 };
 
-
 export default SmsMarketModal;
-
-

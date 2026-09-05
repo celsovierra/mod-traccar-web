@@ -1,1172 +1,428 @@
 ﻿const BASE_URL = '/api-smsmarket';
 const STORAGE_KEY = 'smsmarket_credentials';
 
-const STATUS = {
-  '-9': { label: 'SEM COBERTURA', terminal: true, error: true },
-  '-8': { label: 'CONTEÃšDO BLOQUEADO', terminal: true, error: true },
-  '-7': { label: 'NÃšMERO SEM WHATSAPP', terminal: true, error: true },
-  '-6': { label: 'CANCELADA', terminal: true, error: true },
-  '-5': { label: 'LISTA NEGRA', terminal: true, error: true },
-  '-4': { label: 'NÃšMERO FIXO', terminal: true, error: true },
-  '-3': { label: 'NÃšMERO INVÃLIDO', terminal: true, error: true },
-  '-2': { label: 'FALHA DE ENTREGA', terminal: true, error: true },
-  '-1': { label: 'ENFILEIRADA', terminal: false, error: false },
-  '0': { label: 'ENVIADA', terminal: false, error: false },
-  '1': { label: 'ENTREGUE', terminal: true, error: false },
-  '2': { label: 'LIDA', terminal: true, error: false },
-  '3': { label: 'PREPARANDO', terminal: false, error: false },
-  '4': { label: 'RESPONDIDA', terminal: true, error: false },
-  '6': { label: 'PAUSADA', terminal: false, error: false },
-  '7': { label: 'EXPIRADA', terminal: true, error: true },
-  '8': { label: 'REJEITADA', terminal: true, error: true },
-  '9': { label: 'NÃƒO RECEBIDA', terminal: true, error: true },
+const STATUS_MAP = {
+  '-11': 'FALHA NO ENVIO',
+  '-10': 'FALHA NO ENVIO',
+  '-9': 'SEM COBERTURA',
+  '-8': 'CONTEÚDO BLOQUEADO',
+  '-7': 'NÚMERO SEM WHATSAPP',
+  '-6': 'CANCELADA',
+  '-5': 'LISTA NEGRA',
+  '-4': 'NÚMERO FIXO',
+  '-3': 'NÚMERO INVÁLIDO',
+  '-2': 'FALHA DE ENTREGA',
+  '-1': 'ENFILEIRADA',
+  '0': 'ENVIADA',
+  '1': 'ENTREGUE',
+  '2': 'LIDA',
+  '3': 'PREPARANDO',
+  '4': 'RESPONDIDA',
+  '6': 'PAUSADA',
+  '7': 'EXPIRADA',
+  '8': 'REJEITADA',
+  '9': 'NÃO RECEBIDA'
 };
 
-export const getStatusInfo = (status) => {
-  return (
-    STATUS[String(status)] || {
-      label: `STATUS ${status ?? 'DESCONHECIDO'}`,
-      terminal: false,
-      error: false,
-    }
-  );
-};
-
-export const getCredentials = () => {
-  try {
-    const value = localStorage.getItem(STORAGE_KEY);
-
-    if (!value) {
-      return {
-        user: '',
-        pass: '',
-      };
-    }
-
-    const credentials = JSON.parse(value);
-
-    return {
-      user: credentials?.user || '',
-      pass: credentials?.pass || '',
-    };
-  } catch (error) {
-    console.error(
-      'Erro ao ler credenciais da SMSMarket:',
-      error
-    );
-
-    return {
-      user: '',
-      pass: '',
-    };
+export const getStatusInfo = function(status) {
+  const code = String(status !== undefined && status !== null ? status : '-1');
+  let label = STATUS_MAP[code];
+  if (!label) {
+    label = 'STATUS ' + code;
   }
-};
-
-const getAuthHeaders = () => {
-  const { user, pass } = getCredentials();
-
-  if (!user || !pass) {
-    throw new Error(
-      'Configure o usuÃ¡rio e a senha da SMSMarket.'
-    );
-  }
+  
+  const terminal = code === '1' || code === '2' || code === '4' || code === '-2' || code === '-3' || code === '-4' || code === '-5' || code === '-6' || code === '-7' || code === '-8' || code === '-9' || code === '-10' || code === '-11' || code === '7' || code === '8' || code === '9';
+  const error = code === '-2' || code === '-3' || code === '-4' || code === '-5' || code === '-6' || code === '-7' || code === '-8' || code === '-9' || code === '-10' || code === '-11' || code === '7' || code === '8' || code === '9';
 
   return {
-    Authorization: `Basic ${btoa(`${user}:${pass}`)}`,
-    Accept: 'application/json',
+    label: label,
+    terminal: terminal,
+    error: error
   };
 };
 
-export const normalizeBrazilPhone = (phone) => {
-  let digits = String(phone ?? '').replace(/\D/g, '');
+export const getStatusLabel = function(status) {
+  return getStatusInfo(status).label;
+};
 
-  if (!digits) {
-    throw new Error('Telefone nÃ£o informado.');
+export const getCredentials = function() {
+  try {
+    const value = localStorage.getItem(STORAGE_KEY);
+    if (!value) {
+      return { user: '', pass: '' };
+    }
+    const credentials = JSON.parse(value);
+    return {
+      user: credentials && credentials.user ? credentials.user : '',
+      pass: credentials && credentials.pass ? credentials.pass : ''
+    };
+  } catch (error) {
+    console.error('Erro ao ler credenciais da SMSMarket:', error);
+    return { user: '', pass: '' };
   }
+};
 
-  /*
-   * Se o nÃºmero vier com DDI 55,
-   * remove o 55 antes de enviar.
-   *
-   * Exemplo:
-   * 5586999999999
-   * vira:
-   * 86999999999
-   */
+const getAuthHeaders = function() {
+  const creds = getCredentials();
+  const user = creds.user;
+  const pass = creds.pass;
+  if (!user || !pass) {
+    throw new Error('Configure o usuário e a senha da SMSMarket.');
+  }
+  return {
+    'Authorization': 'Basic ' + btoa(user + ':' + pass),
+    'Accept': 'application/json'
+  };
+};
 
-  if (digits.startsWith('55') && digits.length >= 12) {
+export const normalizeBrazilPhone = function(phone) {
+  let digits = String(phone !== undefined && phone !== null ? phone : '').replace(/\D/g, '');
+  if (!digits) {
+    throw new Error('Telefone não informado.');
+  }
+  if (digits.indexOf('55') === 0 && digits.length >= 12) {
     digits = digits.slice(2);
   }
-
   if (digits.length !== 10 && digits.length !== 11) {
-    throw new Error(
-      'Telefone invÃ¡lido. Informe DDD + nÃºmero, por exemplo: 86999999999.'
-    );
+    throw new Error('Telefone inválido. Informe DDD + número, por exemplo: 86999999999.');
   }
-
   return digits;
 };
 
-
-/* ============================================================
-   PROCESSAMENTO DA RESPOSTA
-   ============================================================ */
-
-const parseResponse = async (response) => {
+const parseResponse = async function(response) {
   const raw = await response.text();
-
   let json = {};
-
-  if (raw) {
-    try {
+  try {
+    if (raw) {
       json = JSON.parse(raw);
-    } catch {
-      throw new Error(
-        `A SMSMarket retornou uma resposta invÃ¡lida. HTTP ${response.status}: ${raw}`
-      );
     }
+  } catch (e) {
+    // Mantém vazio se não for JSON
   }
 
   if (!response.ok) {
-    const description =
-      json?.responseDescription ||
-      json?.message ||
-      json?.error ||
-      raw ||
-      `Erro HTTP ${response.status}.`;
-
-    const error = new Error(
-      `SMSMarket: ${description}`
-    );
-
+    let description = raw;
+    if (json) {
+      if (json.responseDescription) {
+        description = json.responseDescription;
+      } else if (json.message) {
+        description = json.message;
+      } else if (json.error) {
+        description = json.error;
+      }
+    }
+    if (!description) {
+      description = 'Erro HTTP ' + response.status;
+    }
+    const error = new Error('SMSMarket: ' + description);
     error.httpStatus = response.status;
     error.response = json;
-
     throw error;
   }
 
-  if (
-    json?.success === false ||
-    json?.success === 'false'
-  ) {
-    const error = new Error(
-      `${
-        json?.responseCode
-          ? `[${json.responseCode}] `
-          : ''
-      }${
-        json?.responseDescription ||
-        json?.message ||
-        'A SMSMarket recusou a operaÃ§Ã£o.'
-      }`
-    );
-
-    error.responseCode =
-      json?.responseCode || null;
-
+  if (json && (json.success === false || json.success === 'false')) {
+    let desc = 'A SMSMarket recusou a operação.';
+    if (json.responseDescription) {
+      desc = json.responseDescription;
+    } else if (json.message) {
+      desc = json.message;
+    }
+    const error = new Error((json.responseCode ? '[' + json.responseCode + '] ' : '') + desc);
+    error.responseCode = json.responseCode || null;
     error.response = json;
-
     throw error;
   }
 
   return json;
 };
 
-
-/* ============================================================
-   GET
-   ============================================================ */
-
-const getRequest = async (
-  endpoint,
-  params = {}
-) => {
+const getRequest = async function(endpoint, params) {
+  if (!params) {
+    params = {};
+  }
   const query = new URLSearchParams();
-
-  Object.entries(params).forEach(
-    ([key, value]) => {
-      if (
-        value !== undefined &&
-        value !== null &&
-        value !== ''
-      ) {
-        query.set(
-          key,
-          String(value)
-        );
-      }
+  Object.entries(params).forEach(function(entry) {
+    const key = entry[0];
+    const value = entry[1];
+    if (value !== undefined && value !== null && value !== '') {
+      query.set(key, String(value));
     }
-  );
+  });
 
   const queryString = query.toString();
+  const url = BASE_URL + '/' + endpoint + (queryString ? '?' + queryString : '');
 
-  const url =
-    `${BASE_URL}/${endpoint}` +
-    (
-      queryString
-        ? `?${queryString}`
-        : ''
-    );
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
 
-  try {
-    const response = await fetch(
-      url,
-      {
-        method: 'GET',
-        headers: getAuthHeaders(),
-      }
-    );
-
-    return await parseResponse(response);
-  } catch (error) {
-    if (
-      error?.httpStatus ||
-      error?.response
-    ) {
-      throw error;
-    }
-
-    throw new Error(
-      `NÃ£o foi possÃ­vel conectar Ã  SMSMarket. ${
-        error?.message || ''
-      }`.trim()
-    );
-  }
+  return parseResponse(response);
 };
 
-
-/* ============================================================
-   POST FORM
-   ============================================================ */
-
-const postForm = async (
-  endpoint,
-  data = {}
-) => {
+const postForm = async function(endpoint, data) {
+  if (!data) {
+    data = {};
+  }
   const body = new URLSearchParams();
-
-  Object.entries(data).forEach(
-    ([key, value]) => {
-      if (
-        value !== undefined &&
-        value !== null &&
-        value !== ''
-      ) {
-        body.set(
-          key,
-          String(value)
-        );
-      }
+  Object.entries(data).forEach(function(entry) {
+    const key = entry[0];
+    const value = entry[1];
+    if (value !== undefined && value !== null && value !== '') {
+      body.set(key, String(value));
     }
-  );
+  });
 
-  try {
-    const response = await fetch(
-      `${BASE_URL}/${endpoint}`,
-      {
-        method: 'POST',
+  const headers = Object.assign({}, getAuthHeaders(), {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  });
 
-        headers: {
-          ...getAuthHeaders(),
+  const response = await fetch(BASE_URL + '/' + endpoint, {
+    method: 'POST',
+    headers: headers,
+    body: body
+  });
 
-          'Content-Type':
-            'application/x-www-form-urlencoded',
-        },
-
-        body,
-      }
-    );
-
-    return await parseResponse(response);
-  } catch (error) {
-    if (
-      error?.httpStatus ||
-      error?.response
-    ) {
-      throw error;
-    }
-
-    throw new Error(
-      `NÃ£o foi possÃ­vel conectar Ã  SMSMarket. ${
-        error?.message || ''
-      }`.trim()
-    );
-  }
+  return parseResponse(response);
 };
 
-
-/* ============================================================
-   POST JSON
-   ============================================================ */
-
-const postJson = async (
-  endpoint,
-  data
-) => {
-  try {
-    const response = await fetch(
-      `${BASE_URL}/${endpoint}`,
-      {
-        method: 'POST',
-
-        headers: {
-          ...getAuthHeaders(),
-
-          'Content-Type':
-            'application/json',
-        },
-
-        body:
-          JSON.stringify(data),
-      }
-    );
-
-    return await parseResponse(response);
-  } catch (error) {
-    if (
-      error?.httpStatus ||
-      error?.response
-    ) {
-      throw error;
-    }
-
-    throw new Error(
-      `NÃ£o foi possÃ­vel conectar Ã  SMSMarket. ${
-        error?.message || ''
-      }`.trim()
-    );
-  }
-};
-
-
-/* ============================================================
-   EXTRAIR MENSAGEM
-   ============================================================ */
-
-const extractMessage = (json) => {
+export const extractMessage = function(json) {
   if (!json) {
     return null;
   }
-
-  if (
-    Array.isArray(json.messages) &&
-    json.messages.length > 0
-  ) {
+  if (Array.isArray(json.messages) && json.messages.length > 0) {
     return json.messages[0];
   }
-
-  if (
-    Array.isArray(json.data) &&
-    json.data.length > 0
-  ) {
+  if (Array.isArray(json.data) && json.data.length > 0) {
     return json.data[0];
   }
-
-  if (
-    json.message &&
-    typeof json.message === 'object'
-  ) {
+  if (json.message && typeof json.message === 'object') {
     return json.message;
   }
-
-  if (
-    json.data &&
-    typeof json.data === 'object'
-  ) {
+  if (json.data && typeof json.data === 'object') {
     return json.data;
   }
-
   return json;
 };
 
-
-/* ============================================================
-   EXTRAIR MENSAGENS
-   ============================================================ */
-
-const extractMessages = (json) => {
-  if (
-    Array.isArray(json?.messages)
-  ) {
+export const extractMessages = function(json) {
+  if (json && Array.isArray(json.messages)) {
     return json.messages;
   }
-
-  if (
-    Array.isArray(json?.data)
-  ) {
+  if (json && Array.isArray(json.data)) {
     return json.data;
   }
-
-  if (
-    json &&
-    (
-      json.id ||
-      json.status ||
-      json.campaign_id
-    )
-  ) {
+  if (json && (json.id || json.mt_id || json.message_id || json.status)) {
     return [json];
   }
-
   return [];
 };
 
-
-/* ============================================================
-   EXTRAIR ID
-   ============================================================ */
-
-const extractMessageId = (json) => {
-  const message =
-    extractMessage(json);
-
-  return (
-    message?.id ??
-    message?.mt_id ??
-    message?.message_id ??
-    json?.id ??
-    json?.mt_id ??
-    json?.message_id ??
-    null
-  );
+export const extractMessageId = function(json) {
+  const message = extractMessage(json);
+  if (message) {
+    if (message.id !== undefined && message.id !== null) return message.id;
+    if (message.mt_id !== undefined && message.mt_id !== null) return message.mt_id;
+    if (message.message_id !== undefined && message.message_id !== null) return message.message_id;
+  }
+  if (json) {
+    if (json.id !== undefined && json.id !== null) return json.id;
+    if (json.mt_id !== undefined && json.mt_id !== null) return json.mt_id;
+    if (json.message_id !== undefined && json.message_id !== null) return json.message_id;
+  }
+  return null;
 };
 
-
-/* ============================================================
-   EXTRAIR STATUS
-   ============================================================ */
-
-const extractMessageStatus = (
-  json,
-  fallback = '-1'
-) => {
-  const message =
-    extractMessage(json);
-
-  return String(
-    message?.status ??
-    json?.status ??
-    fallback
-  );
+export const extractMessageStatus = function(json, fallback) {
+  const defaultFallback = fallback !== undefined ? fallback : '-1';
+  const message = extractMessage(json);
+  if (message) {
+    if (message.status !== undefined && message.status !== null) return String(message.status);
+    if (message.stat !== undefined && message.stat !== null) return String(message.stat);
+    if (message.st !== undefined && message.st !== null) return String(message.st);
+  }
+  if (json) {
+    if (json.status !== undefined && json.status !== null) return String(json.status);
+    if (json.stat !== undefined && json.stat !== null) return String(json.stat);
+  }
+  return String(defaultFallback);
 };
 
-
-/* ============================================================
-   EXTRAIR SALDO
-   ============================================================ */
-
-const readBalance = (json) => {
-  if (typeof json === 'number' || !isNaN(Number(json))) return String(json);
-  const value =
-    json?.balance ??
-    json?.sms ??
-    json?.saldo ??
-    json?.quantidade ??
-    json?.creditos ??
-    json?.total ??
-    json?.data?.balance ??
-    json?.data?.sms ??
-    json?.data?.saldo ??
-    json?.data?.quantidade ??
-    json?.data;
-  if (value !== undefined && value !== null && typeof value !== 'object') return String(value);
+const readBalance = function(json) {
+  if (typeof json === 'number' || !isNaN(Number(json))) {
+    return String(json);
+  }
+  let val = '0';
+  if (json) {
+    if (json.balance !== undefined) val = json.balance;
+    else if (json.sms !== undefined) val = json.sms;
+    else if (json.saldo !== undefined) val = json.saldo;
+    else if (json.quantidade !== undefined) val = json.quantidade;
+    else if (json.creditos !== undefined) val = json.creditos;
+    else if (json.total !== undefined) val = json.total;
+    else if (json.data) {
+      if (typeof json.data !== 'object') val = json.data;
+      else if (json.data.balance !== undefined) val = json.data.balance;
+      else if (json.data.sms !== undefined) val = json.data.sms;
+    }
+  }
+  if (val !== undefined && val !== null && typeof val !== 'object') {
+    return String(val);
+  }
   return '0';
-
-  if (
-    value === undefined ||
-    value === null
-  ) {
-    return '0';
-  }
-
-  return value;
 };
 
-
-/* ============================================================
-   CONSULTAR SALDO
-   ============================================================ */
-
-export const getBalance = async () => {
-  const { user, pass } =
-    getCredentials();
-
-  if (!user || !pass) {
-    return 'Configure login';
-  }
-
+export const getBalance = async function() {
   try {
-    const json =
-      await getRequest('balance');
-
+    const json = await getRequest('balance', {});
     return readBalance(json);
   } catch (error) {
-    console.error(
-      'Erro ao consultar saldo SMSMarket:',
-      error
-    );
-
+    console.error('Erro ao consultar saldo SMSMarket:', error);
     return 'Erro API';
   }
 };
 
-
-/* ============================================================
-   SALDO DETALHADO
-   ============================================================ */
-
-export const getBalanceDetails = async () => {
-  const json =
-    await getRequest('balance');
-
-  const balance =
-    readBalance(json);
-
-  return {
-    balance,
-
-    sms:
-      json?.sms ?? balance,
-
-    raw:
-      json,
-  };
-};
-
-
-/* ============================================================
-   SALVAR CREDENCIAIS
-   ============================================================ */
-
-export const saveCredentials = async (
-  credentials
-) => {
-  if (
-    !credentials?.user?.trim() ||
-    !credentials?.pass?.trim()
-  ) {
-    throw new Error(
-      'Informe o usuÃ¡rio e a senha da SMSMarket.'
-    );
+export const saveCredentials = async function(credentials) {
+  if (!credentials || !credentials.user || !credentials.user.trim() || !credentials.pass || !credentials.pass.trim()) {
+    throw new Error('Informe o usuário e a senha da SMSMarket.');
   }
-
   const newCredentials = {
-    user:
-      credentials.user.trim(),
-
-    pass:
-      credentials.pass,
+    user: credentials.user.trim(),
+    pass: credentials.pass
   };
-
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(
-      newCredentials
-    )
-  );
-
-  try {
-    /*
-     * Testa imediatamente a autenticaÃ§Ã£o
-     * atravÃ©s do endpoint real de saldo.
-     */
-
-    const json =
-      await getRequest('balance');
-
-    return readBalance(json);
-  } catch (error) {
-    /*
-     * Se usuÃ¡rio/senha forem invÃ¡lidos,
-     * remove a credencial salva.
-     */
-
-    localStorage.removeItem(
-      STORAGE_KEY
-    );
-
-    throw error;
-  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(newCredentials));
+  const json = await getRequest('balance', {});
+  return readBalance(json);
 };
 
-
-/* ============================================================
-   TESTAR CONEXÃƒO
-   ============================================================ */
-
-export const testConnection = async () => {
-  try {
-    const json =
-      await getRequest('balance');
-
-    return {
-      connected: true,
-
-      balance:
-        readBalance(json),
-
-      raw:
-        json,
-    };
-  } catch (error) {
-    return {
-      connected: false,
-
-      balance: null,
-
-      error:
-        error?.message ||
-        'NÃ£o foi possÃ­vel conectar Ã  SMSMarket.',
-    };
-  }
-};
-
-
-/* ============================================================
-   ENVIO DE SMS
-   ============================================================ */
-
-export const sendSms = async (
-  phone,
-  content,
-  campaignId = null
-) => {
-  const number =
-    normalizeBrazilPhone(phone);
-
-  const text =
-    String(content ?? '').trim();
-
+export const sendSms = async function(phone, content, campaignId) {
+  const number = normalizeBrazilPhone(phone);
+  const text = String(content !== undefined && content !== null ? content : '').trim();
   if (!text) {
-    throw new Error(
-      'Digite a mensagem antes de enviar.'
-    );
+    throw new Error('Digite a mensagem antes de enviar.');
   }
-
-  /*
-   * SMSMarket
-   *
-   * type=2 = SMS
-   *
-   * country_code=55
-   *
-   * number = nÃºmero sem o DDI 55
-   */
 
   const data = {
     type: '2',
-
     country_code: '55',
-
-    number,
-
-    content: text,
-  };
-
-  if (
-    campaignId !== undefined &&
-    campaignId !== null &&
-    String(campaignId).trim() !== ''
-  ) {
-    data.campaign_id =
-      String(campaignId).trim();
-  }
-
-  /*
-   * Endpoint:
-   *
-   * POST /send-single
-   *
-   * Basic Authentication
-   *
-   * application/x-www-form-urlencoded
-   */
-
-  const json =
-    await postForm(
-      'send-single',
-      data
-    );
-
-  const message =
-    extractMessage(json);
-
-  const id =
-    extractMessageId(json);
-
-  const status =
-    extractMessageStatus(
-      json,
-      '-1'
-    );
-
-  const responseCode =
-    json?.responseCode ??
-    json?.response_code ??
-    null;
-
-  return {
-    id,
-
-    campaignId:
-      message?.campaign_id ??
-      json?.campaign_id ??
-      campaignId ??
-      null,
-
-    status,
-
-    statusInfo:
-      getStatusInfo(status),
-
-    carrier:
-      message?.carrier_name ??
-      message?.carrier ??
-      json?.carrier_name ??
-      json?.carrier ??
-      '',
-
-    responseCode,
-
-    accepted:
-      responseCode === null ||
-      String(responseCode) === '000',
-
-    raw:
-      json,
-  };
-};
-
-
-/* ============================================================
-   CONSULTAR STATUS POR ID
-   ============================================================ */
-
-export const getMessageStatus = async ({
-  id,
-  campaignId,
-}) => {
-  if (
-    !id &&
-    !campaignId
-  ) {
-    throw new Error(
-      'NÃ£o hÃ¡ identificador para consultar o status do SMS.'
-    );
-  }
-
-  const params = {
-    timezone: '-03:00',
-  };
-
-  if (id) {
-    params.id =
-      String(id);
-  } else {
-    params.campaign_id =
-      String(campaignId);
-  }
-
-  const json =
-    await getRequest(
-      'mt_id',
-      params
-    );
-
-  const messages =
-    extractMessages(json);
-
-  const message =
-    messages[0];
-
-  if (!message) {
-    throw new Error(
-      'A SMSMarket ainda nÃ£o retornou o status desta mensagem.'
-    );
-  }
-
-  const status =
-    String(
-      message.status ?? '-1'
-    );
-
-  return {
-    id:
-      message.id ??
-      id ??
-      null,
-
-    campaignId:
-      message.campaign_id ??
-      campaignId ??
-      null,
-
-    status,
-
-    statusInfo:
-      getStatusInfo(status),
-
-    carrier:
-      message.carrier_name ??
-      message.carrier ??
-      '',
-
-    sentDate:
-      message.sent_date ??
-      message.date ??
-      message.schedule ??
-      '',
-
-    raw:
-      json,
-  };
-};
-
-
-/* ============================================================
-   STATUS POR CAMPANHA
-   ============================================================ */
-
-export const getCampaignStatus = async (
-  campaignId
-) => {
-  if (!campaignId) {
-    throw new Error(
-      'campaign_id nÃ£o informado.'
-    );
-  }
-
-  const json =
-    await getRequest(
-      'mt_id',
-      {
-        campaign_id:
-          String(campaignId),
-
-        timezone:
-          '-03:00',
-      }
-    );
-
-  const messages =
-    extractMessages(json);
-
-  return {
-    messages:
-      messages.map(
-        (message) => {
-          const status =
-            String(
-              message.status ??
-              '-1'
-            );
-
-          return {
-            id:
-              message.id ??
-              null,
-
-            campaignId:
-              message.campaign_id ??
-              campaignId,
-
-            status,
-
-            statusInfo:
-              getStatusInfo(status),
-
-            carrier:
-              message.carrier_name ??
-              message.carrier ??
-              '',
-
-            sentDate:
-              message.sent_date ??
-              message.date ??
-              message.schedule ??
-              '',
-
-            raw:
-              message,
-          };
-        }
-      ),
-
-    raw:
-      json,
-  };
-};
-
-
-/* ============================================================
-   STATUS POR PERÃODO
-   ============================================================ */
-
-export const getMessagesByPeriod = async (
-  startDate,
-  endDate,
-  type = null,
-  status = null
-) => {
-  if (!startDate) {
-    throw new Error(
-      'Data inicial nÃ£o informada.'
-    );
-  }
-
-  if (!endDate) {
-    throw new Error(
-      'Data final nÃ£o informada.'
-    );
-  }
-
-  const params = {
-    start_date: startDate,
-
-    end_date: endDate,
-
-    timezone: '-03:00',
-  };
-
-  if (
-    type !== null &&
-    type !== undefined &&
-    type !== ''
-  ) {
-    params.type =
-      type;
-  }
-
-  if (
-    status !== null &&
-    status !== undefined &&
-    status !== ''
-  ) {
-    params.status =
-      Array.isArray(status)
-        ? status.join(',')
-        : status;
-  }
-
-  return getRequest(
-    'mt_date',
-    params
-  );
-};
-
-
-/* ============================================================
-   COMPATIBILIDADE COM NOMES ANTIGOS
-   ============================================================ */
-
-export const statusPorId = (
-  id
-) => {
-  return getMessageStatus({
-    id,
-  });
-};
-
-
-export const statusPorCampanha = (
-  campaignId
-) => {
-  return getCampaignStatus(
-    campaignId
-  );
-};
-
-
-export const statusPorPeriodo = (
-  dataInicial,
-  dataFinal,
-  tipo = null,
-  status = null
-) => {
-  return getMessagesByPeriod(
-    dataInicial,
-    dataFinal,
-    tipo,
-    status
-  );
-};
-
-
-/* ============================================================
-   NOVAS MENSAGENS RECEBIDAS
-   ============================================================ */
-
-export const novasMensagens = async () => {
-  return getRequest(
-    'mo_new',
-    {
-      type: '5',
-
-      timezone:
-        '-03:00',
-    }
-  );
-};
-
-
-/* ============================================================
-   MENSAGENS RECEBIDAS POR PERÃODO
-   ============================================================ */
-
-export const mensagensPorPeriodo = async (
-  dataInicial,
-  dataFinal,
-  campaignId = null
-) => {
-  if (!dataInicial) {
-    throw new Error(
-      'Data inicial nÃ£o informada.'
-    );
-  }
-
-  if (!dataFinal) {
-    throw new Error(
-      'Data final nÃ£o informada.'
-    );
-  }
-
-  const params = {
-    start_date:
-      dataInicial,
-
-    end_date:
-      dataFinal,
-
-    type:
-      '5',
-
-    timezone:
-      '-03:00',
+    number: number,
+    content: text
   };
 
   if (campaignId) {
-    params.campaign_id =
-      campaignId;
+    data.campaign_id = String(campaignId).trim();
   }
 
-  return getRequest(
-    'mo',
-    params
-  );
+  const json = await postForm('send-single', data);
+  const message = extractMessage(json);
+  const id = extractMessageId(json);
+  const status = extractMessageStatus(json, '-1');
+  let responseCode = '000';
+  if (json) {
+    if (json.responseCode !== undefined) responseCode = json.responseCode;
+    else if (json.response_code !== undefined) responseCode = json.response_code;
+  }
+
+  let campId = null;
+  if (message && message.campaign_id) campId = message.campaign_id;
+  else if (json && json.campaign_id) campId = json.campaign_id;
+  else if (campaignId) campId = campaignId;
+
+  let carrierName = '';
+  if (message) {
+    carrierName = message.carrier_name || message.carrier || '';
+  }
+
+  return {
+    id: id,
+    campaignId: campId,
+    status: status,
+    statusInfo: getStatusInfo(status),
+    carrier: carrierName,
+    responseCode: responseCode,
+    accepted: String(responseCode) === '000',
+    raw: json
+  };
 };
 
+export const getMessageStatus = async function(options) {
+  const id = options && options.id;
+  const campaignId = options && options.campaignId;
 
-/* ============================================================
-   ENVIO EM LOTE
-   ============================================================ */
-
-export const sendMultiple = async (
-  messages,
-  type = 2
-) => {
-  if (!Array.isArray(messages)) {
-    throw new Error(
-      'As mensagens precisam ser um array.'
-    );
+  if (!id && !campaignId) {
+    throw new Error('Não há identificador para consultar o status do SMS.');
   }
 
-  if (messages.length === 0) {
-    throw new Error(
-      'O lote nÃ£o possui mensagens.'
-    );
+  const params = { timezone: '-03:00' };
+  if (id) {
+    params.id = String(id);
+  }
+  if (campaignId) {
+    params.campaign_id = String(campaignId);
   }
 
-  if (messages.length > 5000) {
-    throw new Error(
-      'A SMSMarket permite no mÃ¡ximo 5000 mensagens por lote.'
-    );
+  const json = await getRequest('mt_id', params);
+  const messages = extractMessages(json);
+  const message = messages[0] || extractMessage(json);
+
+  if (!message) {
+    throw new Error('A SMSMarket ainda não retornou o status desta mensagem.');
   }
 
-  const preparedMessages =
-    messages.map(
-      (message) => {
-        if (!message?.number) {
-          throw new Error(
-            'Uma das mensagens do lote nÃ£o possui telefone.'
-          );
-        }
+  const status = extractMessageStatus(message, '-1');
+  
+  let msgId = null;
+  if (message && message.id !== undefined) msgId = message.id;
+  else if (message && message.mt_id !== undefined) msgId = message.mt_id;
+  else if (id) msgId = id;
 
-        if (!message?.content) {
-          throw new Error(
-            'Uma das mensagens do lote nÃ£o possui conteÃºdo.'
-          );
-        }
+  let campId = null;
+  if (message && message.campaign_id) campId = message.campaign_id;
+  else if (campaignId) campId = campaignId;
 
-        return {
-          ...message,
+  let carrierName = '';
+  if (message) {
+    carrierName = message.carrier_name || message.carrier || '';
+  }
 
-          number:
-            normalizeBrazilPhone(
-              message.number
-            ),
-        };
-      }
-    );
+  let sentDate = '';
+  if (message) {
+    sentDate = message.sent_date || message.date || message.schedule || '';
+  }
 
-  return postJson(
-    'send-multiple',
-    {
-      defaultValues: {
-        type:
-          Number(type),
+  return {
+    id: msgId,
+    campaignId: campId,
+    status: status,
+    statusInfo: getStatusInfo(status),
+    carrier: carrierName,
+    sentDate: sentDate,
+    raw: json
+  };
+};
 
-        country_code:
-          55,
-      },
+export const statusPorId = function(id) {
+  return getMessageStatus({ id: id });
+};
 
-      messages:
-        preparedMessages,
+export const statusPorCampanha = async function(campaignId) {
+  const json = await getRequest('mt_id', { campaign_id: String(campaignId), timezone: '-03:00' });
+  const messages = extractMessages(json);
+  return messages.map(function(message) {
+    const status = extractMessageStatus(message, '-1');
+    let msgId = null;
+    if (message) {
+      if (message.id !== undefined) msgId = message.id;
+      else if (message.mt_id !== undefined) msgId = message.mt_id;
     }
-  );
+    return {
+      id: msgId,
+      campaignId: (message && message.campaign_id) || campaignId,
+      status: status,
+      statusInfo: getStatusInfo(status),
+      carrier: (message && (message.carrier_name || message.carrier)) || '',
+      sentDate: (message && (message.sent_date || message.date)) || '',
+      raw: message
+    };
+  });
 };
-
-
-/* ============================================================
-   ENVIO DE SMS EM LOTE
-   ============================================================ */
-
-export const sendSmsMultiple = (
-  messages
-) => {
-  return sendMultiple(
-    messages,
-    2
-  );
-};
-
-
-/* ============================================================
-   LABEL DO STATUS
-   ============================================================ */
-
-export const getStatusLabel = (
-  status
-) => {
-  return getStatusInfo(
-    status
-  ).label;
-};
-
-
-/* ============================================================
-   CONSTANTES
-   ============================================================ */
-
-export const SMSMARKET_BASE_URL =
-  BASE_URL;
-
-export const SMSMARKET_STORAGE_KEY =
-  STORAGE_KEY;
-
-
-
-
-
-
-
-
