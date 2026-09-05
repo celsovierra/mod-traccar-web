@@ -30,36 +30,12 @@ export default (
     const twoDaysAgo = dayjs().subtract(2, 'day').valueOf();
 
     const filtered = Object.values(devices)
-      .filter((device) => {
-        if (isOldOfflineOnly) {
-          const isOffline = device.status === 'offline' || device.status === 'unknown';
-          const lastTime = device.lastUpdate ? dayjs(device.lastUpdate).valueOf() : 0;
-          return isOffline && (!device.lastUpdate || lastTime <= twoDaysAgo);
-        }
-        if (isMovingOnly) {
-          const pos = positions[device.id];
-          return (
-            device.status === 'online' &&
-            pos &&
-            pos.speed > 0 &&
-            pos.attributes?.ignition === true
-          );
-        }
-        return !filter.statuses.length || filter.statuses.includes(device.status);
-      })
-      .filter(
-        (device) =>
-          !filter.groups.length || deviceGroups(device).some((id) => filter.groups.includes(id)),
-      )
-      .filter(
-        (device) =>
-          !filter.geofences.length ||
-          (positions[device.id]?.geofenceIds || []).some((id) => filter.geofences.includes(id)),
-      )
-      .filter((device) => {
-        const lowerCaseKeyword = keyword.toLowerCase();
+            .filter((device) => {
+        if (!keyword || keyword.trim() === '') return true;
+        const normalize = (val) => String(val || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const q = normalize(keyword);
         return [device.name, device.uniqueId, device.phone, device.model, device.contact].some(
-          (s) => s && s.toLowerCase().includes(lowerCaseKeyword),
+          (s) => normalize(s).includes(q)
         );
       });
 
