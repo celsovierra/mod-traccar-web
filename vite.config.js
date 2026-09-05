@@ -6,6 +6,13 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig(() => ({
   server: {
+    proxy: {
+      '/api-smsmarket': {
+        target: 'https://api.smsmarket.com.br/webservice-rest',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api-smsmarket/, ''),
+      },
+    },
     hmr: { overlay: false },
     port: 3000,
     proxy: {
@@ -64,3 +71,4 @@ export default defineConfig(() => ({
     }),
   ],
 }));
+

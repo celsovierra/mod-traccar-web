@@ -1,14 +1,14 @@
-const BASE_URL = 'https://api.smsmarket.com.br/webservice-rest';
+﻿const BASE_URL = '/api-smsmarket';
 const STORAGE_KEY = 'smsmarket_credentials';
 
 const STATUS = {
   '-9': { label: 'SEM COBERTURA', terminal: true, error: true },
-  '-8': { label: 'CONTEÚDO BLOQUEADO', terminal: true, error: true },
-  '-7': { label: 'NÚMERO SEM WHATSAPP', terminal: true, error: true },
+  '-8': { label: 'CONTEÃšDO BLOQUEADO', terminal: true, error: true },
+  '-7': { label: 'NÃšMERO SEM WHATSAPP', terminal: true, error: true },
   '-6': { label: 'CANCELADA', terminal: true, error: true },
   '-5': { label: 'LISTA NEGRA', terminal: true, error: true },
-  '-4': { label: 'NÚMERO FIXO', terminal: true, error: true },
-  '-3': { label: 'NÚMERO INVÁLIDO', terminal: true, error: true },
+  '-4': { label: 'NÃšMERO FIXO', terminal: true, error: true },
+  '-3': { label: 'NÃšMERO INVÃLIDO', terminal: true, error: true },
   '-2': { label: 'FALHA DE ENTREGA', terminal: true, error: true },
   '-1': { label: 'ENFILEIRADA', terminal: false, error: false },
   '0': { label: 'ENVIADA', terminal: false, error: false },
@@ -19,7 +19,7 @@ const STATUS = {
   '6': { label: 'PAUSADA', terminal: false, error: false },
   '7': { label: 'EXPIRADA', terminal: true, error: true },
   '8': { label: 'REJEITADA', terminal: true, error: true },
-  '9': { label: 'NÃO RECEBIDA', terminal: true, error: true },
+  '9': { label: 'NÃƒO RECEBIDA', terminal: true, error: true },
 };
 
 export const getStatusInfo = (status) => {
@@ -67,7 +67,7 @@ const getAuthHeaders = () => {
 
   if (!user || !pass) {
     throw new Error(
-      'Configure o usuário e a senha da SMSMarket.'
+      'Configure o usuÃ¡rio e a senha da SMSMarket.'
     );
   }
 
@@ -81,11 +81,11 @@ export const normalizeBrazilPhone = (phone) => {
   let digits = String(phone ?? '').replace(/\D/g, '');
 
   if (!digits) {
-    throw new Error('Telefone não informado.');
+    throw new Error('Telefone nÃ£o informado.');
   }
 
   /*
-   * Se o número vier com DDI 55,
+   * Se o nÃºmero vier com DDI 55,
    * remove o 55 antes de enviar.
    *
    * Exemplo:
@@ -100,7 +100,7 @@ export const normalizeBrazilPhone = (phone) => {
 
   if (digits.length !== 10 && digits.length !== 11) {
     throw new Error(
-      'Telefone inválido. Informe DDD + número, por exemplo: 86999999999.'
+      'Telefone invÃ¡lido. Informe DDD + nÃºmero, por exemplo: 86999999999.'
     );
   }
 
@@ -122,7 +122,7 @@ const parseResponse = async (response) => {
       json = JSON.parse(raw);
     } catch {
       throw new Error(
-        `A SMSMarket retornou uma resposta inválida. HTTP ${response.status}: ${raw}`
+        `A SMSMarket retornou uma resposta invÃ¡lida. HTTP ${response.status}: ${raw}`
       );
     }
   }
@@ -157,7 +157,7 @@ const parseResponse = async (response) => {
       }${
         json?.responseDescription ||
         json?.message ||
-        'A SMSMarket recusou a operação.'
+        'A SMSMarket recusou a operaÃ§Ã£o.'
       }`
     );
 
@@ -227,7 +227,7 @@ const getRequest = async (
     }
 
     throw new Error(
-      `Não foi possível conectar à SMSMarket. ${
+      `NÃ£o foi possÃ­vel conectar Ã  SMSMarket. ${
         error?.message || ''
       }`.trim()
     );
@@ -287,7 +287,7 @@ const postForm = async (
     }
 
     throw new Error(
-      `Não foi possível conectar à SMSMarket. ${
+      `NÃ£o foi possÃ­vel conectar Ã  SMSMarket. ${
         error?.message || ''
       }`.trim()
     );
@@ -331,7 +331,7 @@ const postJson = async (
     }
 
     throw new Error(
-      `Não foi possível conectar à SMSMarket. ${
+      `NÃ£o foi possÃ­vel conectar Ã  SMSMarket. ${
         error?.message || ''
       }`.trim()
     );
@@ -538,7 +538,7 @@ export const saveCredentials = async (
     !credentials?.pass?.trim()
   ) {
     throw new Error(
-      'Informe o usuário e a senha da SMSMarket.'
+      'Informe o usuÃ¡rio e a senha da SMSMarket.'
     );
   }
 
@@ -559,8 +559,8 @@ export const saveCredentials = async (
 
   try {
     /*
-     * Testa imediatamente a autenticação
-     * através do endpoint real de saldo.
+     * Testa imediatamente a autenticaÃ§Ã£o
+     * atravÃ©s do endpoint real de saldo.
      */
 
     const json =
@@ -569,7 +569,7 @@ export const saveCredentials = async (
     return readBalance(json);
   } catch (error) {
     /*
-     * Se usuário/senha forem inválidos,
+     * Se usuÃ¡rio/senha forem invÃ¡lidos,
      * remove a credencial salva.
      */
 
@@ -583,7 +583,7 @@ export const saveCredentials = async (
 
 
 /* ============================================================
-   TESTAR CONEXÃO
+   TESTAR CONEXÃƒO
    ============================================================ */
 
 export const testConnection = async () => {
@@ -608,7 +608,7 @@ export const testConnection = async () => {
 
       error:
         error?.message ||
-        'Não foi possível conectar à SMSMarket.',
+        'NÃ£o foi possÃ­vel conectar Ã  SMSMarket.',
     };
   }
 };
@@ -642,7 +642,7 @@ export const sendSms = async (
    *
    * country_code=55
    *
-   * number = número sem o DDI 55
+   * number = nÃºmero sem o DDI 55
    */
 
   const data = {
@@ -743,7 +743,7 @@ export const getMessageStatus = async ({
     !campaignId
   ) {
     throw new Error(
-      'Não há identificador para consultar o status do SMS.'
+      'NÃ£o hÃ¡ identificador para consultar o status do SMS.'
     );
   }
 
@@ -773,7 +773,7 @@ export const getMessageStatus = async ({
 
   if (!message) {
     throw new Error(
-      'A SMSMarket ainda não retornou o status desta mensagem.'
+      'A SMSMarket ainda nÃ£o retornou o status desta mensagem.'
     );
   }
 
@@ -824,7 +824,7 @@ export const getCampaignStatus = async (
 ) => {
   if (!campaignId) {
     throw new Error(
-      'campaign_id não informado.'
+      'campaign_id nÃ£o informado.'
     );
   }
 
@@ -891,7 +891,7 @@ export const getCampaignStatus = async (
 
 
 /* ============================================================
-   STATUS POR PERÍODO
+   STATUS POR PERÃODO
    ============================================================ */
 
 export const getMessagesByPeriod = async (
@@ -902,13 +902,13 @@ export const getMessagesByPeriod = async (
 ) => {
   if (!startDate) {
     throw new Error(
-      'Data inicial não informada.'
+      'Data inicial nÃ£o informada.'
     );
   }
 
   if (!endDate) {
     throw new Error(
-      'Data final não informada.'
+      'Data final nÃ£o informada.'
     );
   }
 
@@ -1002,7 +1002,7 @@ export const novasMensagens = async () => {
 
 
 /* ============================================================
-   MENSAGENS RECEBIDAS POR PERÍODO
+   MENSAGENS RECEBIDAS POR PERÃODO
    ============================================================ */
 
 export const mensagensPorPeriodo = async (
@@ -1012,13 +1012,13 @@ export const mensagensPorPeriodo = async (
 ) => {
   if (!dataInicial) {
     throw new Error(
-      'Data inicial não informada.'
+      'Data inicial nÃ£o informada.'
     );
   }
 
   if (!dataFinal) {
     throw new Error(
-      'Data final não informada.'
+      'Data final nÃ£o informada.'
     );
   }
 
@@ -1064,13 +1064,13 @@ export const sendMultiple = async (
 
   if (messages.length === 0) {
     throw new Error(
-      'O lote não possui mensagens.'
+      'O lote nÃ£o possui mensagens.'
     );
   }
 
   if (messages.length > 5000) {
     throw new Error(
-      'A SMSMarket permite no máximo 5000 mensagens por lote.'
+      'A SMSMarket permite no mÃ¡ximo 5000 mensagens por lote.'
     );
   }
 
@@ -1079,13 +1079,13 @@ export const sendMultiple = async (
       (message) => {
         if (!message?.number) {
           throw new Error(
-            'Uma das mensagens do lote não possui telefone.'
+            'Uma das mensagens do lote nÃ£o possui telefone.'
           );
         }
 
         if (!message?.content) {
           throw new Error(
-            'Uma das mensagens do lote não possui conteúdo.'
+            'Uma das mensagens do lote nÃ£o possui conteÃºdo.'
           );
         }
 
