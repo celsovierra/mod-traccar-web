@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -93,71 +93,27 @@ const SmsMarketModal = ({ device, onClose }) => {
      ============================================================ */
 
   const loadBalance = async () => {
-
     if (!creds?.user || !creds?.pass) {
       setBalance(null);
       return;
     }
-
     try {
-
       setLoadingBalance(true);
-
-      const result = await getBalance();
-
-      /*
-       * A API pode retornar:
-       *
-       * {
-       *   success: true,
-       *   sms: "7289",
-       *   whatsapp: "606"
-       * }
-       *
-       * Para este módulo estamos mostrando
-       * somente o saldo SMS.
-       */
-
-      if (typeof result === 'number') {
-
-        setBalance(result);
-
-      } else if (typeof result === 'string') {
-
-        setBalance(result);
-
-      } else if (result && result.sms !== undefined) {
-
-        setBalance(result.sms);
-
-      } else if (
-        result &&
-        result.balance !== undefined
-      ) {
-
-        setBalance(result.balance);
-
-      } else {
-
-        setBalance(0);
-
-      }
-
+      const res = await fetch('/api-smsmarket/balance', {
+        headers: {
+          'Authorization': 'Basic ' + btoa(creds.user + ':' + creds.pass),
+          'Accept': 'application/json'
+        }
+      });
+      const data = await res.json();
+      const val = data?.balance_1 ?? data?.sms ?? data?.balance ?? data?.saldo ?? data?.quantidade ?? data?.creditos ?? (typeof data === 'number' ? data : null);
+      setBalance(val !== null && val !== undefined ? val : JSON.stringify(data));
     } catch (error) {
-
-      console.error(
-        'Erro ao consultar saldo SMS Market:',
-        error
-      );
-
-      setBalance(null);
-
+      console.error('Erro ao consultar saldo:', error);
+      setBalance('Erro');
     } finally {
-
       setLoadingBalance(false);
-
     }
-
   };
 
 
@@ -182,7 +138,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
     if (!creds.user?.trim()) {
 
-      alert('Informe o usuário do SMS Market.');
+      alert('Informe o usuÃ¡rio do SMS Market.');
 
       return;
     }
@@ -227,7 +183,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       } else {
 
         /*
-         * Se saveCredentials apenas salvar e não
+         * Se saveCredentials apenas salvar e nÃ£o
          * retornar saldo, fazemos uma consulta real.
          */
 
@@ -250,7 +206,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
       alert(
         error?.message ||
-        'Não foi possível validar as credenciais do SMS Market.'
+        'NÃ£o foi possÃ­vel validar as credenciais do SMS Market.'
       );
 
     } finally {
@@ -301,10 +257,10 @@ const SmsMarketModal = ({ device, onClose }) => {
         return 'LISTA NEGRA';
 
       case '-4':
-        return 'NÚMERO FIXO';
+        return 'NÃšMERO FIXO';
 
       case '-3':
-        return 'NÚMERO INVÁLIDO';
+        return 'NÃšMERO INVÃLIDO';
 
       case '-2':
         return 'FALHA';
@@ -337,7 +293,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         return 'REJEITADA';
 
       case '9':
-        return 'NÃO RECEBIDA';
+        return 'NÃƒO RECEBIDA';
 
       default:
         return status || 'AGUARDANDO';
@@ -363,7 +319,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     ) {
 
       alert(
-        'Configure o usuário e a senha do SMS Market na engrenagem.'
+        'Configure o usuÃ¡rio e a senha do SMS Market na engrenagem.'
       );
 
       setShowSettings(true);
@@ -382,7 +338,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     if (!normalizedPhone) {
 
       alert(
-        'Veículo sem número de telefone cadastrado.'
+        'VeÃ­culo sem nÃºmero de telefone cadastrado.'
       );
 
       return;
@@ -413,7 +369,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       /*
        * Envia para o service.
        *
-       * O service é responsável por conversar
+       * O service Ã© responsÃ¡vel por conversar
        * diretamente com a API SMSMarket.
        */
 
@@ -426,7 +382,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       /*
        * ID retornado pela SMSMarket.
        *
-       * Esse ID será utilizado depois para
+       * Esse ID serÃ¡ utilizado depois para
        * consultar o status real da mensagem.
        */
 
@@ -440,7 +396,7 @@ const SmsMarketModal = ({ device, onClose }) => {
        * Status inicial correto.
        *
        * A SMSMarket primeiro aceita/enfileira.
-       * Não podemos chamar de ENTREGUE ainda.
+       * NÃ£o podemos chamar de ENTREGUE ainda.
        */
 
       const responseCode =
@@ -474,7 +430,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           normalizedPhone,
 
         deviceName:
-          device?.name || 'Veículo',
+          device?.name || 'VeÃ­culo',
 
         response:
           res,
@@ -483,7 +439,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
 
       /*
-       * Coloca no início do relatório
+       * Coloca no inÃ­cio do relatÃ³rio
        */
 
       setReports((prev) => [
@@ -507,7 +463,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
 
       /*
-       * Não mostramos "entregue".
+       * NÃ£o mostramos "entregue".
        *
        * Apenas informamos que a API aceitou.
        */
@@ -538,7 +494,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
 
       /*
-       * Registra falha no relatório
+       * Registra falha no relatÃ³rio
        */
 
       setReports((prev) => [
@@ -565,7 +521,7 @@ const SmsMarketModal = ({ device, onClose }) => {
             normalizedPhone,
 
           deviceName:
-            device?.name || 'Veículo',
+            device?.name || 'VeÃ­culo',
 
           error:
             error?.message ||
@@ -621,7 +577,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
 
   /* ============================================================
-     SALDO PARA EXIBIÇÃO
+     SALDO PARA EXIBIÃ‡ÃƒO
      ============================================================ */
 
   const displayBalance =
@@ -660,7 +616,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     >
 
       {/* ======================================================
-          CABEÇALHO
+          CABEÃ‡ALHO
           ====================================================== */}
 
       <Box
@@ -741,7 +697,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Paper>
 
 
-          {/* CONFIGURAÇÕES */}
+          {/* CONFIGURAÃ‡Ã•ES */}
 
           <IconButton
             onClick={() =>
@@ -773,7 +729,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
 
       {/* ======================================================
-          CONFIGURAÇÕES
+          CONFIGURAÃ‡Ã•ES
           ====================================================== */}
 
       <Collapse in={showSettings}>
@@ -799,7 +755,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           <TextField
             size="small"
             fullWidth
-            label="Usuário / Login"
+            label="UsuÃ¡rio / Login"
             value={creds.user}
             onChange={(e) =>
               setCreds({
@@ -910,7 +866,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
 
       {/* ======================================================
-          CONTEÚDO
+          CONTEÃšDO
           ====================================================== */}
 
       <DialogContent
@@ -942,7 +898,7 @@ const SmsMarketModal = ({ device, onClose }) => {
             fontWeight="medium"
           >
             Tel:{' '}
-            {phone || 'Não cadastrado'}
+            {phone || 'NÃ£o cadastrado'}
           </Typography>
 
 
@@ -957,8 +913,8 @@ const SmsMarketModal = ({ device, onClose }) => {
           >
 
             {phone
-              ? 'Disponível'
-              : 'Cadastre no veículo'}
+              ? 'DisponÃ­vel'
+              : 'Cadastre no veÃ­culo'}
 
           </Typography>
 
@@ -985,7 +941,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         />
 
 
-        {/* BOTÕES */}
+        {/* BOTÃ•ES */}
 
         <Box
           display="flex"
@@ -1070,7 +1026,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
 
         {/* ====================================================
-            RELATÓRIO
+            RELATÃ“RIO
             ==================================================== */}
 
         <Box
@@ -1091,7 +1047,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               fontWeight="bold"
               color="#1976d2"
             >
-              RELATÓRIO
+              RELATÃ“RIO
             </Typography>
 
 
@@ -1134,7 +1090,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
 
         {/* ====================================================
-            LISTA DE RELATÓRIOS
+            LISTA DE RELATÃ“RIOS
             ==================================================== */}
 
         <Box
@@ -1181,7 +1137,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 }}
               >
 
-                {/* CABEÇALHO DO RELATÓRIO */}
+                {/* CABEÃ‡ALHO DO RELATÃ“RIO */}
 
                 <Box
                   display="flex"
@@ -1278,7 +1234,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 </Typography>
 
 
-                {/* VEÍCULO */}
+                {/* VEÃCULO */}
 
                 <Typography
                   variant="caption"
@@ -1289,7 +1245,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                   mt={0.5}
                 >
 
-                  🚗 {rep.deviceName} ({rep.phone})
+                  ðŸš— {rep.deviceName} ({rep.phone})
 
                 </Typography>
 
@@ -1312,7 +1268,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 )}
 
 
-                {/* CÓDIGO DE RESPOSTA */}
+                {/* CÃ“DIGO DE RESPOSTA */}
 
                 {rep.responseCode && (
 
@@ -1323,7 +1279,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                     mt={0.3}
                   >
 
-                    Código: {rep.responseCode}
+                    CÃ³digo: {rep.responseCode}
 
                   </Typography>
 
@@ -1365,3 +1321,5 @@ const SmsMarketModal = ({ device, onClose }) => {
 
 
 export default SmsMarketModal;
+
+

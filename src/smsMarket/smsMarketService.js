@@ -456,13 +456,21 @@ const extractMessageStatus = (
    ============================================================ */
 
 const readBalance = (json) => {
+  if (typeof json === 'number' || !isNaN(Number(json))) return String(json);
   const value =
-    json?.sms ??
     json?.balance ??
+    json?.sms ??
     json?.saldo ??
-    json?.data?.sms ??
+    json?.quantidade ??
+    json?.creditos ??
+    json?.total ??
     json?.data?.balance ??
-    json?.data?.saldo;
+    json?.data?.sms ??
+    json?.data?.saldo ??
+    json?.data?.quantidade ??
+    json?.data;
+  if (value !== undefined && value !== null && typeof value !== 'object') return String(value);
+  return '0';
 
   if (
     value === undefined ||
@@ -1154,6 +1162,11 @@ export const SMSMARKET_BASE_URL =
 
 export const SMSMARKET_STORAGE_KEY =
   STORAGE_KEY;
+
+
+
+
+
 
 
 
