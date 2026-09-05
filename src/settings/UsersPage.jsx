@@ -71,6 +71,7 @@ const UsersPage = () => {
       const query = new URLSearchParams({ excludeAttributes: false, limit: pageSize, offset });
       const response = await fetchOrThrow(`/api/users?${query.toString()}`, { signal });
       const data = await response.json();
+      console.log('API Users Data Loaded:', data);
 
       setItems((previous) => {
         const combined = offset ? [...previous, ...data] : data;
@@ -119,13 +120,7 @@ const UsersPage = () => {
   };
 
   const getLastAccessTime = (item) => {
-    return (
-      item.attributes?.lastLogin ||
-      item.attributes?.lastUpdate ||
-      item.lastUpdate ||
-      item.attributes?.webLoginTime ||
-      item.attributes?.lastActivity
-    );
+    return item.lastUpdate || item.attributes?.lastUpdate || new Date().toISOString();
   };
 
   return (
