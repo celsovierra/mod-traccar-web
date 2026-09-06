@@ -43,7 +43,11 @@ const SmsMarketModal = ({ device, onClose }) => {
   const [loadingBalance, setLoadingBalance] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [creds, setCreds] = useState({ user: '', pass: '' });
-  const [reports, setReports] = useState([]);
+  const [reports, setReports] = useState(() => { try { return JSON.parse(localStorage.getItem('smsmarket_reports') || '[]'); } catch { return []; } });
+
+  useEffect(() => {
+    localStorage.setItem('smsmarket_reports', JSON.stringify(reports));
+  }, [reports]);
 
   useEffect(() => {
     const loadedCreds = getCredentials();
