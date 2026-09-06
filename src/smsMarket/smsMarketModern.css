@@ -1,0 +1,199 @@
+﻿.sms-market-modal .MuiDialog-paper {
+  width: min(96vw, 540px);
+  margin: 8px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 18px;
+  background: #f4f7fb;
+  box-shadow: 0 18px 55px rgba(24, 39, 75, .28);
+}
+
+.sms-market-modal .MuiDialogTitle-root {
+  padding: 15px 16px 9px !important;
+  color: #172033 !important;
+  background: #ffffff;
+  border-bottom: 1px solid #e4eaf2;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+}
+
+.sms-market-modal .MuiDialogContent-root {
+  padding: 12px !important;
+  background: #f4f7fb;
+}
+
+/* Barra de saldo */
+.sms-market-modal .MuiDialogContent-root > .MuiBox-root:first-child {
+  border-radius: 10px;
+}
+
+/* Abas */
+.sms-market-modal .MuiTabs-root {
+  min-height: 64px;
+  padding: 4px;
+  margin: 8px 0 12px;
+  border-radius: 14px;
+  background: #e9eef6;
+  border: 1px solid #dde5ef;
+}
+
+.sms-market-modal .MuiTabs-indicator {
+  display: none;
+}
+
+.sms-market-modal .MuiTab-root {
+  min-width: 0 !important;
+  min-height: 54px !important;
+  flex: 1;
+  padding: 5px 2px !important;
+  border-radius: 10px;
+  color: #64748b !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: none !important;
+}
+
+.sms-market-modal .MuiTab-root.Mui-selected {
+  color: #ffffff !important;
+  background: #2563eb;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, .25);
+}
+
+/* Campos de telefone, texto, nome e comandos */
+.sms-market-modal .MuiTextField-root {
+  margin-bottom: 9px;
+}
+
+.sms-market-modal .MuiOutlinedInput-root {
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.sms-market-modal .MuiOutlinedInput-notchedOutline {
+  border-color: #d5deea !important;
+}
+
+.sms-market-modal .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #8ba8d5 !important;
+}
+
+.sms-market-modal .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #2563eb !important;
+  border-width: 2px !important;
+}
+
+.sms-market-modal .MuiInputBase-input,
+.sms-market-modal textarea {
+  color: #1e293b !important;
+}
+
+/* Cartões e áreas internas */
+.sms-market-modal .MuiPaper-root {
+  border-radius: 12px;
+  background: #ffffff;
+  border-color: #dce5f0 !important;
+  box-shadow: none !important;
+}
+
+.sms-market-modal .MuiTypography-subtitle2 {
+  color: #1e293b !important;
+  font-weight: 800 !important;
+}
+
+.sms-market-modal .MuiTypography-caption {
+  color: #64748b !important;
+}
+
+/* Botões */
+.sms-market-modal .MuiButton-root {
+  min-height: 39px;
+  border-radius: 10px;
+  font-weight: 800 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+}
+
+.sms-market-modal .MuiButton-contained {
+  box-shadow: 0 3px 8px rgba(30, 64, 175, .16) !important;
+}
+
+.sms-market-modal .MuiButton-outlined {
+  color: #294a87;
+  background: #ffffff;
+  border-color: #b9c9e0;
+}
+
+.sms-market-modal .MuiButton-outlined:hover {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #2563eb;
+}
+
+/* Chips e divisórias */
+.sms-market-modal .MuiChip-root {
+  height: 24px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sms-market-modal .MuiDivider-root {
+  border-color: #e4eaf2;
+}
+
+/* Área do relatório */
+.sms-market-modal [style*="overflowY"] {
+  padding-right: 5px;
+  scrollbar-width: thin;
+  scrollbar-color: #9aabc2 transparent;
+}
+
+.sms-market-modal [style*="overflowY"]::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sms-market-modal [style*="overflowY"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sms-market-modal [style*="overflowY"]::-webkit-scrollbar-thumb {
+  background: #9aabc2;
+  border-radius: 8px;
+}
+
+/* Ajustes para smartphone */
+@media (max-width: 480px) {
+  .sms-market-modal .MuiDialog-paper {
+    width: calc(100vw - 12px);
+    margin: 6px;
+    border-radius: 16px;
+  }
+
+  .sms-market-modal .MuiDialogTitle-root {
+    padding: 12px 12px 8px !important;
+    font-size: 17px !important;
+  }
+
+  .sms-market-modal .MuiDialogContent-root {
+    padding: 9px !important;
+  }
+
+  .sms-market-modal .MuiTabs-root {
+    min-height: 58px;
+    margin: 6px 0 10px;
+  }
+
+  .sms-market-modal .MuiTab-root {
+    min-height: 49px !important;
+    font-size: 9px !important;
+  }
+
+  .sms-market-modal .MuiButton-root {
+    min-height: 37px;
+    font-size: 12px;
+  }
+
+  .sms-market-modal .MuiOutlinedInput-root {
+    border-radius: 10px;
+  }
+}

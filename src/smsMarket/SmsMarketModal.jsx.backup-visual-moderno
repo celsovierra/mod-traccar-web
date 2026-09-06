@@ -1,5 +1,4 @@
 ﻿import React, { useState, useEffect } from 'react';
-import './smsMarketModern.css';
 import './smsMarketMobile.css';
 import {
   Dialog,
@@ -737,7 +736,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
-
 
 
 
