@@ -202,3 +202,61 @@
 .sms-market-modal .MuiDialogTitle-root {
   display: none !important;
 }
+
+/* Aba GRUPO: estrutura mais simples e compacta */
+.sms-market-modal .MuiDialogContent-root {
+  gap: 0 !important;
+}
+
+.sms-market-modal .MuiDialogContent-root .MuiPaper-root {
+  box-shadow: none !important;
+}
+
+/* Reduz os espaços gerais dos blocos */
+.sms-market-modal .MuiDialogContent-root .MuiBox-root {
+  margin-bottom: 6px;
+}
+
+/* Títulos de criar grupo e grupos cadastrados */
+.sms-market-modal .MuiDialogContent-root .MuiTypography-subtitle2 {
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
+  font-size: 13px !important;
+}
+
+/* Campo do nome do grupo menor */
+.sms-market-modal .MuiDialogContent-root .MuiTextField-root {
+  margin-bottom: 6px !important;
+}
+
+/* Botões de salvar/enviar mais compactos */
+.sms-market-modal .MuiDialogContent-root .MuiButton-root {
+  min-height: 35px !important;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+/* Cartões internos mais finos */
+.sms-market-modal .MuiDialogContent-root .MuiPaper-root {
+  padding: 9px !important;
+  margin-bottom: 5px !important;
+}
+
+/* Textos secundários menores */
+.sms-market-modal .MuiDialogContent-root .MuiTypography-caption {
+  font-size: 9px !important;
+  line-height: 1.15 !important;
+}
+
+/* No celular, ocupa menos altura */
+@media (max-width: 480px) {
+  .sms-market-modal .MuiDialogContent-root .MuiPaper-root {
+    padding: 7px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .sms-market-modal .MuiDialogContent-root .MuiButton-root {
+    min-height: 33px !important;
+    font-size: 11px !important;
+  }
+}

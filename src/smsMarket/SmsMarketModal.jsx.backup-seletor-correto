@@ -501,24 +501,14 @@ const SmsMarketModal = ({ device, onClose }) => {
             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
               GRUPOS CADASTRADOS
             </Typography>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => setShowSavedGroups(!showSavedGroups)}
-              sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
-            >
-              {showSavedGroups ? '▲ Fechar grupos' : '▼ Ver grupos criados'}
-            </Button>
-
-            <Button size="small" variant="contained" fullWidth onClick={() => setShowSavedGroups(!showSavedGroups)} sx={{ mb: 1.5, py: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}>
+            <Button size="small" variant="outlined" onClick={() => setShowSavedGroups(!showSavedGroups)} sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}>
               {showSavedGroups ? '▲ Fechar grupos' : '▼ Ver grupos criados'}
             </Button>
 
             {showSavedGroups && (savedGroups.length === 0 ? (
               <Typography variant="body2" color="textSecondary">Nenhum grupo cadastrado ainda.</Typography>
             ) : (
-              
-              <Box display="flex" flexDirection="row" gap={0.5} sx={{ display: showSavedGroups ? 'flex' : 'none' }}>
+              <Box display="flex" flexDirection="row" gap={0.5}>
                 {savedGroups.map((group) => (
                   <Paper key={group.id} variant="outlined" sx={{ p: 1.5, borderRadius: '10px', borderColor: '#dbe7f5', bgcolor: '#fbfdff' }}>
                     <Typography variant="body2" fontWeight="bold">{group.description}</Typography>
@@ -575,15 +565,6 @@ const SmsMarketModal = ({ device, onClose }) => {
             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
               COMANDOS CADASTRADOS
             </Typography>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => setShowSavedCommands(!showSavedCommands)}
-              sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
-            >
-              {showSavedCommands ? '▲ Fechar comandos' : '▼ Ver comandos criados'}
-            </Button>
-
             <Button size="small" variant="outlined" onClick={() => setShowSavedCommands(!showSavedCommands)} sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}>
               {showSavedCommands ? '▲ Fechar comandos' : '▼ Ver comandos criados'}
             </Button>
@@ -593,8 +574,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 Nenhum comando cadastrado ainda.
               </Typography>
             ) : (
-              
-              <Box display="flex" flexDirection="row" gap={0.5} sx={{ display: showSavedCommands ? 'flex' : 'none' }}>
+              <Box display="flex" flexDirection="row" gap={0.5}>
                 {savedCommands.map((command) => (
                   <Paper
                     key={command.id}
@@ -837,8 +817,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
-
-
 
 
 

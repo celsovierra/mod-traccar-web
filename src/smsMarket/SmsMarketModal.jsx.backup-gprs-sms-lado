@@ -42,8 +42,6 @@ const SmsMarketModal = ({ device, onClose }) => {
   const [phone, setPhone] = useState(device?.phone || '');
   const [avulsoPhone, setAvulsoPhone] = useState('');
   const [avulsoChoice, setAvulsoChoice] = useState('');
-  const [showSavedCommands, setShowSavedCommands] = useState(false);
-  const [showSavedGroups, setShowSavedGroups] = useState(false);
   const [sending, setSending] = useState(false);
   const [balance, setBalance] = useState(null);
   const [loadingBalance, setLoadingBalance] = useState(false);
@@ -173,87 +171,6 @@ const SmsMarketModal = ({ device, onClose }) => {
   };
 
   const handleSend = async (type, phoneOverride = '') => {
-    if (!message.trim()) {
-      alert('Digite uma mensagem ou comando antes de enviar.');
-      return;
-    }
-
-    /* GPRS: envia pelo servidor/API do Traccar, sem usar saldo SMS Market */
-    if (type === 'GPRS') {
-      if (!device?.id) {
-        alert('Nenhum veículo foi selecionado.');
-        return;
-      }
-
-      if ((device?.status || '').toLowerCase() !== 'online') {
-        alert('Este veículo está offline. Use SMS para enviar o comando.');
-        return;
-      }
-
-      try {
-        setSending(true);
-
-        const response = await fetch('/api/commands/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            deviceId: device.id,
-            type: 'custom',
-            text: message.trim()
-          })
-        });
-
-        if (!response.ok) {
-          const detail = await response.text();
-          throw new Error(detail || 'O Traccar não aceitou o comando GPRS.');
-        }
-
-        setReports((prev) => [{
-          id: Date.now(),
-          smsMarketId: null,
-          campaignId: null,
-          responseCode: 'GPRS',
-          status: 'ENVIADA',
-          statusCode: 'GPRS',
-          terminal: true,
-          type: 'GPRS',
-          time: new Date().toLocaleTimeString('pt-BR'),
-          text: message.trim(),
-          phone: phone || '',
-          deviceName: device?.name || 'Veículo',
-          response: { transport: 'Traccar GPRS' }
-        }, ...prev]);
-
-        setMessage('');
-        alert('Comando enviado via GPRS para o veículo online.');
-      } catch (error) {
-        console.error('Erro ao enviar GPRS:', error);
-
-        setReports((prev) => [{
-          id: Date.now(),
-          smsMarketId: null,
-          campaignId: null,
-          responseCode: 'GPRS_ERRO',
-          status: 'FALHA',
-          statusCode: '-11',
-          terminal: true,
-          type: 'GPRS',
-          time: new Date().toLocaleTimeString('pt-BR'),
-          text: message.trim(),
-          phone: phone || '',
-          deviceName: device?.name || 'Veículo',
-          error: error?.message || 'Erro ao enviar comando GPRS.'
-        }, ...prev]);
-
-        alert(error?.message || 'Erro ao enviar comando via GPRS.');
-      } finally {
-        setSending(false);
-      }
-
-      return;
-    }
-
-    /* SMS: usa a SMS Market e desconta saldo normalmente */
     if (!creds?.user?.trim() || !creds?.pass?.trim()) {
       alert('Configure o usuário e a senha do ENVIAR COMANDO na engrenagem.');
       setShowSettings(true);
@@ -265,6 +182,11 @@ const SmsMarketModal = ({ device, onClose }) => {
       normalizedPhone = normalizeBrazilPhone(phoneOverride || phone);
     } catch (err) {
       alert(err?.message || 'Telefone inválido.');
+      return;
+    }
+
+    if (!message.trim()) {
+      alert('Digite uma mensagem ou comando antes de enviar.');
       return;
     }
 
@@ -284,7 +206,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         status: initialStatus,
         statusCode: initialStatus === 'ENFILEIRADA' ? '-1' : '0',
         terminal: false,
-        type: 'SMS',
+        type,
         time: new Date().toLocaleTimeString('pt-BR'),
         text: message.trim(),
         phone: normalizedPhone,
@@ -297,35 +219,39 @@ const SmsMarketModal = ({ device, onClose }) => {
       await loadBalance();
 
       if (responseCode === '000') {
-        alert(messageId ? `Mensagem aceita.` + "\nID: " + messageId : 'Mensagem enfileirada.');
+        alert(messageId ? `Mensagem aceita.\nID: ${messageId}` : 'Mensagem enfileirada.');
       } else {
         alert('A SMSMarket retornou uma resposta inesperada.');
       }
     } catch (error) {
       console.error('Erro ao enviar SMS:', error);
-      const errInfo = getStatusInfo('-11');
+      const errStatus = '-11';
+      const errInfo = getStatusInfo(errStatus);
 
-      setReports((prev) => [{
-        id: Date.now(),
-        smsMarketId: null,
-        campaignId: null,
-        responseCode: error?.responseCode || null,
-        status: errInfo.label,
-        statusCode: '-11',
-        terminal: errInfo.terminal,
-        type: 'SMS',
-        time: new Date().toLocaleTimeString('pt-BR'),
-        text: message.trim(),
-        phone: normalizedPhone || phone,
-        deviceName: device?.name || 'Veículo',
-        error: error?.message || 'Erro desconhecido'
-      }, ...prev]);
-
+      setReports((prev) => [
+        {
+          id: Date.now(),
+          smsMarketId: null,
+          campaignId: null,
+          responseCode: error?.responseCode || null,
+          status: errInfo.label,
+          statusCode: errStatus,
+          terminal: errInfo.terminal,
+          type,
+          time: new Date().toLocaleTimeString('pt-BR'),
+          text: message.trim(),
+          phone,
+          deviceName: device?.name || 'Veículo',
+          error: error?.message || 'Erro desconhecido'
+        },
+        ...prev
+      ]);
       alert(error?.message || 'Erro ao enviar mensagem.');
     } finally {
       setSending(false);
     }
   };
+
   const isSuccessStatus = (status) => {
     return ['ENTREGUE', 'LIDA', 'ENVIADA', 'RESPONDIDA'].includes(status);
   };
@@ -501,24 +427,11 @@ const SmsMarketModal = ({ device, onClose }) => {
             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
               GRUPOS CADASTRADOS
             </Typography>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => setShowSavedGroups(!showSavedGroups)}
-              sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
-            >
-              {showSavedGroups ? '▲ Fechar grupos' : '▼ Ver grupos criados'}
-            </Button>
 
-            <Button size="small" variant="contained" fullWidth onClick={() => setShowSavedGroups(!showSavedGroups)} sx={{ mb: 1.5, py: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}>
-              {showSavedGroups ? '▲ Fechar grupos' : '▼ Ver grupos criados'}
-            </Button>
-
-            {showSavedGroups && (savedGroups.length === 0 ? (
+            {savedGroups.length === 0 ? (
               <Typography variant="body2" color="textSecondary">Nenhum grupo cadastrado ainda.</Typography>
             ) : (
-              
-              <Box display="flex" flexDirection="row" gap={0.5} sx={{ display: showSavedGroups ? 'flex' : 'none' }}>
+              <Box display="flex" flexDirection="row" gap={0.5}>
                 {savedGroups.map((group) => (
                   <Paper key={group.id} variant="outlined" sx={{ p: 1.5, borderRadius: '10px', borderColor: '#dbe7f5', bgcolor: '#fbfdff' }}>
                     <Typography variant="body2" fontWeight="bold">{group.description}</Typography>
@@ -531,7 +444,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                   </Paper>
                 ))}
               </Box>
-            ))}
+            )}
           </Box>
         ) : tabValue === 1 ? (
           <Box sx={{ bgcolor: '#fff', border: '1px solid #e3edf8', borderRadius: '12px', p: 2, mb: 1 }}>
@@ -575,26 +488,13 @@ const SmsMarketModal = ({ device, onClose }) => {
             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
               COMANDOS CADASTRADOS
             </Typography>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => setShowSavedCommands(!showSavedCommands)}
-              sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
-            >
-              {showSavedCommands ? '▲ Fechar comandos' : '▼ Ver comandos criados'}
-            </Button>
 
-            <Button size="small" variant="outlined" onClick={() => setShowSavedCommands(!showSavedCommands)} sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}>
-              {showSavedCommands ? '▲ Fechar comandos' : '▼ Ver comandos criados'}
-            </Button>
-
-            {showSavedCommands && (savedCommands.length === 0 ? (
+            {savedCommands.length === 0 ? (
               <Typography variant="body2" color="textSecondary">
                 Nenhum comando cadastrado ainda.
               </Typography>
             ) : (
-              
-              <Box display="flex" flexDirection="row" gap={0.5} sx={{ display: showSavedCommands ? 'flex' : 'none' }}>
+              <Box display="flex" flexDirection="row" gap={0.5}>
                 {savedCommands.map((command) => (
                   <Paper
                     key={command.id}
@@ -615,7 +515,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                   </Paper>
                 ))}
               </Box>
-            ))}
+            )}
           </Box>
         ) : (
           <>
@@ -728,14 +628,14 @@ const SmsMarketModal = ({ device, onClose }) => {
           </>
         )}
 
-        <Box display="flex" gap={1} mb={2} sx={{ width: '100%', flexWrap: 'nowrap', '& .MuiButton-root': { borderRadius: '10px', boxShadow: 'none', flex: 1, minWidth: 0 } }}>
+        <Box display="flex" gap={1.5} mb={3} sx={{ '& .MuiButton-root': { borderRadius: '10px', boxShadow: 'none' } }}>
           <Button
             variant="contained"
             startIcon={sending ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
             onClick={() => handleSend('GPRS')}
             disabled={sending}
-
-            sx={{ flex: 1, minWidth: 0, py: 1.2, fontWeight: 'bold', bgcolor: '#90caf9', color: '#fff', '&:hover': { bgcolor: '#64b5f6' } }}
+            fullWidth
+            sx={{ py: 1.2, fontWeight: 'bold', bgcolor: '#90caf9', color: '#fff', '&:hover': { bgcolor: '#64b5f6' } }}
           >
             GPRS
           </Button>
@@ -744,8 +644,8 @@ const SmsMarketModal = ({ device, onClose }) => {
             startIcon={sending ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
             onClick={() => handleSend('SMS', tabValue === 3 ? avulsoPhone : '')}
             disabled={sending}
-
-            sx={{ flex: 1, minWidth: 0, py: 1.2, fontWeight: 'bold', bgcolor: '#ffe0b2', color: '#e65100', '&:hover': { bgcolor: '#ffe0b2' } }}
+            fullWidth
+            sx={{ py: 1.2, fontWeight: 'bold', bgcolor: '#ffe0b2', color: '#e65100', '&:hover': { bgcolor: '#ffe0b2' } }}
           >
             SMS
           </Button>
@@ -837,12 +737,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
-
-
-
-
-
-
 
 
 
