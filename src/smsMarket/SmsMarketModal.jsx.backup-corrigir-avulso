@@ -238,8 +238,8 @@ const SmsMarketModal = ({ device, onClose }) => {
           type,
           time: new Date().toLocaleTimeString('pt-BR'),
           text: message.trim(),
-          phone,
-          deviceName: device?.name || 'Veículo',
+          phone: phoneOverride || phone,
+          deviceName: phoneOverride ? 'SMS Avulso' : (device?.name || 'Veículo'),
           error: error?.message || 'Erro desconhecido'
         },
         ...prev
@@ -362,7 +362,6 @@ const SmsMarketModal = ({ device, onClose }) => {
       </Tabs>
 
       <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: 2.5, bgcolor: '#f7f9fc', overflowY: 'auto' }}>
-        {tabValue !== 3 && (
         <Box mb={2.5} p={1.5} bgcolor="#fff" borderRadius="12px" border="1px solid #dbe7f5" display="flex" justifyContent="space-between" alignItems="center" boxShadow="0 2px 8px rgba(25,118,210,0.08)">
           <Typography variant="body2" color="textSecondary" fontWeight="medium">
             Tel: {phone || 'Não cadastrado'}
@@ -372,8 +371,6 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Typography>
         </Box>
 
-        )}
-        
         {tabValue === 2 ? (
           <Box sx={{ bgcolor: '#fff', border: '1px solid #e3edf8', borderRadius: '12px', p: 2, mb: 1 }}>
             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
@@ -516,31 +513,18 @@ const SmsMarketModal = ({ device, onClose }) => {
             )}
           </Box>
         ) : (
-          <>
-            {tabValue === 3 && (
-              <TextField
-                fullWidth
-                size="small"
-                label="Telefone para SMS avulso"
-                placeholder="DDD + número. Exemplo: 11999998888"
-                value={avulsoPhone}
-                onChange={(e) => setAvulsoPhone(e.target.value)}
-                disabled={sending}
-                sx={{ mb: 1.5, bgcolor: '#fff', '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
-              />
-            )}
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              placeholder={tabValue === 3 ? 'Digite a mensagem SMS...' : 'Digite o comando ou mensagem...'}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              variant="outlined"
-              disabled={sending}
-              sx={{ mb: 2.5, bgcolor: '#fff', '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
-            />
-          </>
+        <TextField
+          fullWidth
+          multiline
+          rows={3}
+          placeholder="Digite o comando ou mensagem..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          variant="outlined"
+          disabled={sending}
+          sx={{ mb: 2.5, bgcolor: '#fff', '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+        />
+
         )}
 
         <Box display="flex" gap={1.5} mb={3} sx={{ '& .MuiButton-root': { borderRadius: '10px', boxShadow: 'none' } }}>
@@ -652,9 +636,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
-
-
-
 
 
 
