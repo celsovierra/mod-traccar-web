@@ -21,283 +21,260 @@ const STATUS_MAP = {
   '6': 'PAUSADA',
   '7': 'EXPIRADA',
   '8': 'REJEITADA',
-  '9': 'NÃO RECEBIDA'
+  '9': 'NÃO RECEBIDA',
 };
 
-export const getStatusInfo = function(status) {
-  const code = String(status !== undefined && status !== null ? status : '-1');
-  let label = STATUS_MAP[code];
-  if (!label) {
-    label = 'STATUS ' + code;
-  }
-  
-  const terminal = code === '1' || code === '2' || code === '4' || code === '-2' || code === '-3' || code === '-4' || code === '-5' || code === '-6' || code === '-7' || code === '-8' || code === '-9' || code === '-10' || code === '-11' || code === '7' || code === '8' || code === '9';
-  const error = code === '-2' || code === '-3' || code === '-4' || code === '-5' || code === '-6' || code === '-7' || code === '-8' || code === '-9' || code === '-10' || code === '-11' || code === '7' || code === '8' || code === '9';
+export const getStatusInfo = (status) => {
+  const code = String(status ?? '-1');
+  const label = STATUS_MAP[code] || `STATUS ${code}`;
+
+  const terminal = [
+    '1', '2', '4', '7', '8', '9',
+    '-2', '-3', '-4', '-5', '-6',
+    '-7', '-8', '-9', '-10', '-11',
+  ].includes(code);
+
+  const error = [
+    '7', '8', '9',
+    '-2', '-3', '-4', '-5', '-6',
+    '-7', '-8', '-9', '-10', '-11',
+  ].includes(code);
 
   return {
-    label: label,
-    terminal: terminal,
-    error: error
+    code,
+    label,
+    terminal,
+    error,
   };
 };
 
-export const getStatusLabel = function(status) {
-  return getStatusInfo(status).label;
-};
+export const getStatusLabel = (status) => getStatusInfo(status).label;
 
-export const getCredentials = function() {
+export const getCredentials = () => {
   try {
-    const value = localStorage.getItem(STORAGE_KEY);
-    if (!value) {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (!saved) {
       return { user: '', pass: '' };
     }
-    const credentials = JSON.parse(value);
+
+    const credentials = JSON.parse(saved);
+
     return {
-      user: credentials && credentials.user ? credentials.user : '',
-      pass: credentials && credentials.pass ? credentials.pass : ''
+      user: credentials?.user || '',
+      pass: credentials?.pass || '',
     };
   } catch (error) {
-    console.error('Erro ao ler credenciais da SMSMarket:', error);
+    console.error('Erro ao ler credenciais SMSMarket:', error);
     return { user: '', pass: '' };
   }
 };
 
-const getAuthHeaders = function() {
-  const creds = getCredentials();
-  const user = creds.user;
-  const pass = creds.pass;
-  if (!user || !pass) {
+const getAuthHeaders = () => {
+  const { user, pass } = getCredentials();
+
+  if (!user?.trim() || !pass?.trim()) {
     throw new Error('Configure o usuário e a senha da SMSMarket.');
   }
+
   return {
-    'Authorization': 'Basic ' + btoa(user + ':' + pass),
-    'Accept': 'application/json'
+    Authorization: `Basic ${btoa(`${user.trim()}:${pass}`)}`,
+    Accept: 'application/json',
   };
 };
 
-export const normalizeBrazilPhone = function(phone) {
-  let digits = String(phone !== undefined && phone !== null ? phone : '').replace(/\D/g, '');
+export const normalizeBrazilPhone = (phone) => {
+  let digits = String(phone ?? '').replace(/\D/g, '');
+
   if (!digits) {
     throw new Error('Telefone não informado.');
   }
-  if (digits.indexOf('55') === 0 && digits.length >= 12) {
+
+  if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
     digits = digits.slice(2);
   }
+
   if (digits.length !== 10 && digits.length !== 11) {
-    throw new Error('Telefone inválido. Informe DDD + número, por exemplo: 86999999999.');
+    throw new Error(
+      'Telefone inválido. Informe DDD + número. Exemplo: 86999999999.'
+    );
   }
+
   return digits;
 };
 
-const parseResponse = async function(response) {
-  const raw = await response.text();
+const parseResponse = async (response) => {
+  const text = await response.text();
+
   let json = {};
+
   try {
-    if (raw) {
-      json = JSON.parse(raw);
-    }
-  } catch (e) {
-    // Mantém vazio se não for JSON
+    json = text ? JSON.parse(text) : {};
+  } catch {
+    json = { raw: text };
   }
 
   if (!response.ok) {
-    let description = raw;
-    if (json) {
-      if (json.responseDescription) {
-        description = json.responseDescription;
-      } else if (json.message) {
-        description = json.message;
-      } else if (json.error) {
-        description = json.error;
-      }
-    }
-    if (!description) {
-      description = 'Erro HTTP ' + response.status;
-    }
-    const error = new Error('SMSMarket: ' + description);
-    error.httpStatus = response.status;
-    error.response = json;
-    throw error;
+    const message =
+      json?.message ||
+      json?.error ||
+      json?.description ||
+      text ||
+      `Erro na SMSMarket: ${response.status}`;
+
+    throw new Error(message);
   }
 
-  if (json && (json.success === false || json.success === 'false')) {
-    let desc = 'A SMSMarket recusou a operação.';
-    if (json.responseDescription) {
-      desc = json.responseDescription;
-    } else if (json.message) {
-      desc = json.message;
-    }
-    const error = new Error((json.responseCode ? '[' + json.responseCode + '] ' : '') + desc);
-    error.responseCode = json.responseCode || null;
-    error.response = json;
-    throw error;
+  if (json?.success === false || json?.status === false) {
+    throw new Error(
+      json?.message ||
+      json?.error ||
+      json?.description ||
+      'A SMSMarket recusou a solicitação.'
+    );
   }
 
   return json;
 };
 
-const getRequest = async function(endpoint, params) {
-  if (!params) {
-    params = {};
-  }
-  const query = new URLSearchParams();
-  Object.entries(params).forEach(function(entry) {
-    const key = entry[0];
-    const value = entry[1];
+const postForm = async (endpoint, data) => {
+  const body = new URLSearchParams();
+
+  Object.entries(data).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
-      query.set(key, String(value));
+      body.append(key, String(value));
     }
   });
 
-  const queryString = query.toString();
-  const url = BASE_URL + '/' + endpoint + (queryString ? '?' + queryString : '');
+  const response = await fetch(`${BASE_URL}/${endpoint}`, {
+    method: 'POST',
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+    },
+    body: body.toString(),
+  });
+
+  return parseResponse(response);
+};
+
+const getRequest = async (endpoint, params = {}) => {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      query.append(key, String(value));
+    }
+  });
+
+  const url = query.toString()
+    ? `${BASE_URL}/${endpoint}?${query.toString()}`
+    : `${BASE_URL}/${endpoint}`;
 
   const response = await fetch(url, {
     method: 'GET',
-    headers: getAuthHeaders()
+    headers: getAuthHeaders(),
   });
 
   return parseResponse(response);
 };
 
-const postForm = async function(endpoint, data) {
-  if (!data) {
-    data = {};
-  }
-  const body = new URLSearchParams();
-  Object.entries(data).forEach(function(entry) {
-    const key = entry[0];
-    const value = entry[1];
-    if (value !== undefined && value !== null && value !== '') {
-      body.set(key, String(value));
-    }
-  });
+const extractBalance = (json) => {
+  const value =
+    json?.balance_1 ??
+    json?.balance ??
+    json?.credit ??
+    json?.saldo ??
+    json?.data?.balance_1 ??
+    json?.data?.balance ??
+    json?.data?.credit ??
+    json?.data?.saldo ??
+    json?.data ??
+    0;
 
-  const headers = Object.assign({}, getAuthHeaders(), {
-    'Content-Type': 'application/x-www-form-urlencoded'
-  });
-
-  const response = await fetch(BASE_URL + '/' + endpoint, {
-    method: 'POST',
-    headers: headers,
-    body: body
-  });
-
-  return parseResponse(response);
+  return value;
 };
 
-export const extractMessage = function(json) {
-  if (!json) {
-    return null;
-  }
-  if (Array.isArray(json.messages) && json.messages.length > 0) {
-    return json.messages[0];
-  }
-  if (Array.isArray(json.data) && json.data.length > 0) {
-    return json.data[0];
-  }
-  if (json.message && typeof json.message === 'object') {
-    return json.message;
-  }
-  if (json.data && typeof json.data === 'object') {
-    return json.data;
-  }
-  return json;
-};
+const extractMessages = (json) => {
+  if (Array.isArray(json)) return json;
+  if (Array.isArray(json?.messages)) return json.messages;
+  if (Array.isArray(json?.data)) return json.data;
+  if (Array.isArray(json?.data?.messages)) return json.data.messages;
+  if (Array.isArray(json?.response)) return json.response;
 
-export const extractMessages = function(json) {
-  if (json && Array.isArray(json.messages)) {
-    return json.messages;
-  }
-  if (json && Array.isArray(json.data)) {
-    return json.data;
-  }
-  if (json && (json.id || json.mt_id || json.message_id || json.status)) {
-    return [json];
-  }
   return [];
 };
 
-export const extractMessageId = function(json) {
+const extractMessage = (json) => {
+  const messages = extractMessages(json);
+
+  if (messages.length > 0) {
+    return messages[0];
+  }
+
+  if (json?.message && typeof json.message === 'object') {
+    return json.message;
+  }
+
+  if (json?.data && !Array.isArray(json.data) && typeof json.data === 'object') {
+    return json.data;
+  }
+
+  return json;
+};
+
+const extractMessageId = (json) => {
   const message = extractMessage(json);
-  if (message) {
-    if (message.id !== undefined && message.id !== null) return message.id;
-    if (message.mt_id !== undefined && message.mt_id !== null) return message.mt_id;
-    if (message.message_id !== undefined && message.message_id !== null) return message.message_id;
-  }
-  if (json) {
-    if (json.id !== undefined && json.id !== null) return json.id;
-    if (json.mt_id !== undefined && json.mt_id !== null) return json.mt_id;
-    if (json.message_id !== undefined && json.message_id !== null) return json.message_id;
-  }
-  return null;
+
+  return (
+    message?.id ??
+    message?.mt_id ??
+    message?.message_id ??
+    json?.id ??
+    json?.mt_id ??
+    json?.message_id ??
+    null
+  );
 };
 
-export const extractMessageStatus = function(json, fallback) {
-  const defaultFallback = fallback !== undefined ? fallback : '-1';
+const extractMessageStatus = (json, fallback = '-1') => {
   const message = extractMessage(json);
-  if (message) {
-    if (message.status !== undefined && message.status !== null) return String(message.status);
-    if (message.stat !== undefined && message.stat !== null) return String(message.stat);
-    if (message.st !== undefined && message.st !== null) return String(message.st);
-  }
-  if (json) {
-    if (json.status !== undefined && json.status !== null) return String(json.status);
-    if (json.stat !== undefined && json.stat !== null) return String(json.stat);
-  }
-  return String(defaultFallback);
+
+  return String(
+    message?.status ??
+    message?.status_id ??
+    message?.message_status ??
+    json?.status ??
+    json?.status_id ??
+    fallback
+  );
 };
 
-const readBalance = function(json) {
-  if (typeof json === 'number' || !isNaN(Number(json))) {
-    return String(json);
-  }
-  let val = '0';
-  if (json) {
-    if (json.balance !== undefined) val = json.balance;
-    else if (json.sms !== undefined) val = json.sms;
-    else if (json.saldo !== undefined) val = json.saldo;
-    else if (json.quantidade !== undefined) val = json.quantidade;
-    else if (json.creditos !== undefined) val = json.creditos;
-    else if (json.total !== undefined) val = json.total;
-    else if (json.data) {
-      if (typeof json.data !== 'object') val = json.data;
-      else if (json.data.balance !== undefined) val = json.data.balance;
-      else if (json.data.sms !== undefined) val = json.data.sms;
-    }
-  }
-  if (val !== undefined && val !== null && typeof val !== 'object') {
-    return String(val);
-  }
-  return '0';
+export const getBalance = async () => {
+  const json = await getRequest('balance');
+  return extractBalance(json);
 };
 
-export const getBalance = async function() {
-  try {
-    const json = await getRequest('balance', {});
-    return readBalance(json);
-  } catch (error) {
-    console.error('Erro ao consultar saldo SMSMarket:', error);
-    return 'Erro API';
-  }
-};
-
-export const saveCredentials = async function(credentials) {
-  if (!credentials || !credentials.user || !credentials.user.trim() || !credentials.pass || !credentials.pass.trim()) {
+export const saveCredentials = async ({ user, pass }) => {
+  if (!user?.trim() || !pass?.trim()) {
     throw new Error('Informe o usuário e a senha da SMSMarket.');
   }
-  const newCredentials = {
-    user: credentials.user.trim(),
-    pass: credentials.pass
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(newCredentials));
-  const json = await getRequest('balance', {});
-  return readBalance(json);
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      user: user.trim(),
+      pass,
+    })
+  );
+
+  return getBalance();
 };
 
-export const sendSms = async function(phone, content, campaignId) {
+export const sendSms = async (phone, content, campaignId = null) => {
   const number = normalizeBrazilPhone(phone);
-  const text = String(content !== undefined && content !== null ? content : '').trim();
+  const text = String(content ?? '').trim();
+
   if (!text) {
     throw new Error('Digite a mensagem antes de enviar.');
   }
@@ -305,61 +282,38 @@ export const sendSms = async function(phone, content, campaignId) {
   const data = {
     type: '2',
     country_code: '55',
-    number: number,
-    content: text
+    number,
+    content: text,
   };
 
   if (campaignId) {
-    data.campaign_id = String(campaignId).trim();
+    data.campaign_id = String(campaignId);
   }
 
   const json = await postForm('send-single', data);
   const message = extractMessage(json);
-  const id = extractMessageId(json);
-  const status = extractMessageStatus(json, '-1');
-  let responseCode = '000';
-  if (json) {
-    if (json.responseCode !== undefined) responseCode = json.responseCode;
-    else if (json.response_code !== undefined) responseCode = json.response_code;
-  }
-
-  let campId = null;
-  if (message && message.campaign_id) campId = message.campaign_id;
-  else if (json && json.campaign_id) campId = json.campaign_id;
-  else if (campaignId) campId = campaignId;
-
-  let carrierName = '';
-  if (message) {
-    carrierName = message.carrier_name || message.carrier || '';
-  }
 
   return {
-    id: id,
-    campaignId: campId,
-    status: status,
-    statusInfo: getStatusInfo(status),
-    carrier: carrierName,
-    responseCode: responseCode,
-    accepted: String(responseCode) === '000',
-    raw: json
+    id: extractMessageId(json),
+    campaignId: message?.campaign_id ?? json?.campaign_id ?? campaignId ?? null,
+    responseCode: String(json?.responseCode ?? json?.response_code ?? '000'),
+    status: extractMessageStatus(json, '-1'),
+    carrier: message?.carrier_name ?? message?.carrier ?? null,
+    response: json,
   };
 };
 
-export const getMessageStatus = async function(options) {
-  const id = options && options.id;
-  const campaignId = options && options.campaignId;
-
+export const getMessageStatus = async ({ id, campaignId } = {}) => {
   if (!id && !campaignId) {
     throw new Error('Não há identificador para consultar o status do SMS.');
   }
 
-  const params = { timezone: '-03:00' };
-  if (id) {
-    params.id = String(id);
-  }
-  if (campaignId) {
-    params.campaign_id = String(campaignId);
-  }
+  const params = {
+    timezone: '-03:00',
+  };
+
+  if (id) params.id = String(id);
+  if (campaignId) params.campaign_id = String(campaignId);
 
   const json = await getRequest('mt_id', params);
   const messages = extractMessages(json);
@@ -370,59 +324,20 @@ export const getMessageStatus = async function(options) {
   }
 
   const status = extractMessageStatus(message, '-1');
-  
-  let msgId = null;
-  if (message && message.id !== undefined) msgId = message.id;
-  else if (message && message.mt_id !== undefined) msgId = message.mt_id;
-  else if (id) msgId = id;
-
-  let campId = null;
-  if (message && message.campaign_id) campId = message.campaign_id;
-  else if (campaignId) campId = campaignId;
-
-  let carrierName = '';
-  if (message) {
-    carrierName = message.carrier_name || message.carrier || '';
-  }
-
-  let sentDate = '';
-  if (message) {
-    sentDate = message.sent_date || message.date || message.schedule || '';
-  }
 
   return {
-    id: msgId,
-    campaignId: campId,
-    status: status,
+    id: message?.id ?? message?.mt_id ?? id ?? null,
+    campaignId: message?.campaign_id ?? campaignId ?? null,
+    status,
     statusInfo: getStatusInfo(status),
-    carrier: carrierName,
-    sentDate: sentDate,
-    raw: json
+    carrier: message?.carrier_name ?? message?.carrier ?? null,
+    date: message?.sent_date ?? message?.date ?? message?.schedule ?? null,
+    response: json,
   };
 };
 
-export const statusPorId = function(id) {
-  return getMessageStatus({ id: id });
-};
+export const statusPorId = async (id) => getMessageStatus({ id });
 
-export const statusPorCampanha = async function(campaignId) {
-  const json = await getRequest('mt_id', { campaign_id: String(campaignId), timezone: '-03:00' });
-  const messages = extractMessages(json);
-  return messages.map(function(message) {
-    const status = extractMessageStatus(message, '-1');
-    let msgId = null;
-    if (message) {
-      if (message.id !== undefined) msgId = message.id;
-      else if (message.mt_id !== undefined) msgId = message.mt_id;
-    }
-    return {
-      id: msgId,
-      campaignId: (message && message.campaign_id) || campaignId,
-      status: status,
-      statusInfo: getStatusInfo(status),
-      carrier: (message && (message.carrier_name || message.carrier)) || '',
-      sentDate: (message && (message.sent_date || message.date)) || '',
-      raw: message
-    };
-  });
-};
+export const statusPorCampanha = async (campaignId) =>
+  getMessageStatus({ campaignId });
+

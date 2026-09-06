@@ -1,0 +1,380 @@
+﻿const BASE_URL = '/api-smsmarket';
+const STORAGE_KEY = 'smsmarket_credentials';
+
+const STATUS_MAP = {
+  '-11': 'FALHA NO ENVIO',
+  '-10': 'FALHA NO ENVIO',
+  '-9': 'SEM COBERTURA',
+  '-8': 'CONTEÚDO BLOQUEADO',
+  '-7': 'NÚMERO SEM WHATSAPP',
+  '-6': 'CANCELADA',
+  '-5': 'LISTA NEGRA',
+  '-4': 'NÚMERO FIXO',
+  '-3': 'NÚMERO INVÁLIDO',
+  '-2': 'FALHA DE ENTREGA',
+  '-1': 'ENFILEIRADA',
+  '0': 'ENVIADA',
+  '1': 'ENTREGUE',
+  '2': 'LIDA',
+  '3': 'PREPARANDO',
+  '4': 'RESPONDIDA',
+  '6': 'PAUSADA',
+  '7': 'EXPIRADA',
+  '8': 'REJEITADA',
+  '9': 'NÃO RECEBIDA'
+};
+
+export const getStatusInfo = function(status) {
+  const code = String(status !== undefined && status !== null ? status : '-1');
+  let label = STATUS_MAP[code];
+  if (!label) {
+    label = 'STATUS ' + code;
+  }
+  
+  const terminal = code === '1' || code === '2' || code === '4' || code === '-2' || code === '-3' || code === '-4' || code === '-5' || code === '-6' || code === '-7' || code === '-8' || code === '-9' || code === '-10' || code === '-11' || code === '7' || code === '8' || code === '9';
+  const error = code === '-2' || code === '-3' || code === '-4' || code === '-5' || code === '-6' || code === '-7' || code === '-8' || code === '-9' || code === '-10' || code === '-11' || code === '7' || code === '8' || code === '9';
+
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const getStatusLabel = function(status) {
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const getCredentials = function() {
+  try {
+    const value = localStorage.getItem(STORAGE_KEY);
+    if (!value) return { user: '', pass: '' };
+    return JSON.parse(value);
+  } catch (error) {
+    console.error('Erro ao ler credenciais:', error);
+    return { user: '', pass: '' };
+  }
+};
+
+const getAuthHeaders = function() {
+  const creds = getCredentials();
+  const user = creds.user;
+  const pass = creds.pass;
+  if (!user || !pass) {
+    throw new Error('Configure o usuário e a senha da SMSMarket.');
+  }
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const normalizeBrazilPhone = function(phone) {
+  let digits = String(phone !== undefined && phone !== null ? phone : '').replace(/\D/g, '');
+  if (!digits) {
+    throw new Error('Telefone não informado.');
+  }
+  if (digits.indexOf('55') === 0 && digits.length >= 12) {
+    digits = digits.slice(2);
+  }
+  if (digits.length !== 10 && digits.length !== 11) {
+    throw new Error('Telefone inválido. Informe DDD + número, por exemplo: 86999999999.');
+  }
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+const parseResponse = async function(response) {
+  const raw = await response.text();
+  let json = {};
+  try {
+    if (raw) {
+      json = JSON.parse(raw);
+    }
+  } catch (e) {
+    // Mantém vazio se não for JSON
+  }
+
+  if (!response.ok) {
+    let description = raw;
+    if (json) {
+      if (json.responseDescription) {
+        description = json.responseDescription;
+      } else if (json.message) {
+        description = json.message;
+      } else if (json.error) {
+        description = json.error;
+      }
+    }
+    if (!description) {
+      description = 'Erro HTTP ' + response.status;
+    }
+    const error = new Error('SMSMarket: ' + description);
+    error.httpStatus = response.status;
+    error.response = json;
+    throw error;
+  }
+
+  if (json && (json.success === false || json.success === 'false')) {
+    let desc = 'A SMSMarket recusou a operação.';
+    if (json.responseDescription) {
+      desc = json.responseDescription;
+    } else if (json.message) {
+      desc = json.message;
+    }
+    const error = new Error((json.responseCode ? '[' + json.responseCode + '] ' : '') + desc);
+    error.responseCode = json.responseCode || null;
+    error.response = json;
+    throw error;
+  }
+
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+const getRequest = async function(endpoint, params) {
+  if (!params) {
+    params = {};
+  }
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(function(entry) {
+    const key = entry[0];
+    const value = entry[1];
+    if (value !== undefined && value !== null && value !== '') {
+      query.set(key, String(value));
+    }
+  });
+
+  const queryString = query.toString();
+  const url = BASE_URL + '/' + endpoint + (queryString ? '?' + queryString : '');
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+const postForm = async function(endpoint, data) {
+  if (!data) {
+    data = {};
+  }
+  const body = new URLSearchParams();
+  Object.entries(data).forEach(function(entry) {
+    const key = entry[0];
+    const value = entry[1];
+    if (value !== undefined && value !== null && value !== '') {
+      body.set(key, String(value));
+    }
+  });
+
+  const headers = Object.assign({}, getAuthHeaders(), {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  });
+
+  const response = await fetch(BASE_URL + '/' + endpoint, {
+    method: 'POST',
+    headers: headers,
+    body: body
+  });
+
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const extractMessage = function(json) {
+  if (!json) {
+    return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  if (Array.isArray(json.messages) && json.messages.length > 0) {
+    return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  if (Array.isArray(json.data) && json.data.length > 0) {
+    return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  if (json.message && typeof json.message === 'object') {
+    return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  if (json.data && typeof json.data === 'object') {
+    return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const extractMessages = function(json) {
+  if (json && Array.isArray(json.messages)) {
+    return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  if (json && Array.isArray(json.data)) {
+    return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  if (json && (json.id || json.mt_id || json.message_id || json.status)) {
+    return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const extractMessageId = function(json) {
+  const message = extractMessage(json);
+  if (message) {
+    if (message.id !== undefined && message.id !== null) return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+    if (message.mt_id !== undefined && message.mt_id !== null) return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+    if (message.message_id !== undefined && message.message_id !== null) return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  if (json) {
+    if (json.id !== undefined && json.id !== null) return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+    if (json.mt_id !== undefined && json.mt_id !== null) return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+    if (json.message_id !== undefined && json.message_id !== null) return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const extractMessageStatus = function(json, fallback) {
+  const defaultFallback = fallback !== undefined ? fallback : '-1';
+  const message = extractMessage(json);
+  if (message) {
+    if (message.status !== undefined && message.status !== null) return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+    if (message.stat !== undefined && message.stat !== null) return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+    if (message.st !== undefined && message.st !== null) return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  if (json) {
+    if (json.status !== undefined && json.status !== null) return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+    if (json.stat !== undefined && json.stat !== null) return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+const readBalance = function(json) {
+  if (typeof json === 'number' || !isNaN(Number(json))) {
+    return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  let val = '0';
+  if (json) {
+    if (json.balance !== undefined) val = json.balance;
+    else if (json.sms !== undefined) val = json.sms;
+    else if (json.saldo !== undefined) val = json.saldo;
+    else if (json.quantidade !== undefined) val = json.quantidade;
+    else if (json.creditos !== undefined) val = json.creditos;
+    else if (json.total !== undefined) val = json.total;
+    else if (json.data) {
+      if (typeof json.data !== 'object') val = json.data;
+      else if (json.data.balance !== undefined) val = json.data.balance;
+      else if (json.data.sms !== undefined) val = json.data.sms;
+    }
+  }
+  if (val !== undefined && val !== null && typeof val !== 'object') {
+    return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+  }
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const getBalance = async function() {
+  try {
+    const res = await fetch(${BASE_URL}/balance, { method: 'GET', headers: getAuthHeaders() });
+    const text = await res.text();
+    let json = {}; try { json = text ? JSON.parse(text) : {}; } catch(e) { json = { balance: Number(text) || 0 }; }
+    return json.balance_1 ?? json.balance ?? json.credit ?? json.saldo ?? json.quantidade ?? json.total ?? json.valor ?? json.data ?? 0;
+  } catch (e) { return 0; }
+};
+
+export const saveCredentials = async function(credentials) {
+  if (!credentials || !credentials.user || !credentials.user.trim() || !credentials.pass || !credentials.pass.trim()) {
+    throw new Error('Informe o usuário e a senha da SMSMarket.');
+  }
+  const newCredentials = {
+    user: credentials.user.trim(),
+    pass: credentials.pass
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(newCredentials));
+  const json = await getBalance();
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const sendSms = async function(phone, content, campaignId) {
+  const number = normalizeBrazilPhone(phone);
+  const text = String(content !== undefined && content !== null ? content : '').trim();
+  if (!text) {
+    throw new Error('Digite a mensagem antes de enviar.');
+  }
+
+  const data = {
+    type: '2',
+    country_code: '55',
+    number: number,
+    content: text
+  };
+
+  if (campaignId) {
+    data.campaign_id = String(campaignId).trim();
+  }
+
+  const json = await postForm('send-single', data);
+  const message = extractMessage(json);
+  const id = extractMessageId(json);
+  const status = extractMessageStatus(json, '-1');
+  let responseCode = '000';
+  if (json) {
+    if (json.responseCode !== undefined) responseCode = json.responseCode;
+    else if (json.response_code !== undefined) responseCode = json.response_code;
+  }
+
+  let campId = null;
+  if (message && message.campaign_id) campId = message.campaign_id;
+  else if (json && json.campaign_id) campId = json.campaign_id;
+  else if (campaignId) campId = campaignId;
+
+  let carrierName = '';
+  if (message) {
+    carrierName = message.carrier_name || message.carrier || '';
+  }
+
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const getMessageStatus = async function(options) {
+  const id = options && options.id;
+  const campaignId = options && options.campaignId;
+
+  if (!id && !campaignId) {
+    throw new Error('Não há identificador para consultar o status do SMS.');
+  }
+
+  const params = { timezone: '-03:00' };
+  if (id) {
+    params.id = String(id);
+  }
+  if (campaignId) {
+    params.campaign_id = String(campaignId);
+  }
+
+  const json = await getRequest('mt_id', params);
+  const messages = extractMessages(json);
+  const message = messages[0] || extractMessage(json);
+
+  if (!message) {
+    throw new Error('A SMSMarket ainda não retornou o status desta mensagem.');
+  }
+
+  const status = extractMessageStatus(message, '-1');
+  
+  let msgId = null;
+  if (message && message.id !== undefined) msgId = message.id;
+  else if (message && message.mt_id !== undefined) msgId = message.mt_id;
+  else if (id) msgId = id;
+
+  let campId = null;
+  if (message && message.campaign_id) campId = message.campaign_id;
+  else if (campaignId) campId = campaignId;
+
+  let carrierName = '';
+  if (message) {
+    carrierName = message.carrier_name || message.carrier || '';
+  }
+
+  let sentDate = '';
+  if (message) {
+    sentDate = message.sent_date || message.date || message.schedule || '';
+  }
+
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const statusPorId = function(id) {
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
+
+export const statusPorCampanha = async function(campaignId) {
+  const json = await getRequest('mt_id', { campaign_id: String(campaignId), timezone: '-03:00' });
+  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.quantidade ?? json?.total ?? json?.valor ?? json?.data ?? 0;
+};
