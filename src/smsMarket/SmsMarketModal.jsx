@@ -48,6 +48,10 @@ const SmsMarketModal = ({ device, onClose }) => {
   const [commandName, setCommandName] = useState('');
   const [commandText, setCommandText] = useState('');
   const [loadingCommands, setLoadingCommands] = useState(false);
+  const [savedGroups, setSavedGroups] = useState([]);
+  const [groupName, setGroupName] = useState('');
+  const [selectedCommandIds, setSelectedCommandIds] = useState([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('smsmarket_reports', JSON.stringify(reports));
@@ -68,7 +72,9 @@ const SmsMarketModal = ({ device, onClose }) => {
       const response = await fetch('/api/commands');
       if (!response.ok) throw new Error('Não foi possível carregar os comandos do Traccar.');
       const data = await response.json();
-      setSavedCommands(Array.isArray(data) ? data.filter((command) => command.type === 'custom') : []);
+      const commands = Array.isArray(data) ? data : [];
+      setSavedCommands(commands.filter((command) => command.type === 'custom' && !command.attributes?.smsMarketGroup));
+      setSavedGroups(commands.filter((command) => command.type === 'custom' && command.attributes?.smsMarketGroup));
     } catch (error) {
       console.error('Erro ao carregar comandos:', error);
     } finally {
@@ -97,6 +103,41 @@ const SmsMarketModal = ({ device, onClose }) => {
     } catch (error) {
       alert(error.message || 'Erro ao salvar comando.');
     }
+  };
+
+  const toggleCommandInGroup = (id) => {
+    setSelectedCommandIds((previous) => previous.includes(id) ? previous.filter((item) => item !== id) : [...previous, id]);
+  };
+
+  const saveGroup = async () => {
+    const name = groupName.trim();
+    if (!name) { alert('Informe o nome do grupo.'); return; }
+    if (selectedCommandIds.length === 0) { alert('Selecione pelo menos um comando.'); return; }
+    try {
+      setLoadingGroups(true);
+      const response = await fetch('/api/commands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: name, type: 'custom', attributes: { smsMarketGroup: true, commandIds: selectedCommandIds } }) });
+      if (!response.ok) throw new Error('Não foi possível salvar o grupo no Traccar.');
+      setGroupName('');
+      setSelectedCommandIds([]);
+      await loadCommands();
+      alert('Grupo salvo com sucesso.');
+    } catch (error) { alert(error.message || 'Erro ao salvar grupo.'); } finally { setLoadingGroups(false); }
+  };
+
+  const sendGroup = async (group) => {
+    const ids = group.attributes?.commandIds || [];
+    const commands = savedCommands.filter((command) => ids.includes(command.id));
+    if (commands.length === 0) { alert('Este grupo não possui comandos válidos.'); return; }
+    if (!window.confirm('Enviar ' + commands.length + ' comando(s) por SMS?')) return;
+    try {
+      setSending(true);
+      for (const command of commands) {
+        const text = command.attributes?.text || '';
+        if (text) await sendSms(normalizeBrazilPhone(phone), text);
+      }
+      alert('Comandos do grupo enviados.');
+      await loadBalance();
+    } catch (error) { alert(error.message || 'Erro ao enviar o grupo.'); } finally { setSending(false); }
   };
 
   const loadBalance = async () => {
@@ -328,7 +369,77 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Typography>
         </Box>
 
-        {tabValue === 1 ? (
+        {tabValue === 2 ? (
+          <Box>
+            <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
+              CRIAR GRUPO DE COMANDOS
+            </Typography>
+
+            <TextField
+              fullWidth
+              size="small"
+              label="Nome do grupo"
+              placeholder="Exemplo: Bloqueio e alarme"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              disabled={loadingGroups}
+              sx={{ mb: 1.5 }}
+            />
+
+            <Typography variant="body2" fontWeight="bold" mb={1}>
+              Selecione os comandos do grupo:
+            </Typography>
+
+            <Box display="flex" flexDirection="column" gap={1} mb={1.5}>
+              {savedCommands.map((command) => (
+                <Paper
+                  key={command.id}
+                  variant="outlined"
+                  onClick={() => toggleCommandInGroup(command.id)}
+                  sx={{
+                    p: 1.2,
+                    cursor: 'pointer',
+                    borderColor: selectedCommandIds.includes(command.id) ? '#1976d2' : '#e0e0e0',
+                    bgcolor: selectedCommandIds.includes(command.id) ? '#e3f2fd' : '#fff'
+                  }}
+                >
+                  <Typography variant="body2" fontWeight="bold">
+                    {selectedCommandIds.includes(command.id) ? '✓ ' : ''}{command.description}
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    {command.attributes?.text || 'Sem texto configurado'}
+                  </Typography>
+                </Paper>
+              ))}
+            </Box>
+
+            <Button variant="contained" fullWidth onClick={saveGroup} disabled={loadingGroups} sx={{ mb: 2, fontWeight: 'bold' }}>
+              {loadingGroups ? 'SALVANDO...' : 'SALVAR GRUPO'}
+            </Button>
+
+            <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
+              GRUPOS CADASTRADOS
+            </Typography>
+
+            {savedGroups.length === 0 ? (
+              <Typography variant="body2" color="textSecondary">Nenhum grupo cadastrado ainda.</Typography>
+            ) : (
+              <Box display="flex" flexDirection="column" gap={1}>
+                {savedGroups.map((group) => (
+                  <Paper key={group.id} variant="outlined" sx={{ p: 1.5 }}>
+                    <Typography variant="body2" fontWeight="bold">{group.description}</Typography>
+                    <Typography variant="caption" color="textSecondary" display="block" mb={1}>
+                      {(group.attributes?.commandIds || []).length} comando(s) selecionado(s)
+                    </Typography>
+                    <Button size="small" variant="contained" onClick={() => sendGroup(group)} disabled={sending}>
+                      ENVIAR GRUPO POR SMS
+                    </Button>
+                  </Paper>
+                ))}
+              </Box>
+            )}
+          </Box>
+        ) : tabValue === 1 ? (
           <Box>
             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
               CADASTRAR COMANDO PRONTO
@@ -523,5 +634,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
+
+
 
 
