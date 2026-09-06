@@ -306,13 +306,13 @@ const SmsMarketModal = ({ device, onClose }) => {
   return (
     <Dialog className="sms-market-modal" open={true} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: '18px', m: { xs: 1, sm: 2 }, maxHeight: '92vh', overflow: 'hidden' } }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" px={{ xs: 2, sm: 3 }} py={2} bgcolor="#f8fbff" borderBottom="1px solid #e3f2fd">
-        <Box display="flex" alignItems="center" gap={1}>
+        <Box display="flex" alignItems="center" gap={0.5}>
           <FlashOnIcon color="primary" />
           <Typography variant="h6" fontWeight="bold" color="#1976d2" sx={{ letterSpacing: 0.3 }}>
             ENVIAR COMANDO
           </Typography>
         </Box>
-        <Box display="flex" alignItems="center" gap={1}>
+        <Box display="flex" alignItems="center" gap={0.5}>
           <Paper variant="outlined" sx={{ px: 1.5, py: 0.3, bgcolor: '#e3f2fd', borderColor: '#90caf9', borderRadius: '8px', minWidth: '75px', textAlign: 'center' }}>
             <Typography variant="body2" color={balance === null ? 'error' : 'primary'} fontWeight="bold">
               {loadingBalance ? <CircularProgress size={14} thickness={5} /> : `SMS: ${displayBalance}`}
@@ -362,7 +362,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         <Tab icon={<SmartphoneIcon />} label="SMS Avulso" iconPosition="top" />
       </Tabs>
 
-      <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: 2.5, bgcolor: '#f7f9fc', overflowY: 'auto' }}>
+      <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: 2.5, bgcolor: '#f7f9fc', overflow: 'hidden' }}>
         {tabValue !== 3 && (
         <Box mb={2.5} p={1.5} bgcolor="#fff" borderRadius="12px" border="1px solid #dbe7f5" display="flex" justifyContent="space-between" alignItems="center" boxShadow="0 2px 8px rgba(25,118,210,0.08)">
           <Typography variant="body2" color="textSecondary" fontWeight="medium">
@@ -396,7 +396,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               Selecione os comandos do grupo:
             </Typography>
 
-            <Box display="flex" flexDirection="column" gap={1} mb={2} sx={{ maxHeight: 210, overflowY: 'auto', pr: 0.5 }}>
+            <Box display="flex" flexDirection="column" gap={0.5} mb={2} sx={{ maxHeight: 210, overflowY: 'auto', pr: 0.5 }}>
               {savedCommands.map((command) => (
                 <Paper
                   key={command.id}
@@ -430,7 +430,7 @@ const SmsMarketModal = ({ device, onClose }) => {
             {savedGroups.length === 0 ? (
               <Typography variant="body2" color="textSecondary">Nenhum grupo cadastrado ainda.</Typography>
             ) : (
-              <Box display="flex" flexDirection="column" gap={1}>
+              <Box display="flex" flexDirection="column" gap={0.5}>
                 {savedGroups.map((group) => (
                   <Paper key={group.id} variant="outlined" sx={{ p: 1.5, borderRadius: '10px', borderColor: '#dbe7f5', bgcolor: '#fbfdff' }}>
                     <Typography variant="body2" fontWeight="bold">{group.description}</Typography>
@@ -493,7 +493,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 Nenhum comando cadastrado ainda.
               </Typography>
             ) : (
-              <Box display="flex" flexDirection="column" gap={1}>
+              <Box display="flex" flexDirection="column" gap={0.5}>
                 {savedCommands.map((command) => (
                   <Paper
                     key={command.id}
@@ -537,7 +537,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                     ESCOLHA O QUE DESEJA ENVIAR
                   </Typography>
 
-                  <Box display="flex" gap={1} mb={avulsoChoice ? 1.5 : 0}>
+                  <Box display="flex" gap={0.5} mb={avulsoChoice ? 1.5 : 0}>
                     <Button
                       variant={avulsoChoice === 'command' ? 'contained' : 'outlined'}
                       fullWidth
@@ -563,7 +563,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
                   {avulsoChoice === 'command' && (
                     <Box>
-                      <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
+                      <Typography variant="caption" color="textSecondary" display="block" mb={0.15}>
                         COMANDOS PRONTOS
                       </Typography>
                       {savedCommands.length > 0 ? savedCommands.map((command) => (
@@ -588,7 +588,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
                   {avulsoChoice === 'group' && (
                     <Box>
-                      <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
+                      <Typography variant="caption" color="textSecondary" display="block" mb={0.15}>
                         GRUPOS CADASTRADOS
                       </Typography>
                       {savedGroups.length > 0 ? savedGroups.map((group) => (
@@ -651,7 +651,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         </Box>
 
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} pt={1} borderTop="1px solid #dbe7f5">
-          <Box display="flex" alignItems="center" gap={1}>
+          <Box display="flex" alignItems="center" gap={0.5}>
             <Typography variant="subtitle2" fontWeight="bold" color="#1976d2">
               RELATÓRIO
             </Typography>
@@ -664,7 +664,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Typography>
         </Box>
 
-        <Box display="flex" flexDirection="column" gap={1.5} sx={{ pb: 1, minHeight: 130, maxHeight: 'calc(100vh - 730px)', overflowY: 'auto', pr: 0.5 }}>
+        <Box display="flex" flexDirection="column" gap={1.5} sx={{ pb: 1, height: 185, maxHeight: 185, overflowY: 'scroll', overflowX: 'hidden', pr: 1.5, flexShrink: 0, scrollbarGutter: 'stable' }}>
           {reports.map((rep) => {
             const success = isSuccessStatus(rep.status);
             const pending = isPendingStatus(rep.status);
@@ -674,14 +674,14 @@ const SmsMarketModal = ({ device, onClose }) => {
                 key={rep.id}
                 variant="outlined"
                 sx={{
-                  p: 0.75, boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                  p: 0.35, minHeight: 0, maxHeight: 78, overflow: 'hidden', boxShadow: 'none',
                   borderRadius: '12px',
                   borderColor: success ? '#a5d6a7' : pending ? '#90caf9' : '#ef9a9a',
                   bgcolor: success ? '#f1f8e9' : pending ? '#e3f2fd' : '#ffebee'
                 }}
               >
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                  <Box display="flex" alignItems="center" gap={1}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.15}>
+                  <Box display="flex" alignItems="center" gap={0.5}>
                     {pending ? (
                       <CircularProgress size={14} thickness={5} color="primary" />
                     ) : success ? (
@@ -736,6 +736,15 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
+
+
+
+
+
+
+
+
+
 
 
 
