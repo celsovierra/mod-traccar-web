@@ -518,69 +518,51 @@ const SmsMarketModal = ({ device, onClose }) => {
         ) : (
           <>
             {tabValue === 3 && (
-              <>
+              <TextField
+                fullWidth
+                size="small"
+                label="Telefone para SMS avulso"
+                placeholder="DDD + número. Exemplo: 11999998888"
+                value={avulsoPhone}
+                onChange={(e) => setAvulsoPhone(e.target.value)}
+                disabled={sending}
+                sx={{ mb: 1.5, bgcolor: '#fff', '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+              />
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Telefone para SMS avulso"
-                  placeholder="DDD + numero. Exemplo: 11999998888"
-                  value={avulsoPhone}
-                  onChange={(e) => setAvulsoPhone(e.target.value)}
-                  disabled={sending}
-                  sx={{ mb: 1.5, bgcolor: '#fff', '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
-                />
-
-                <Box sx={{ mb: 2, p: 1.5, border: '1px solid #dbe7f5', borderRadius: '10px', bgcolor: '#f8fbff' }}>
-                  <Typography variant="caption" fontWeight="bold" color="#1976d2" display="block" mb={1}>
-                    ESCOLHER COMANDO OU GRUPO
-                  </Typography>
-
-                  <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
-                    COMANDOS PRONTOS
-                  </Typography>
-
-                  {savedCommands.length > 0 ? savedCommands.map((command) => (
-                    <Button
-                      key={command.id}
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                      disabled={sending}
-                      onClick={() => setMessage(command.attributes?.text || '')}
-                      sx={{ mb: 0.8, justifyContent: 'flex-start', textTransform: 'none' }}
-                    >
-                      {command.description}
-                    </Button>
-                  )) : (
-                    <Typography variant="caption" color="textSecondary" display="block" mb={1}>
-                      Nenhum comando pronto cadastrado.
-                    </Typography>
-                  )}
-
-                  <Typography variant="caption" color="textSecondary" display="block" mt={1} mb={0.5}>
-                    GRUPOS CADASTRADOS
-                  </Typography>
-
-                  {savedGroups.length > 0 ? savedGroups.map((group) => (
-                    <Button
-                      key={group.id}
-                      variant="contained"
-                      size="small"
-                      fullWidth
-                      disabled={sending || !avulsoPhone.trim()}
-                      onClick={() => sendGroup(group, avulsoPhone)}
-                      sx={{ mb: 0.8, justifyContent: 'flex-start', textTransform: 'none', bgcolor: '#1976d2' }}
-                    >
-                      Enviar grupo: {group.description}
-                    </Button>
-                  )) : (
-                    <Typography variant="caption" color="textSecondary">
-                      Nenhum grupo cadastrado.
-                    </Typography>
-                  )}
-                </Box>
-              </>
+              <Box sx={{ mb: 2, p: 1.5, border: '1px solid #dbe7f5', borderRadius: '10px', bgcolor: '#f8fbff' }}>
+                <Typography variant="caption" fontWeight="bold" color="#1976d2" display="block" mb={1}>
+                  USAR COMANDOS CADASTRADOS
+                </Typography>
+                {loadingCommands ? (
+                  <Typography variant="caption">Carregando comandos...</Typography>
+                ) : (
+                  <>
+                    {savedCommands.length > 0 && (
+                      <Box mb={1}>
+                        <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>COMANDO PRONTO</Typography>
+                        {savedCommands.map((command) => (
+                          <Button key={command.id} size="small" variant="outlined" fullWidth sx={{ mb: 0.5, justifyContent: 'flex-start', textTransform: 'none' }} onClick={() => setMessage(command.attributes?.text || '')} disabled={sending}>
+                            {command.description}
+                          </Button>
+                        ))}
+                      </Box>
+                    )}
+                    {savedGroups.length > 0 && (
+                      <Box>
+                        <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>GRUPO CADASTRADO</Typography>
+                        {savedGroups.map((group) => (
+                          <Button key={group.id} size="small" variant="contained" fullWidth sx={{ mb: 0.5, justifyContent: 'flex-start', textTransform: 'none', bgcolor: '#1976d2' }} onClick={() => sendGroup(group, avulsoPhone)} disabled={sending || !avulsoPhone}>
+                            Enviar grupo: {group.description}
+                          </Button>
+                        ))}
+                      </Box>
+                    )}
+                    {savedCommands.length === 0 && savedGroups.length === 0 && (
+                      <Typography variant="caption" color="textSecondary">Nenhum comando ou grupo cadastrado.</Typography>
+                    )}
+                  </>
+                )}
+              </Box>
             )}
             <TextField
               fullWidth
