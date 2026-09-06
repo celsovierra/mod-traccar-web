@@ -540,22 +540,22 @@ const SmsMarketModal = ({ device, onClose }) => {
                   <Box display="flex" gap={0.5} mb={avulsoChoice ? 1.5 : 0}>
                     <Button
                       variant={avulsoChoice === 'command' ? 'contained' : 'outlined'}
-                      sx={{ flex: 1, minWidth: 0, textTransform: 'none' }}
+                      fullWidth
                       size="small"
                       onClick={() => setAvulsoChoice(avulsoChoice === 'command' ? '' : 'command')}
                       disabled={sending}
-
+                      sx={{ textTransform: 'none' }}
                     >
                       Comandos prontos
                     </Button>
 
                     <Button
                       variant={avulsoChoice === 'group' ? 'contained' : 'outlined'}
-                      sx={{ flex: 1, minWidth: 0, textTransform: 'none' }}
+                      fullWidth
                       size="small"
                       onClick={() => setAvulsoChoice(avulsoChoice === 'group' ? '' : 'group')}
                       disabled={sending}
-
+                      sx={{ textTransform: 'none' }}
                     >
                       Grupos
                     </Button>
@@ -736,7 +736,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
-
 
 
 
