@@ -44,6 +44,10 @@ const SmsMarketModal = ({ device, onClose }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [creds, setCreds] = useState({ user: '', pass: '' });
   const [reports, setReports] = useState(() => { try { return JSON.parse(localStorage.getItem('smsmarket_reports') || '[]'); } catch { return []; } });
+  const [savedCommands, setSavedCommands] = useState([]);
+  const [commandName, setCommandName] = useState('');
+  const [commandText, setCommandText] = useState('');
+  const [loadingCommands, setLoadingCommands] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('smsmarket_reports', JSON.stringify(reports));
@@ -55,7 +59,45 @@ const SmsMarketModal = ({ device, onClose }) => {
     if (loadedCreds.user && loadedCreds.pass) {
       loadBalance();
     }
+    loadCommands();
   }, []);
+
+  const loadCommands = async () => {
+    try {
+      setLoadingCommands(true);
+      const response = await fetch('/api/commands');
+      if (!response.ok) throw new Error('Não foi possível carregar os comandos do Traccar.');
+      const data = await response.json();
+      setSavedCommands(Array.isArray(data) ? data.filter((command) => command.type === 'custom') : []);
+    } catch (error) {
+      console.error('Erro ao carregar comandos:', error);
+    } finally {
+      setLoadingCommands(false);
+    }
+  };
+
+  const saveCommand = async () => {
+    const name = commandName.trim();
+    const text = commandText.trim();
+    if (!name || !text) {
+      alert('Informe o nome e o texto do comando.');
+      return;
+    }
+    try {
+      const response = await fetch('/api/commands', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: name, type: 'custom', attributes: { text } })
+      });
+      if (!response.ok) throw new Error('Não foi possível salvar o comando no Traccar.');
+      setCommandName('');
+      setCommandText('');
+      await loadCommands();
+      alert('Comando salvo para todos os aparelhos.');
+    } catch (error) {
+      alert(error.message || 'Erro ao salvar comando.');
+    }
+  };
 
   const loadBalance = async () => {
     setLoadingBalance(true);
@@ -286,6 +328,78 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Typography>
         </Box>
 
+        {tabValue === 1 ? (
+          <Box>
+            <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
+              CADASTRAR COMANDO PRONTO
+            </Typography>
+
+            <TextField
+              fullWidth
+              size="small"
+              label="Nome do comando"
+              placeholder="Exemplo: Bloquear veículo"
+              value={commandName}
+              onChange={(e) => setCommandName(e.target.value)}
+              disabled={loadingCommands}
+              sx={{ mb: 1.5 }}
+            />
+
+            <TextField
+              fullWidth
+              multiline
+              rows={2}
+              label="Texto do comando"
+              placeholder="Exemplo: bloqueio123"
+              value={commandText}
+              onChange={(e) => setCommandText(e.target.value)}
+              disabled={loadingCommands}
+              sx={{ mb: 1.5 }}
+            />
+
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={saveCommand}
+              disabled={loadingCommands}
+              sx={{ mb: 2, fontWeight: 'bold' }}
+            >
+              {loadingCommands ? 'CARREGANDO...' : 'SALVAR COMANDO'}
+            </Button>
+
+            <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
+              COMANDOS CADASTRADOS
+            </Typography>
+
+            {savedCommands.length === 0 ? (
+              <Typography variant="body2" color="textSecondary">
+                Nenhum comando cadastrado ainda.
+              </Typography>
+            ) : (
+              <Box display="flex" flexDirection="column" gap={1}>
+                {savedCommands.map((command) => (
+                  <Paper
+                    key={command.id}
+                    variant="outlined"
+                    onClick={() => setMessage(command.attributes?.text || '')}
+                    sx={{
+                      p: 1.5,
+                      cursor: 'pointer',
+                      '&:hover': { bgcolor: '#e3f2fd' }
+                    }}
+                  >
+                    <Typography variant="body2" fontWeight="bold">
+                      {command.description}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {command.attributes?.text || 'Sem texto configurado'}
+                    </Typography>
+                  </Paper>
+                ))}
+              </Box>
+            )}
+          </Box>
+        ) : (
         <TextField
           fullWidth
           multiline
@@ -297,6 +411,8 @@ const SmsMarketModal = ({ device, onClose }) => {
           disabled={sending}
           sx={{ mb: 2, bgcolor: '#f8f9fa' }}
         />
+
+        )}
 
         <Box display="flex" gap={1.5} mb={3}>
           <Button
@@ -407,3 +523,5 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
+
+
