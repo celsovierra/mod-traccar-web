@@ -1,5 +1,4 @@
 ﻿import React, { useState, useEffect } from 'react';
-import './smsMarketMobile.css';
 import {
   Dialog,
   DialogContent,
@@ -39,7 +38,6 @@ const SmsMarketModal = ({ device, onClose }) => {
   const [tabValue, setTabValue] = useState(0);
   const [message, setMessage] = useState('');
   const [phone, setPhone] = useState(device?.phone || '');
-  const [avulsoPhone, setAvulsoPhone] = useState('');
   const [sending, setSending] = useState(false);
   const [balance, setBalance] = useState(null);
   const [loadingBalance, setLoadingBalance] = useState(false);
@@ -168,16 +166,16 @@ const SmsMarketModal = ({ device, onClose }) => {
     }
   };
 
-  const handleSend = async (type, phoneOverride = '') => {
+  const handleSend = async (type) => {
     if (!creds?.user?.trim() || !creds?.pass?.trim()) {
-      alert('Configure o usuário e a senha do ENVIAR COMANDO na engrenagem.');
+      alert('Configure o usuário e a senha do SMS Market na engrenagem.');
       setShowSettings(true);
       return;
     }
 
     let normalizedPhone = '';
     try {
-      normalizedPhone = normalizeBrazilPhone(phoneOverride || phone);
+      normalizedPhone = normalizeBrazilPhone(phone);
     } catch (err) {
       alert(err?.message || 'Telefone inválido.');
       return;
@@ -238,8 +236,8 @@ const SmsMarketModal = ({ device, onClose }) => {
           type,
           time: new Date().toLocaleTimeString('pt-BR'),
           text: message.trim(),
-          phone: phoneOverride || phone,
-          deviceName: phoneOverride ? 'SMS Avulso' : (device?.name || 'Veículo'),
+          phone,
+          deviceName: device?.name || 'Veículo',
           error: error?.message || 'Erro desconhecido'
         },
         ...prev
@@ -303,12 +301,12 @@ const SmsMarketModal = ({ device, onClose }) => {
   const displayBalance = balance === null || balance === undefined || balance === '' ? '--' : balance;
 
   return (
-    <Dialog className="sms-market-modal" open={true} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: '18px', m: { xs: 1, sm: 2 }, maxHeight: '92vh', overflow: 'hidden' } }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" px={{ xs: 2, sm: 3 }} py={2} bgcolor="#f8fbff" borderBottom="1px solid #e3f2fd">
+    <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '16px', p: 2, m: 1, maxHeight: '90vh' } }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" px={1} pt={1}>
         <Box display="flex" alignItems="center" gap={1}>
           <FlashOnIcon color="primary" />
-          <Typography variant="h6" fontWeight="bold" color="#1976d2" sx={{ letterSpacing: 0.3 }}>
-            ENVIAR COMANDO
+          <Typography variant="h6" fontWeight="bold" color="#1976d2">
+            SMS MARKET
           </Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={1}>
@@ -329,7 +327,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       <Collapse in={showSettings}>
         <Box p={2} mb={2} bgcolor="#f1f8e9" borderRadius="8px" border="1px solid #c8e6c9">
           <Typography variant="subtitle2" fontWeight="bold" color="success.dark" mb={1}>
-            Configurar Credenciais ENVIAR COMANDO
+            Configurar Credenciais SMS Market
           </Typography>
           <TextField
             size="small"
@@ -354,15 +352,15 @@ const SmsMarketModal = ({ device, onClose }) => {
         </Box>
       </Collapse>
 
-      <Tabs value={tabValue} onChange={(e, value) => setTabValue(value)} variant="fullWidth" sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 0, sm: 2 }, pt: 1, bgcolor: '#fff', '& .MuiTab-root': { minHeight: 68, fontSize: { xs: '0.65rem', sm: '0.75rem' }, fontWeight: 'bold' }, '& .Mui-selected': { color: '#1565c0' } }}>
+      <Tabs value={tabValue} onChange={(e, value) => setTabValue(value)} variant="fullWidth" sx={{ borderBottom: 1, borderColor: 'divider', px: 1, pt: 1 }}>
         <Tab icon={<EditIcon />} label="Personalizado" iconPosition="top" />
         <Tab icon={<FlashOnIcon />} label="Cmd Pronto" iconPosition="top" />
         <Tab icon={<Inventory2Icon />} label="Grupo" iconPosition="top" />
         <Tab icon={<SmartphoneIcon />} label="SMS Avulso" iconPosition="top" />
       </Tabs>
 
-      <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: 2.5, bgcolor: '#f7f9fc', overflowY: 'auto' }}>
-        <Box mb={2.5} p={1.5} bgcolor="#fff" borderRadius="12px" border="1px solid #dbe7f5" display="flex" justifyContent="space-between" alignItems="center" boxShadow="0 2px 8px rgba(25,118,210,0.08)">
+      <DialogContent sx={{ px: 2, py: 2 }}>
+        <Box mb={2} p={1.5} bgcolor="#f8f9fa" borderRadius="8px" border="1px solid #e0e0e0" display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="body2" color="textSecondary" fontWeight="medium">
             Tel: {phone || 'Não cadastrado'}
           </Typography>
@@ -372,7 +370,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         </Box>
 
         {tabValue === 2 ? (
-          <Box sx={{ bgcolor: '#fff', border: '1px solid #e3edf8', borderRadius: '12px', p: 2, mb: 1 }}>
+          <Box>
             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
               CRIAR GRUPO DE COMANDOS
             </Typography>
@@ -392,14 +390,14 @@ const SmsMarketModal = ({ device, onClose }) => {
               Selecione os comandos do grupo:
             </Typography>
 
-            <Box display="flex" flexDirection="column" gap={1} mb={2} sx={{ maxHeight: 210, overflowY: 'auto', pr: 0.5 }}>
+            <Box display="flex" flexDirection="column" gap={1} mb={1.5}>
               {savedCommands.map((command) => (
                 <Paper
                   key={command.id}
                   variant="outlined"
                   onClick={() => toggleCommandInGroup(command.id)}
                   sx={{
-                    p: 1.5, borderRadius: '10px',
+                    p: 1.2,
                     cursor: 'pointer',
                     borderColor: selectedCommandIds.includes(command.id) ? '#1976d2' : '#e0e0e0',
                     bgcolor: selectedCommandIds.includes(command.id) ? '#e3f2fd' : '#fff'
@@ -415,7 +413,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               ))}
             </Box>
 
-            <Button variant="contained" fullWidth onClick={saveGroup} disabled={loadingGroups} sx={{ mb: 2.5, py: 1.2, fontWeight: 'bold', borderRadius: '10px' }}>
+            <Button variant="contained" fullWidth onClick={saveGroup} disabled={loadingGroups} sx={{ mb: 2, fontWeight: 'bold' }}>
               {loadingGroups ? 'SALVANDO...' : 'SALVAR GRUPO'}
             </Button>
 
@@ -428,12 +426,12 @@ const SmsMarketModal = ({ device, onClose }) => {
             ) : (
               <Box display="flex" flexDirection="column" gap={1}>
                 {savedGroups.map((group) => (
-                  <Paper key={group.id} variant="outlined" sx={{ p: 1.5, borderRadius: '10px', borderColor: '#dbe7f5', bgcolor: '#fbfdff' }}>
+                  <Paper key={group.id} variant="outlined" sx={{ p: 1.5 }}>
                     <Typography variant="body2" fontWeight="bold">{group.description}</Typography>
                     <Typography variant="caption" color="textSecondary" display="block" mb={1}>
                       {(group.attributes?.commandIds || []).length} comando(s) selecionado(s)
                     </Typography>
-                    <Button size="small" variant="contained" onClick={() => sendGroup(group)} disabled={sending} sx={{ borderRadius: '8px', fontWeight: 'bold' }}>
+                    <Button size="small" variant="contained" onClick={() => sendGroup(group)} disabled={sending}>
                       ENVIAR GRUPO POR SMS
                     </Button>
                   </Paper>
@@ -442,7 +440,7 @@ const SmsMarketModal = ({ device, onClose }) => {
             )}
           </Box>
         ) : tabValue === 1 ? (
-          <Box sx={{ bgcolor: '#fff', border: '1px solid #e3edf8', borderRadius: '12px', p: 2, mb: 1 }}>
+          <Box>
             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
               CADASTRAR COMANDO PRONTO
             </Typography>
@@ -475,7 +473,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               fullWidth
               onClick={saveCommand}
               disabled={loadingCommands}
-              sx={{ mb: 2.5, py: 1.2, fontWeight: 'bold', borderRadius: '10px' }}
+              sx={{ mb: 2, fontWeight: 'bold' }}
             >
               {loadingCommands ? 'CARREGANDO...' : 'SALVAR COMANDO'}
             </Button>
@@ -496,7 +494,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                     variant="outlined"
                     onClick={() => setMessage(command.attributes?.text || '')}
                     sx={{
-                      p: 1.5, borderRadius: '10px', borderColor: '#dbe7f5', bgcolor: '#fbfdff',
+                      p: 1.5,
                       cursor: 'pointer',
                       '&:hover': { bgcolor: '#e3f2fd' }
                     }}
@@ -522,12 +520,12 @@ const SmsMarketModal = ({ device, onClose }) => {
           onChange={(e) => setMessage(e.target.value)}
           variant="outlined"
           disabled={sending}
-          sx={{ mb: 2.5, bgcolor: '#fff', '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+          sx={{ mb: 2, bgcolor: '#f8f9fa' }}
         />
 
         )}
 
-        <Box display="flex" gap={1.5} mb={3} sx={{ '& .MuiButton-root': { borderRadius: '10px', boxShadow: 'none' } }}>
+        <Box display="flex" gap={1.5} mb={3}>
           <Button
             variant="contained"
             startIcon={sending ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
@@ -541,7 +539,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           <Button
             variant="contained"
             startIcon={sending ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
-            onClick={() => handleSend('SMS', tabValue === 3 ? avulsoPhone : '')}
+            onClick={() => handleSend('SMS')}
             disabled={sending}
             fullWidth
             sx={{ py: 1.2, fontWeight: 'bold', bgcolor: '#ffe0b2', color: '#e65100', '&:hover': { bgcolor: '#ffe0b2' } }}
@@ -550,7 +548,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Button>
         </Box>
 
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} pt={1} borderTop="1px solid #dbe7f5">
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
           <Box display="flex" alignItems="center" gap={1}>
             <Typography variant="subtitle2" fontWeight="bold" color="#1976d2">
               RELATÓRIO
@@ -564,7 +562,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Typography>
         </Box>
 
-        <Box display="flex" flexDirection="column" gap={1.5} sx={{ pb: 1 }}>
+        <Box display="flex" flexDirection="column" gap={1.5}>
           {reports.map((rep) => {
             const success = isSuccessStatus(rep.status);
             const pending = isPendingStatus(rep.status);
@@ -574,7 +572,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 key={rep.id}
                 variant="outlined"
                 sx={{
-                  p: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  p: 2,
                   borderRadius: '12px',
                   borderColor: success ? '#a5d6a7' : pending ? '#90caf9' : '#ef9a9a',
                   bgcolor: success ? '#f1f8e9' : pending ? '#e3f2fd' : '#ffebee'
@@ -636,9 +634,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
-
-
-
 
 
 

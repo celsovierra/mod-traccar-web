@@ -39,7 +39,6 @@ const SmsMarketModal = ({ device, onClose }) => {
   const [tabValue, setTabValue] = useState(0);
   const [message, setMessage] = useState('');
   const [phone, setPhone] = useState(device?.phone || '');
-  const [avulsoPhone, setAvulsoPhone] = useState('');
   const [sending, setSending] = useState(false);
   const [balance, setBalance] = useState(null);
   const [loadingBalance, setLoadingBalance] = useState(false);
@@ -168,7 +167,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     }
   };
 
-  const handleSend = async (type, phoneOverride = '') => {
+  const handleSend = async (type) => {
     if (!creds?.user?.trim() || !creds?.pass?.trim()) {
       alert('Configure o usuário e a senha do ENVIAR COMANDO na engrenagem.');
       setShowSettings(true);
@@ -177,7 +176,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
     let normalizedPhone = '';
     try {
-      normalizedPhone = normalizeBrazilPhone(phoneOverride || phone);
+      normalizedPhone = normalizeBrazilPhone(phone);
     } catch (err) {
       alert(err?.message || 'Telefone inválido.');
       return;
@@ -238,8 +237,8 @@ const SmsMarketModal = ({ device, onClose }) => {
           type,
           time: new Date().toLocaleTimeString('pt-BR'),
           text: message.trim(),
-          phone: phoneOverride || phone,
-          deviceName: phoneOverride ? 'SMS Avulso' : (device?.name || 'Veículo'),
+          phone,
+          deviceName: device?.name || 'Veículo',
           error: error?.message || 'Erro desconhecido'
         },
         ...prev
@@ -541,7 +540,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           <Button
             variant="contained"
             startIcon={sending ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
-            onClick={() => handleSend('SMS', tabValue === 3 ? avulsoPhone : '')}
+            onClick={() => handleSend('SMS')}
             disabled={sending}
             fullWidth
             sx={{ py: 1.2, fontWeight: 'bold', bgcolor: '#ffe0b2', color: '#e65100', '&:hover': { bgcolor: '#ffe0b2' } }}
@@ -636,7 +635,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
-
 
 
 

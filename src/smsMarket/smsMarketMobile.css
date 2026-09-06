@@ -1,0 +1,119 @@
+﻿.sms-market-modal .MuiDialog-paper {
+  width: calc(100% - 16px);
+  max-width: 470px;
+  margin: 8px;
+  border-radius: 16px !important;
+  background: #f8fafc;
+}
+
+.sms-market-modal .MuiDialogContent-root {
+  padding: 12px !important;
+  background: #f8fafc !important;
+}
+
+.sms-market-modal .MuiTabs-root {
+  padding: 8px 10px 0 !important;
+  background: #ffffff;
+  border-bottom: 0 !important;
+}
+
+.sms-market-modal .MuiTabs-indicator {
+  display: none;
+}
+
+.sms-market-modal .MuiTabs-flexContainer {
+  gap: 6px;
+}
+
+.sms-market-modal .MuiTab-root {
+  min-width: 0 !important;
+  min-height: 58px !important;
+  flex: 1;
+  padding: 6px 3px !important;
+  color: #5f6878 !important;
+  background: #f4f6f8;
+  border: 1px solid #e3e8ee;
+  border-radius: 9px 9px 7px 7px;
+  font-size: 10px !important;
+  line-height: 1.1 !important;
+}
+
+.sms-market-modal .MuiTab-root .MuiSvgIcon-root {
+  font-size: 20px;
+  margin-bottom: 3px !important;
+}
+
+.sms-market-modal .MuiTab-root.Mui-selected {
+  color: #ffffff !important;
+  background: #2864d7;
+  border-color: #17499e;
+  box-shadow: inset 0 -2px 0 #102f68;
+}
+
+.sms-market-modal .MuiTab-root.Mui-selected .MuiSvgIcon-root {
+  color: #ffcb45;
+}
+
+.sms-market-modal .MuiTextField-root {
+  margin-bottom: 12px !important;
+}
+
+.sms-market-modal .MuiOutlinedInput-root {
+  border-radius: 9px !important;
+  background: #ffffff;
+}
+
+.sms-market-modal .MuiButton-root {
+  min-height: 42px;
+  border-radius: 9px !important;
+  font-size: 12px;
+}
+
+.sms-market-modal .MuiDialogContent-root > div > .MuiBox-root > .MuiButton-contained:first-child {
+  background: #2864d7;
+}
+
+.sms-market-modal .MuiDialogContent-root > .MuiBox:last-child .MuiPaper-root {
+  border-radius: 9px !important;
+  padding: 11px !important;
+  box-shadow: none !important;
+}
+
+.sms-market-modal .MuiDialogContent-root > .MuiBox:last-child .MuiPaper-root .MuiTypography-body2 {
+  font-size: 12px;
+}
+
+.sms-market-modal .MuiDialogContent-root > .MuiBox:last-child .MuiPaper-root .MuiTypography-caption {
+  font-size: 10px;
+}
+
+@media (max-width: 480px) {
+  .sms-market-modal .MuiDialog-paper {
+    width: calc(100% - 12px);
+    max-height: calc(100dvh - 12px) !important;
+    margin: 6px;
+    border-radius: 14px !important;
+  }
+
+  .sms-market-modal .MuiDialogContent-root {
+    padding: 10px !important;
+  }
+
+  .sms-market-modal .MuiTab-root {
+    min-height: 55px !important;
+    font-size: 9px !important;
+  }
+
+  .sms-market-modal .MuiTab-root .MuiSvgIcon-root {
+    font-size: 18px;
+  }
+
+  .sms-market-modal .MuiButton-root {
+    min-height: 40px;
+    font-size: 11px;
+  }
+
+  .sms-market-modal .MuiDialogContent-root > .MuiBox:last-child .MuiPaper-root {
+    padding: 10px !important;
+  }
+}
