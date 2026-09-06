@@ -40,7 +40,6 @@ const SmsMarketModal = ({ device, onClose }) => {
   const [message, setMessage] = useState('');
   const [phone, setPhone] = useState(device?.phone || '');
   const [avulsoPhone, setAvulsoPhone] = useState('');
-  const [avulsoChoice, setAvulsoChoice] = useState('');
   const [sending, setSending] = useState(false);
   const [balance, setBalance] = useState(null);
   const [loadingBalance, setLoadingBalance] = useState(false);
@@ -534,81 +533,51 @@ const SmsMarketModal = ({ device, onClose }) => {
 
                 <Box sx={{ mb: 2, p: 1.5, border: '1px solid #dbe7f5', borderRadius: '10px', bgcolor: '#f8fbff' }}>
                   <Typography variant="caption" fontWeight="bold" color="#1976d2" display="block" mb={1}>
-                    ESCOLHA O QUE DESEJA ENVIAR
+                    ESCOLHER COMANDO OU GRUPO
                   </Typography>
 
-                  <Box display="flex" gap={1} mb={avulsoChoice ? 1.5 : 0}>
-                    <Button
-                      variant={avulsoChoice === 'command' ? 'contained' : 'outlined'}
-                      fullWidth
-                      size="small"
-                      onClick={() => setAvulsoChoice(avulsoChoice === 'command' ? '' : 'command')}
-                      disabled={sending}
-                      sx={{ textTransform: 'none' }}
-                    >
-                      Comandos prontos
-                    </Button>
+                  <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
+                    COMANDOS PRONTOS
+                  </Typography>
 
+                  {savedCommands.length > 0 ? savedCommands.map((command) => (
                     <Button
-                      variant={avulsoChoice === 'group' ? 'contained' : 'outlined'}
-                      fullWidth
+                      key={command.id}
+                      variant="outlined"
                       size="small"
-                      onClick={() => setAvulsoChoice(avulsoChoice === 'group' ? '' : 'group')}
+                      fullWidth
                       disabled={sending}
-                      sx={{ textTransform: 'none' }}
+                      onClick={() => setMessage(command.attributes?.text || '')}
+                      sx={{ mb: 0.8, justifyContent: 'flex-start', textTransform: 'none' }}
                     >
-                      Grupos
+                      {command.description}
                     </Button>
-                  </Box>
-
-                  {avulsoChoice === 'command' && (
-                    <Box>
-                      <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
-                        COMANDOS PRONTOS
-                      </Typography>
-                      {savedCommands.length > 0 ? savedCommands.map((command) => (
-                        <Button
-                          key={command.id}
-                          variant="outlined"
-                          size="small"
-                          fullWidth
-                          disabled={sending}
-                          onClick={() => setMessage(command.attributes?.text || '')}
-                          sx={{ mb: 0.8, justifyContent: 'flex-start', textTransform: 'none' }}
-                        >
-                          {command.description}
-                        </Button>
-                      )) : (
-                        <Typography variant="caption" color="textSecondary">
-                          Nenhum comando pronto cadastrado.
-                        </Typography>
-                      )}
-                    </Box>
+                  )) : (
+                    <Typography variant="caption" color="textSecondary" display="block" mb={1}>
+                      Nenhum comando pronto cadastrado.
+                    </Typography>
                   )}
 
-                  {avulsoChoice === 'group' && (
-                    <Box>
-                      <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
-                        GRUPOS CADASTRADOS
-                      </Typography>
-                      {savedGroups.length > 0 ? savedGroups.map((group) => (
-                        <Button
-                          key={group.id}
-                          variant="contained"
-                          size="small"
-                          fullWidth
-                          disabled={sending || !avulsoPhone.trim()}
-                          onClick={() => sendGroup(group, avulsoPhone)}
-                          sx={{ mb: 0.8, justifyContent: 'flex-start', textTransform: 'none', bgcolor: '#1976d2' }}
-                        >
-                          Enviar grupo: {group.description}
-                        </Button>
-                      )) : (
-                        <Typography variant="caption" color="textSecondary">
-                          Nenhum grupo cadastrado.
-                        </Typography>
-                      )}
-                    </Box>
+                  <Typography variant="caption" color="textSecondary" display="block" mt={1} mb={0.5}>
+                    GRUPOS CADASTRADOS
+                  </Typography>
+
+                  {savedGroups.length > 0 ? savedGroups.map((group) => (
+                    <Button
+                      key={group.id}
+                      variant="contained"
+                      size="small"
+                      fullWidth
+                      disabled={sending || !avulsoPhone.trim()}
+                      onClick={() => sendGroup(group, avulsoPhone)}
+                      sx={{ mb: 0.8, justifyContent: 'flex-start', textTransform: 'none', bgcolor: '#1976d2' }}
+                    >
+                      Enviar grupo: {group.description}
+                    </Button>
+                  )) : (
+                    <Typography variant="caption" color="textSecondary">
+                      Nenhum grupo cadastrado.
+                    </Typography>
                   )}
                 </Box>
               </>
@@ -736,7 +705,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
-
 
 
 
