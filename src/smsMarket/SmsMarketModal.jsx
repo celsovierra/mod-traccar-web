@@ -664,7 +664,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Typography>
         </Box>
 
-        <Box display="flex" flexDirection="column" gap={1.5} sx={{ pb: 1 }}>
+        <Box display="flex" flexDirection="column" gap={1.5} sx={{ pb: 1, minHeight: 130, maxHeight: 'calc(100vh - 730px)', overflowY: 'auto', pr: 0.5 }}>
           {reports.map((rep) => {
             const success = isSuccessStatus(rep.status);
             const pending = isPendingStatus(rep.status);
@@ -674,7 +674,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 key={rep.id}
                 variant="outlined"
                 sx={{
-                  p: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  p: 0.75, boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                   borderRadius: '12px',
                   borderColor: success ? '#a5d6a7' : pending ? '#90caf9' : '#ef9a9a',
                   bgcolor: success ? '#f1f8e9' : pending ? '#e3f2fd' : '#ffebee'
@@ -736,6 +736,9 @@ const SmsMarketModal = ({ device, onClose }) => {
 };
 
 export default SmsMarketModal;
+
+
+
 
 
 
