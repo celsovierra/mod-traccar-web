@@ -1,4 +1,4 @@
-import { parse, stringify } from 'wellknown';
+﻿import { parse, stringify } from 'wellknown';
 import turfCircle from '@turf/circle';
 import gcoord from 'gcoord';
 import { map } from './MapView';
@@ -78,7 +78,7 @@ export const prepareIcon = (background, icon, color) => {
       const offsetY = (height - customHeight) / 2;
       context.drawImage(icon, offsetX, offsetY, customWidth, customHeight);
     } else {
-      // Carros e outros ícones mantêm o tamanho original 1:1 perfeito
+      // Carros e outros Ã­cones mantÃªm o tamanho original 1:1 perfeito
       context.drawImage(icon, 0, 0, width, height);
     }
 
@@ -146,7 +146,7 @@ export const geofenceToFeature = (theme, item) => {
     type: 'Feature',
     geometry,
     properties: {
-      isAnchor: geofence.name?.startsWith("ANCORA_") || false,
+      isAnchor: item.name?.startsWith("ANCORA_") || false,
       name: item.name,
       color: item.attributes.color || theme.palette.geometry.main,
       width: item.attributes.mapLineWidth || 2,

@@ -1,0 +1,177 @@
+﻿
+  src\map\MapGeofence.js:6:const MapGeofence = () => {
+  src\map\MapGeofence.js:7:  const theme = useTheme();
+> src\map\MapGeofence.js:8:  const geofences = 
+useSelector((state) => state.geofences.items);
+  src\map\MapGeofence.js:9:
+  src\map\MapGeofence.js:10:  useEffect(() => {
+  src\map\MapGeofence.js:11:    if (!map || 
+!map.isStyleLoaded()) return;
+  src\store\geofences.js:17:});
+  src\store\geofences.js:18:
+> src\store\geofences.js:19:export { actions as 
+geofencesActions };
+  src\store\geofences.js:20:export { reducer as 
+geofencesReducer };
+  src\store\index.js:31:export { eventsActions } from 
+'./events';
+  src\store\index.js:32:export { motionActions } from 
+'./motion';
+> src\store\index.js:33:export { geofencesActions } from 
+'./geofences';
+  src\store\index.js:34:export { groupsActions } from 
+'./groups';
+  src\store\index.js:35:export { driversActions } from 
+'./drivers';
+  src\store\index.js:36:export { maintenancesActions } from 
+'./maintenances';
+  src\other\GeofencesList.jsx:4:import { Divider, List, 
+ListItemButton, ListItemText } from '@mui/material';
+  src\other\GeofencesList.jsx:5:
+> src\other\GeofencesList.jsx:6:import { geofencesActions } 
+from '../store';
+  src\other\GeofencesList.jsx:7:import CollectionActions 
+from '../settings/components/CollectionActions';
+  src\other\GeofencesList.jsx:8:import { useCatchCallback } 
+from '../reactHelper';
+  src\other\GeofencesList.jsx:9:import fetchOrThrow from 
+'../common/util/fetchOrThrow';
+  src\other\GeofencesList.jsx:25:  const dispatch = 
+useDispatch();
+  src\other\GeofencesList.jsx:26:
+> src\other\GeofencesList.jsx:27:  const items = 
+useSelector((state) => state.geofences.items);
+  src\other\GeofencesList.jsx:28:
+  src\other\GeofencesList.jsx:29:  const refreshGeofences = 
+useCatchCallback(async () => {
+  src\other\GeofencesList.jsx:30:    const response = await 
+fetchOrThrow('/api/geofences');
+> src\other\GeofencesList.jsx:31:    
+dispatch(geofencesActions.refresh(await response.json()));
+  src\other\GeofencesList.jsx:32:  }, [dispatch]);
+  src\other\GeofencesList.jsx:33:
+  src\other\GeofencesList.jsx:34:  return (
+  src\reports\EventReportPage.jsx:53:    
+deviceEquality(['id', 'name', 'uniqueId']),
+  src\reports\EventReportPage.jsx:54:  );
+> src\reports\EventReportPage.jsx:55:  const geofences = 
+useSelector((state) => state.geofences.items);
+  src\reports\EventReportPage.jsx:56:  const maintenances = 
+useSelector((state) => state.maintenances.items);
+  src\reports\EventReportPage.jsx:57:
+  src\reports\EventReportPage.jsx:58:  const speedUnit = 
+useAttributePreference('speedUnit');
+  src\reports\GeofenceReportPage.jsx:36:
+  src\reports\GeofenceReportPage.jsx:37:  const devices = 
+useSelector((state) => state.devices.items, 
+deviceEquality(['id', 'name']));
+> src\reports\GeofenceReportPage.jsx:38:  const geofences = 
+useSelector((state) => state.geofences.items);
+  src\reports\GeofenceReportPage.jsx:39:
+  src\reports\GeofenceReportPage.jsx:40:  const [columns, 
+setColumns] = usePersistedState('geofenceColumns', [
+  src\reports\GeofenceReportPage.jsx:41:    'geofenceId',
+  src\settings\GeofencePage.jsx:17:import SettingsMenu from 
+'./components/SettingsMenu';
+  src\settings\GeofencePage.jsx:18:import SelectField from 
+'../common/components/SelectField';
+> src\settings\GeofencePage.jsx:19:import { geofencesActions 
+} from '../store';
+  src\settings\GeofencePage.jsx:20:import useSettingsStyles 
+from './common/useSettingsStyles';
+  src\settings\GeofencePage.jsx:21:
+  src\settings\GeofencePage.jsx:22:const GeofencePage = () 
+=> {
+  src\settings\GeofencePage.jsx:30:
+  src\settings\GeofencePage.jsx:31:  const onItemSaved = 
+(result) => {
+> src\settings\GeofencePage.jsx:32:    
+dispatch(geofencesActions.update([result]));
+  src\settings\GeofencePage.jsx:33:  };
+  src\settings\GeofencePage.jsx:34:
+  src\settings\GeofencePage.jsx:35:  const validate = () => 
+item && item.name;
+
+
+import { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { geofencesActions } from '../../store';
+
+const ANCHOR_RADIUS = 100;
+
+export const useAnchor = (deviceId) => {
+  const dispatch = useDispatch();
+  const [isAnchorActive, setIsAnchorActive] = useState(false);
+  const [loadingAnchor, setLoadingAnchor] = useState(false);
+
+  const device = useSelector((state) => state.devices?.items?.[deviceId]);
+  const position = useSelector((state) => Object.values(state.session?.positions || {}).find((p) => p.deviceId === Number(deviceId)));
+  const user = useSelector((state) => state.session?.user);
+  const geofences = useSelector((state) => state.geofences?.items);
+
+  useEffect(() => {
+    const found = Object.values(geofences || {}).some((g) => g.name?.startsWith(`ANCORA_${deviceId}`));
+    setIsAnchorActive(found);
+  }, [geofences, deviceId]);
+
+  const reloadGeofences = async () => {
+    const res = await fetch('/api/geofences');
+    if (res.ok) {
+      const data = await res.json();
+      if (geofencesActions?.refresh) dispatch(geofencesActions.refresh(data));
+    }
+  };
+
+  const toggleAnchor = async () => {
+    setLoadingAnchor(true);
+    try {
+      const listRes = await fetch('/api/geofences');
+      const list = listRes.ok ? await listRes.json() : [];
+      const existing = list.filter((g) => g.name?.startsWith(`ANCORA_${deviceId}`));
+
+      if (existing.length) {
+        await Promise.all(existing.map((g) => fetch(`/api/geofences/${g.id}`, { method: 'DELETE' })));
+        await reloadGeofences();
+        setIsAnchorActive(false);
+      } else {
+        if (!position) {
+          window.alert('Sem posicao atual do veiculo para criar a ancora.');
+          return;
+        }
+        const geoRes = await fetch('/api/geofences', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: `ANCORA_${deviceId} - ${device?.name || 'Veiculo'}`,
+            description: 'Ancora automatica',
+            area: `CIRCLE (${position.latitude} ${position.longitude}, ${ANCHOR_RADIUS})`,
+            attributes: {},
+          }),
+        });
+        if (!geoRes.ok) { const t = await geoRes.text(); window.alert('Falha ao criar ancora: ' + t); throw new Error(t); }
+        const geofence = await geoRes.json();
+
+        await fetch('/api/permissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deviceId: Number(deviceId), geofenceId: geofence.id }),
+        });
+        if (user?.id) {
+          await fetch('/api/permissions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id, geofenceId: geofence.id }),
+          });
+        }
+        await reloadGeofences();
+        setIsAnchorActive(true);
+      }
+    } catch (e) {
+      setIsAnchorActive(false);
+    } finally {
+      setLoadingAnchor(false);
+    }
+  };
+
+  return { isAnchorActive, toggleAnchor, loadingAnchor };
+};
