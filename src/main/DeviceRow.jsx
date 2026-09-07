@@ -1,4 +1,4 @@
-import SmsMarketModal from '../smsMarket/SmsMarketModal';
+﻿import SmsMarketModal from '../smsMarket/SmsMarketModal';
 import SmsIcon from '@mui/icons-material/Sms';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -170,7 +170,7 @@ const DeviceRow = ({ devices, index, style }) => {
           {secondaryValue && (
             <>
               <span>{secondaryValue}</span>
-              <span>•</span>
+              <span>â€¢</span>
             </>
           )}
           <span className={classes[getStatusColor(item.status)]} style={{ fontWeight: item.status === 'online' ? 600 : 400 }}>
@@ -233,7 +233,7 @@ const DeviceRow = ({ devices, index, style }) => {
                 </IconButton>
               </Tooltip>
             )}          {position.attributes.hasOwnProperty("power") && (
-            <Tooltip title={`Tensão da Bateria: ${position.attributes.power}V`}>
+            <Tooltip title={`TensÃ£o da Bateria: ${position.attributes.power}V`}>
               <Box component="span" sx={{ display: "inline-flex", alignItems: "center", px: "5px", py: "1px", borderRadius: "4px", bgcolor: "action.hover", border: "1px solid", borderColor: "divider", fontSize: "0.65rem", fontWeight: 700, color: "text.secondary", ml: 0.5, letterSpacing: "0.2px" }}>
                 {Number(position.attributes.power).toFixed(1)}V
               </Box>
@@ -264,7 +264,7 @@ const DeviceRow = ({ devices, index, style }) => {
                 </IconButton>
               </Tooltip>
             )}
-          <IconButton size='small' onClick={(e) => { e.stopPropagation(); setShowSmsModal(true); }} sx={{ color: '#ff5722', ml: 0.5, p: 0.5 }}><SmsIcon fontSize='small' /></IconButton></Box>)}</ListItemButton>{showSmsModal && <SmsMarketModal device={item} onClose={() => setShowSmsModal(false)} />}
+          {admin && <IconButton size='small' onClick={(e) => { e.stopPropagation(); setShowSmsModal(true); }} sx={{ color: '#ff5722', ml: 0.5, p: 0.5 }}><SmsIcon fontSize='small' /></IconButton>}</Box>)}</ListItemButton>{admin && showSmsModal && <SmsMarketModal device={item} onClose={() => setShowSmsModal(false)} />}
     </div>
   );
 };

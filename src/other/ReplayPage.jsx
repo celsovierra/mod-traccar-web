@@ -24,6 +24,8 @@ import MapScale from '../map/MapScale';
 import BackIcon from '../common/components/BackIcon';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import MapOverlay from '../map/overlay/MapOverlay';
+import HistoryPanel from './HistoryPanel';
+import MapRouteStops from '../map/MapRouteStops';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -80,7 +82,7 @@ const ReplayPage = () => {
   const navigate = useNavigate();
   const timerRef = useRef();
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const defaultDeviceId = useSelector((state) => state.devices.selectedId);
 
@@ -167,6 +169,12 @@ const ReplayPage = () => {
     [t],
   );
 
+  const handleQuickPeriod = ({ from, to }) => {
+    if (!selectedDeviceId) return;
+    setSearchParams({ deviceId: selectedDeviceId, from, to });
+    onShow({ deviceIds: [selectedDeviceId], from, to });
+  };
+
   const handleDownload = () => {
     const query = new URLSearchParams({ deviceId: selectedDeviceId, from, to });
     window.location.assign(`/api/positions/kml?${query.toString()}`);
@@ -178,7 +186,7 @@ const ReplayPage = () => {
         <MapOverlay />
         <MapGeofence />
         <MapRoutePath positions={positions} />
-        <MapRoutePoints positions={positions} onClick={onPointClick} showSpeedControl />
+        <MapRouteStops positions={positions} />
         {index < positions.length && (
           <MapPositions
             positions={[positions[index]]}
@@ -211,6 +219,7 @@ const ReplayPage = () => {
           </Toolbar>
         </Paper>
         <Paper className={classes.content} square>
+          <HistoryPanel positions={positions} loading={loading} onSelect={handleQuickPeriod} />
           {loaded && !filterOpen && (
             <>
               <Typography variant="subtitle1" align="center">

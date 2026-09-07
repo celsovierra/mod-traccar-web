@@ -1,4 +1,4 @@
-import { useId, useCallback, useEffect, useRef, useState } from 'react';
+﻿import { useId, useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -55,7 +55,7 @@ const MapPositions = ({
 
   const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
-  const iconScale = useAttributePreference('iconScale', desktop ? 0.75 : 1);
+  const iconScale = desktop ? 0.45 : 0.55;
 
   const devices = useSelector((state) => state.devices.items);
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
@@ -400,7 +400,7 @@ const MapPositions = ({
     anchorLineLayer,
   ]);
 
-  // Limpeza rigorosa e validação de âncoras ativas (remove resíduos antigos do localStorage)
+  // Limpeza rigorosa e validaÃ§Ã£o de Ã¢ncoras ativas (remove resÃ­duos antigos do localStorage)
   useEffect(() => {
     const anchorFeatures = [];
     Object.keys(devices).forEach((devId) => {
@@ -409,7 +409,7 @@ const MapPositions = ({
       if (anchorRaw) {
         try {
           const anchor = JSON.parse(anchorRaw);
-          // Verifica se a âncora realmente existe e está ativa
+          // Verifica se a Ã¢ncora realmente existe e estÃ¡ ativa
           if (anchor && anchor.active === true && anchor.latitude && anchor.longitude) {
             const coords = toMapCoordinates(anchor.longitude, anchor.latitude);
             const circleFeature = createGeoJSONCircle(coords, anchor.radius || 50);
