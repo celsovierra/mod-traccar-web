@@ -1,4 +1,4 @@
-﻿const BASE_URL = '/api-smsmarket';
+const BASE_URL = import.meta.env.DEV ? '/api-smsmarket' : 'https://api.smsmarket.com.br/webservice-rest';
 const STORAGE_KEY = 'smsmarket_credentials';
 
 const STATUS_MAP = {
