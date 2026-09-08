@@ -405,7 +405,7 @@ const MapPositions = ({
     const anchorFeatures = [];
     Object.keys(devices).forEach((devId) => {
       const anchorKey = `device_anchor_${devId}`;
-      const anchorRaw = localStorage.getItem(anchorKey);
+      localStorage.removeItem(anchorKey); const anchorRaw = null;
       if (anchorRaw) {
         try {
           const anchor = JSON.parse(anchorRaw);
@@ -529,3 +529,4 @@ const MapPositions = ({
 };
 
 export default MapPositions;
+

@@ -1,0 +1,141 @@
+﻿C:\mod-traccar-web\src\common\components\BottomMenu.jsx:38: const [anchorEl, setAnchorEl] = useState(null);
+C:\mod-traccar-web\src\common\components\BottomMenu.jsx:57: setAnchorEl(null);
+C:\mod-traccar-web\src\common\components\BottomMenu.jsx:62: setAnchorEl(null);
+C:\mod-traccar-web\src\common\components\BottomMenu.jsx:118: setAnchorEl(event.currentTarget);
+C:\mod-traccar-web\src\common\components\BottomMenu.jsx:164: <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+C:\mod-traccar-web\src\common\components\ErrorHandler.jsx:37: anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+C:\mod-traccar-web\src\common\components\SplitButton.jsx:15: const anchorRef = useRef();
+C:\mod-traccar-web\src\common\components\SplitButton.jsx:16: const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+C:\mod-traccar-web\src\common\components\SplitButton.jsx:20: <ButtonGroup fullWidth={fullWidth} variant={variant} color={color} ref={anchorRef}>
+C:\mod-traccar-web\src\common\components\SplitButton.jsx:26: <Button fullWidth={false} size="small" onClick={() => setMenuAnchorEl(anchorRef.current)}>
+C:\mod-traccar-web\src\common\components\SplitButton.jsx:31: open={!!menuAnchorEl}
+C:\mod-traccar-web\src\common\components\SplitButton.jsx:32: anchorEl={menuAnchorEl}
+C:\mod-traccar-web\src\common\components\SplitButton.jsx:33: onClose={() => setMenuAnchorEl(null)}
+C:\mod-traccar-web\src\common\components\SplitButton.jsx:34: anchorOrigin={{
+C:\mod-traccar-web\src\common\components\SplitButton.jsx:44: setMenuAnchorEl(null);
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:1: import { AnchorButton } from "../../features/anchor/AnchorButton";
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:2: import { useAnchor } from "../../features/anchor/useAnchor";
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:566: const { isAnchorActive, toggleAnchor, loadingAnchor } = useAnchor(deviceId, device, position);
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:788: const removeAllAnchorGeofences = async () => {
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:807: const handleToggleAnchor = async () => {
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:808: if (loadingAnchor) return;
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:809: setLoadingAnchor(true);
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:811: if (isAnchorActive) {
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:812: setIsAnchorActive(false);
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:815: await removeAllAnchorGeofences();
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:819: delete updatedAttributes.anchor;
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:831: window.dispatchEvent(new CustomEvent('anchorUpdate'));
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:834: setLoadingAnchor(false);
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:836: await removeAllAnchorGeofences();
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:880: const anchorData = {
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:894: anchor: anchorData,
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:908: setIsAnchorActive(true);
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:909: window.dispatchEvent(new CustomEvent('anchorUpdate'));
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:910: setLoadingAnchor(false);
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:912: setLoadingAnchor(false);
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:1312: <AnchorButton
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:1313: isAnchorActive={isAnchorActive}
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:1314: onClick={toggleAnchor}
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:1315: disabled={disableActions || !position || loadingAnchor}
+C:\mod-traccar-web\src\common\components\StatusCard.jsx:1658: anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+C:\mod-traccar-web\src\common\theme\components.js:28: anchorOrigin: {
+C:\mod-traccar-web\src\features\anchor\AnchorButton.jsx:3: import AnchorIcon from '@mui/icons-material/Anchor';
+C:\mod-traccar-web\src\features\anchor\AnchorButton.jsx:5: export const AnchorButton = ({ isAnchorActive, onClick, disabled, classes }) => {
+C:\mod-traccar-web\src\features\anchor\AnchorButton.jsx:12: <AnchorIcon
+C:\mod-traccar-web\src\features\anchor\AnchorButton.jsx:15: color: isAnchorActive ? '#dc2626' : '#0284c7',
+C:\mod-traccar-web\src\features\anchor\AnchorButton.jsx:16: animation: isAnchorActive ? 'superBlinkRed 0.7s infinite ease-in-out' : 'none'
+C:\mod-traccar-web\src\features\anchor\AnchorButton.jsx:20: className={`${classes.actionText} ${isAnchorActive ? 'blinking-anchor-active' : ''}`}
+C:\mod-traccar-web\src\features\anchor\AnchorButton.jsx:21: sx={{ color: isAnchorActive ? '#dc2626 !important' : 'inherit', fontWeight: isAnchorActive ? '800 !important' : '600' }}
+C:\mod-traccar-web\src\features\anchor\AnchorButton.jsx:23: {isAnchorActive ? 'Ancorado' : 'Âncora'}
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:5: export const AnchorMapLayer = () => {
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:12: const sourceId = 'global-anchor-source';
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:13: const fillLayerId = 'global-anchor-fill';
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:14: const lineLayerId = 'global-anchor-line';
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:22: const localAnchor = localStorage.getItem(`device_anchor_${devId}`);
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:25: if (localAnchor === 'false') return;
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:27: let anchorRaw = localAnchor || device?.attributes?.anchor;
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:28: let anchor = null;
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:30: if (typeof anchorRaw === 'string' && anchorRaw !== 'false') {
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:31: try { anchor = JSON.parse(anchorRaw); } catch (e) {}
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:33: anchor = anchorRaw;
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:36: if (anchor && (anchor.active || anchor.latitude)) {
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:37: let lat = Number(anchor.latitude);
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:38: let lng = Number(anchor.longitude);
+C:\mod-traccar-web\src\features\anchor\AnchorMapLayer.jsx:39: const radius = Number(anchor.radius) || 50;
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:5: const ANCHOR_RADIUS = 100;
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:7: const anchorPrefix = (deviceId) => `ANCORA_${deviceId}`;
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:8: const isAnchorOf = (g, deviceId) => g?.name === anchorPrefix(deviceId) || g?.name?.startsWith(`${anchorPrefix(deviceId)} - `);
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:10: export const useAnchor = (deviceId) => {
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:12: const [loadingAnchor, setLoadingAnchor] = useState(false);
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:19: const [isAnchorActive, setIsAnchorActive] = useState(false);
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:22: setIsAnchorActive(Object.values(geofences || {}).some((g) => isAnchorOf(g, deviceId)));
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:30: const toggleAnchor = useCallback(async () => {
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:31: setLoadingAnchor(true);
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:35: const existing = list.filter((g) => isAnchorOf(g, deviceId));
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:41: window.alert('Sem posicao atual do veiculo para criar a ancora.');
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:48: name: `${anchorPrefix(deviceId)} - ${device?.name || 'Veiculo'}`,
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:49: description: 'Ancora automatica',
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:50: area: `CIRCLE (${position.latitude} ${position.longitude}, ${ANCHOR_RADIUS})`,
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:55: window.alert('Falha ao criar ancora: ' + (await geoRes.text()));
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:75: setLoadingAnchor(false);
+C:\mod-traccar-web\src\features\anchor\useAnchor.js:79: return { isAnchorActive, toggleAnchor, loadingAnchor };
+C:\mod-traccar-web\src\main\EventsDrawer.jsx:50: <Drawer anchor="right" open={open} onClose={onClose}>
+C:\mod-traccar-web\src\map\control\MapGeocoder.jsx:49: const [anchorEl, setAnchorEl] = useState(null);
+C:\mod-traccar-web\src\map\control\MapGeocoder.jsx:91: button.onclick = () => setAnchorEl(button);
+C:\mod-traccar-web\src\map\control\MapGeocoder.jsx:109: setAnchorEl(null);
+C:\mod-traccar-web\src\map\control\MapGeocoder.jsx:116: anchorEl={anchorEl}
+C:\mod-traccar-web\src\map\control\MapGeocoder.jsx:117: open={Boolean(anchorEl)}
+C:\mod-traccar-web\src\map\control\MapGeocoder.jsx:118: onClose={() => setAnchorEl(null)}
+C:\mod-traccar-web\src\map\control\MapGeocoder.jsx:119: anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+C:\mod-traccar-web\src\map\control\MapRuler.jsx:74: 'text-anchor': 'bottom',
+C:\mod-traccar-web\src\map\control\MapSwitcher.jsx:26: const [anchorEl, setAnchorEl] = useState(null);
+C:\mod-traccar-web\src\map\control\MapSwitcher.jsx:38: button.onclick = () => setAnchorEl(button);
+C:\mod-traccar-web\src\map\control\MapSwitcher.jsx:55: anchorEl={anchorEl}
+C:\mod-traccar-web\src\map\control\MapSwitcher.jsx:56: open={Boolean(anchorEl)}
+C:\mod-traccar-web\src\map\control\MapSwitcher.jsx:57: onClose={() => setAnchorEl(null)}
+C:\mod-traccar-web\src\map\control\MapSwitcher.jsx:58: anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+C:\mod-traccar-web\src\map\control\MapSwitcher.jsx:67: setAnchorEl(null);
+C:\mod-traccar-web\src\map\core\mapUtil.js:149: isAnchor: item.name?.startsWith("ANCORA_") || false,
+C:\mod-traccar-web\src\map\main\PoiMap.js:80: 'text-anchor': 'bottom',
+C:\mod-traccar-web\src\map\MapMarkers.js:40: layerConfig.layout['text-anchor'] = 'bottom';
+C:\mod-traccar-web\src\map\MapPositions.js:52: const anchorSource = `${id}-anchor-source`;
+C:\mod-traccar-web\src\map\MapPositions.js:53: const anchorFillLayer = `${id}-anchor-fill`;
+C:\mod-traccar-web\src\map\MapPositions.js:54: const anchorLineLayer = `${id}-anchor-line`;
+C:\mod-traccar-web\src\map\MapPositions.js:74: const [anchorVersion, setAnchorVersion] = useState(0);
+C:\mod-traccar-web\src\map\MapPositions.js:77: const handleAnchorEvent = () => setAnchorVersion((v) => v + 1);
+C:\mod-traccar-web\src\map\MapPositions.js:78: window.addEventListener('anchorUpdate', handleAnchorEvent);
+C:\mod-traccar-web\src\map\MapPositions.js:79: return () => window.removeEventListener('anchorUpdate', handleAnchorEvent);
+C:\mod-traccar-web\src\map\MapPositions.js:215: map.addSource(anchorSource, {
+C:\mod-traccar-web\src\map\MapPositions.js:224: id: anchorFillLayer,
+C:\mod-traccar-web\src\map\MapPositions.js:226: source: anchorSource,
+C:\mod-traccar-web\src\map\MapPositions.js:234: id: anchorLineLayer,
+C:\mod-traccar-web\src\map\MapPositions.js:236: source: anchorSource,
+C:\mod-traccar-web\src\map\MapPositions.js:258: 'text-anchor': 'bottom',
+C:\mod-traccar-web\src\map\MapPositions.js:360: if (map.getLayer(anchorLineLayer)) map.removeLayer(anchorLineLayer);
+C:\mod-traccar-web\src\map\MapPositions.js:361: if (map.getLayer(anchorFillLayer)) map.removeLayer(anchorFillLayer);
+C:\mod-traccar-web\src\map\MapPositions.js:362: if (map.getSource(anchorSource)) map.removeSource(anchorSource);
+C:\mod-traccar-web\src\map\MapPositions.js:398: anchorSource,
+C:\mod-traccar-web\src\map\MapPositions.js:399: anchorFillLayer,
+C:\mod-traccar-web\src\map\MapPositions.js:400: anchorLineLayer,
+C:\mod-traccar-web\src\map\MapPositions.js:405: const anchorFeatures = [];
+C:\mod-traccar-web\src\map\MapPositions.js:407: const anchorKey = `device_anchor_${devId}`;
+C:\mod-traccar-web\src\map\MapPositions.js:408: const anchorRaw = localStorage.getItem(anchorKey);
+C:\mod-traccar-web\src\map\MapPositions.js:409: if (anchorRaw) {
+C:\mod-traccar-web\src\map\MapPositions.js:411: const anchor = JSON.parse(anchorRaw);
+C:\mod-traccar-web\src\map\MapPositions.js:413: if (anchor && anchor.active === true && anchor.latitude && anchor.longitude) {
+C:\mod-traccar-web\src\map\MapPositions.js:414: const coords = toMapCoordinates(anchor.longitude, anchor.latitude);
+C:\mod-traccar-web\src\map\MapPositions.js:415: const circleFeature = createGeoJSONCircle(coords, anchor.radius || 50);
+C:\mod-traccar-web\src\map\MapPositions.js:416: anchorFeatures.push(circleFeature);
+C:\mod-traccar-web\src\map\MapPositions.js:418: localStorage.removeItem(anchorKey);
+C:\mod-traccar-web\src\map\MapPositions.js:421: localStorage.removeItem(anchorKey);
+C:\mod-traccar-web\src\map\MapPositions.js:426: if (map.getSource(anchorSource)) {
+C:\mod-traccar-web\src\map\MapPositions.js:427: map.getSource(anchorSource).setData({
+C:\mod-traccar-web\src\map\MapPositions.js:429: features: anchorFeatures,
+C:\mod-traccar-web\src\map\MapPositions.js:432: }, [anchorSource, anchorVersion, devices, selectedDeviceId]);
+C:\mod-traccar-web\src\other\EmulatorPage.jsx:111: anchor={isPhone ? 'top' : 'left'}
+C:\mod-traccar-web\src\settings\components\CollectionActions.jsx:26: const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+C:\mod-traccar-web\src\settings\components\CollectionActions.jsx:31: setMenuAnchorEl(null);
+C:\mod-traccar-web\src\settings\components\CollectionActions.jsx:36: setMenuAnchorEl(null);
+C:\mod-traccar-web\src\settings\components\CollectionActions.jsx:41: setMenuAnchorEl(null);
+C:\mod-traccar-web\src\settings\components\CollectionActions.jsx:55: <IconButton size="small" onClick={(event) => setMenuAnchorEl(event.currentTarget)}>
+C:\mod-traccar-web\src\settings\components\CollectionActions.jsx:58: <Menu open={!!menuAnchorEl} anchorEl={menuAnchorEl} onClose={() => setMenuAnchorEl(null)}>

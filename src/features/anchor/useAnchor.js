@@ -1,103 +1,80 @@
-import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { devicesActions } from '../../store';
+﻿import { useState, useEffect, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { geofencesActions } from '../../store';
 
-export const useAnchor = (deviceId, device, position) => {
+const ANCHOR_RADIUS = 100;
+
+const anchorPrefix = (deviceId) => `ANCORA_${deviceId}`;
+const isAnchorOf = (g, deviceId) => g?.name === anchorPrefix(deviceId) || g?.name?.startsWith(`${anchorPrefix(deviceId)} - `);
+
+export const useAnchor = (deviceId) => {
   const dispatch = useDispatch();
   const [loadingAnchor, setLoadingAnchor] = useState(false);
-  
-  const checkIsActive = () => {
-    if (!deviceId) return false;
-    const localState = localStorage.getItem('device_anchor_state_' + deviceId);
-    
-    if (localState === 'inactive') return false;
-    if (localState === 'active') return true;
 
-    const localAnchor = localStorage.getItem('device_anchor_' + deviceId);
-    if (localAnchor === 'false' || !localAnchor) {
-      return false;
-    }
+  const device = useSelector((state) => state.devices.items[deviceId]);
+  const user = useSelector((state) => state.session.user);
+  const geofences = useSelector((state) => state.geofences.items);
+  const position = useSelector((state) => Object.values(state.session.positions || {}).find((p) => p.deviceId === Number(deviceId)));
 
-    return true;
-  };
-
-  const [isAnchorActive, setIsAnchorActive] = useState(checkIsActive);
+  const [isAnchorActive, setIsAnchorActive] = useState(false);
 
   useEffect(() => {
-    setIsAnchorActive(checkIsActive());
-  }, [deviceId, device]);
+    setIsAnchorActive(Object.values(geofences || {}).some((g) => isAnchorOf(g, deviceId)));
+  }, [geofences, deviceId]);
 
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (deviceId && e.key === 'device_anchor_state_' + deviceId) {
-        if (e.newValue === 'active') {
-          setIsAnchorActive(true);
-        } else if (e.newValue === 'inactive') {
-          setIsAnchorActive(false);
-        }
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [deviceId]);
+  const reloadGeofences = useCallback(async () => {
+    const res = await fetch('/api/geofences');
+    if (res.ok) dispatch(geofencesActions.refresh(await res.json()));
+  }, [dispatch]);
 
-  const toggleAnchor = async () => {
-    if (loadingAnchor) return;
+  const toggleAnchor = useCallback(async () => {
     setLoadingAnchor(true);
-
     try {
-      if (isAnchorActive) {
-        localStorage.setItem('device_anchor_state_' + deviceId, 'inactive');
-        localStorage.removeItem('device_anchor_' + deviceId);
-        setIsAnchorActive(false);
+      const listRes = await fetch('/api/geofences');
+      const list = listRes.ok ? await listRes.json() : [];
+      const existing = list.filter((g) => isAnchorOf(g, deviceId));
 
-        if (device) {
-          const updatedAttributes = { ...(device.attributes || {}) };
-          delete updatedAttributes.anchor;
-          const updatedDevice = { ...device, attributes: updatedAttributes };
-          dispatch(devicesActions.update([updatedDevice]));
-          await fetch('/api/devices/' + deviceId, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify(updatedDevice),
-          }).catch(() => {});
+      if (existing.length) {
+        await Promise.all(existing.map((g) => fetch(`/api/geofences/${g.id}`, { method: 'DELETE' })));
+      } else {
+        if (!position) {
+          window.alert('Sem posicao atual do veiculo para criar a ancora.');
+          return;
         }
-        window.dispatchEvent(new CustomEvent('anchorUpdate'));
-      } else if (position) {
-        localStorage.setItem('device_anchor_state_' + deviceId, 'active');
-        const anchorData = {
-          deviceId: Number(deviceId),
-          latitude: position.latitude,
-          longitude: position.longitude,
-          radius: 50,
-          active: true,
-        };
-        localStorage.setItem('device_anchor_' + deviceId, JSON.stringify(anchorData));
-        setIsAnchorActive(true);
-        
-        if (device) {
-          const updatedDevice = {
-            ...device,
-            attributes: {
-              ...(device.attributes || {}),
-              anchor: anchorData,
-            },
-          };
-          dispatch(devicesActions.update([updatedDevice]));
-          await fetch('/api/devices/' + deviceId, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify(updatedDevice),
-          }).catch(() => {});
+        const geoRes = await fetch('/api/geofences', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: `${anchorPrefix(deviceId)} - ${device?.name || 'Veiculo'}`,
+            description: 'Ancora automatica',
+            area: `CIRCLE (${position.latitude} ${position.longitude}, ${ANCHOR_RADIUS})`,
+            attributes: {},
+          }),
+        });
+        if (!geoRes.ok) {
+          window.alert('Falha ao criar ancora: ' + (await geoRes.text()));
+          return;
         }
-        window.dispatchEvent(new CustomEvent('anchorUpdate'));
+        const geofence = await geoRes.json();
+
+        await fetch('/api/permissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deviceId: Number(deviceId), geofenceId: geofence.id }),
+        });
+        if (user?.id) {
+          await fetch('/api/permissions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id, geofenceId: geofence.id }),
+          });
+        }
       }
+      await reloadGeofences();
     } finally {
       setLoadingAnchor(false);
     }
-  };
+  }, [deviceId, device, position, user, reloadGeofences]);
 
   return { isAnchorActive, toggleAnchor, loadingAnchor };
 };
