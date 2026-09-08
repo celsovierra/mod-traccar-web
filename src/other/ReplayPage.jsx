@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
 import { Collapse, IconButton, Paper, Slider, Toolbar, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import TuneIcon from '@mui/icons-material/Tune';
@@ -7,6 +7,8 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import FastForwardIcon from '@mui/icons-material/FastForward';
 import FastRewindIcon from '@mui/icons-material/FastRewind';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import MapView from '../map/core/MapView';
@@ -95,8 +97,10 @@ const ReplayPage = () => {
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   const loaded = Boolean(from && to && !loading && positions.length);
+  useEffect(() => { setCollapsed(loaded); }, [loaded]);
 
   const deviceName = useSelector((state) => {
     if (selectedDeviceId) {
@@ -208,6 +212,9 @@ const ReplayPage = () => {
             </Typography>
             {loaded && (
               <>
+                <IconButton onClick={() => setCollapsed((v) => !v)}>
+                  {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+                </IconButton>
                 <IconButton onClick={handleDownload}>
                   <DownloadIcon />
                 </IconButton>
@@ -218,7 +225,8 @@ const ReplayPage = () => {
             )}
           </Toolbar>
         </Paper>
-        <Paper className={classes.content} square>
+        <Collapse in={!collapsed} timeout={300}>
+          <Paper className={classes.content} square>
           <HistoryPanel positions={positions} loading={loading} onSelect={handleQuickPeriod} />
           {loaded && !filterOpen && (
             <>
@@ -263,6 +271,7 @@ const ReplayPage = () => {
             <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
           </div>
         </Paper>
+        </Collapse>
       </div>
       {showCard && index < positions.length && (
         <StatusCard
