@@ -4,7 +4,7 @@ import { geofencesActions } from '../../store';
 
 const ANCHOR_RADIUS = 100;
 const prefix = (deviceId) => `ANCORA_${deviceId}`;
-const isAnchorOf = (g, deviceId) => g?.name === prefix(deviceId) || g?.name?.startsWith(`${prefix(deviceId)} - `);
+const isAnchorOf = (g, deviceId) => new RegExp('^ANCORA_' + Number(deviceId) + '($|[^0-9])').test(String(g?.name || ''));
 
 export const useAnchor = (deviceId) => {
   const dispatch = useDispatch();
@@ -17,13 +17,13 @@ export const useAnchor = (deviceId) => {
   const position = useSelector((state) => Object.values(state.session.positions || {}).find((p) => p.deviceId === Number(deviceId)));
 
   useEffect(() => {
-    setIsAnchorActive(Object.values(geofences || {}).some((g) => isAnchorOf(g, deviceId)));
-  }, [geofences, deviceId]);
+    if (!loadingAnchor) setIsAnchorActive(Object.values(geofences || {}).some((g) => isAnchorOf(g, deviceId)));
+  }, [geofences, deviceId, loadingAnchor]);
 
   const reload = useCallback(async () => {
-    const res = await fetch('/api/geofences');
+    const res = await fetch(user?.administrator || user?.admin ? '/api/geofences?all=true' : '/api/geofences');
     if (res.ok) dispatch(geofencesActions.refresh(await res.json()));
-  }, [dispatch]);
+  }, [dispatch, user]);
 
   const link = async (body) => fetch('/api/permissions', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
@@ -31,15 +31,20 @@ export const useAnchor = (deviceId) => {
 
   const toggleAnchor = useCallback(async () => {
     setLoadingAnchor(true);
+    const willActivate = !isAnchorActive;
+    const emit = (active) => window.dispatchEvent(new CustomEvent('anchor-local', { detail: { deviceId: Number(deviceId), active, latitude: position?.latitude, longitude: position?.longitude, radius: ANCHOR_RADIUS } }));
+    emit(willActivate); setIsAnchorActive(willActivate);
     try {
-      const listRes = await fetch('/api/geofences');
+      const listRes = await fetch(user?.administrator || user?.admin ? '/api/geofences?all=true' : '/api/geofences');
       const list = listRes.ok ? await listRes.json() : [];
       const existing = list.filter((g) => isAnchorOf(g, deviceId));
 
       if (existing.length) {
-        await Promise.all(existing.map((g) => fetch(`/api/geofences/${g.id}`, { method: 'DELETE' })));
+        const dels = await Promise.all(existing.map((g) => fetch('/api/geofences/' + g.id, { method: 'DELETE' })));
+        const bad = dels.find((r) => !r.ok); if (!bad) { const r2 = await fetch(user?.administrator || user?.admin ? '/api/geofences?all=true' : '/api/geofences'); const rest = r2.ok ? (await r2.json()).filter((g) => isAnchorOf(g, deviceId)) : []; await Promise.all(rest.map((g) => fetch('/api/geofences/' + g.id, { method: 'DELETE' }))); }
+        if (bad) { setIsAnchorActive(true); emit(true); window.alert('Falha ao excluir ancora: ' + bad.status + ' ' + (await bad.text())); return; }
       } else {
-        if (!position) { window.alert('Sem posicao atual do veiculo para criar a ancora.'); return; }
+        if (!position) { setIsAnchorActive(false); emit(false); window.alert('Sem posicao atual do veiculo para criar a ancora.'); return; }
         const res = await fetch('/api/geofences', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -50,7 +55,7 @@ export const useAnchor = (deviceId) => {
             attributes: {},
           }),
         });
-        if (!res.ok) { window.alert('Falha ao criar ancora: ' + (await res.text())); return; }
+        if (!res.ok) { setIsAnchorActive(false); emit(false); window.alert('Falha ao criar ancora: ' + (await res.text())); return; }
         const geofence = await res.json();
 
         await link({ deviceId: Number(deviceId), geofenceId: geofence.id });
@@ -66,9 +71,15 @@ export const useAnchor = (deviceId) => {
     } finally {
       setLoadingAnchor(false);
     }
-  }, [deviceId, device, position, user, reload]);
+  }, [deviceId, device, position, user, reload, isAnchorActive]);
 
   return { isAnchorActive, toggleAnchor, loadingAnchor };
 };
+
+
+
+
+
+
 
 

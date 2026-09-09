@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { map } from "./core/MapView";
 import { geofencesActions } from "../store";
@@ -61,8 +61,8 @@ const MapGeofence = () => {
   useEffect(() => {
     const visible = (item) => {
       const anchor = String(item.name || "").match(/^ANCORA_(\d+)/);
-      if (!anchor) return true;
-      if (user?.administrator) return true; return Boolean(devices?.[Number(anchor[1])] || devices?.[String(anchor[1])]);
+      if (anchor) return false;
+      return true;
     };
 
     const draw = () => {
