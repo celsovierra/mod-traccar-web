@@ -511,7 +511,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Box>
         ) : null}
 
-        {tabValue === 2 && (
+        {tabValue === 2 ? (
           <Box>
             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
               GRUPOS CADASTRADOS
