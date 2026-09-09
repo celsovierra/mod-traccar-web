@@ -1,71 +1,80 @@
-import { useEffect } from "react";
-import { useSelector } from "react-redux";
-import { useTheme } from "@mui/material/styles";
+﻿import { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { map } from "./core/MapView";
+import { geofencesActions } from "../store";
+
+const SOURCE = "geofences-source";
+
+const circleToPolygon = (lat, lon, radius) => {
+  const points = [];
+  const d = radius / 6378137;
+  const latR = (lat * Math.PI) / 180;
+  const lonR = (lon * Math.PI) / 180;
+  for (let i = 0; i <= 64; i += 1) {
+    const b = (i * 2 * Math.PI) / 64;
+    const la = Math.asin(Math.sin(latR) * Math.cos(d) + Math.cos(latR) * Math.sin(d) * Math.cos(b));
+    const lo = lonR + Math.atan2(Math.sin(b) * Math.sin(d) * Math.cos(latR), Math.cos(d) - Math.sin(latR) * Math.sin(la));
+    points.push([(lo * 180) / Math.PI, (la * 180) / Math.PI]);
+  }
+  return points;
+};
+
+const toFeature = (item) => {
+  const area = String(item.area || "");
+  const circle = area.match(/CIRCLE\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*,\s*([\d.]+)\s*\)/i);
+  if (circle) {
+    return {
+      type: "Feature",
+      properties: { name: item.name, color: "#ff3b30" },
+      geometry: { type: "Polygon", coordinates: [circleToPolygon(parseFloat(circle[1]), parseFloat(circle[2]), parseFloat(circle[3]))] },
+    };
+  }
+  const polygon = area.match(/POLYGON\s*\(\((.+)\)\)/i);
+  if (polygon) {
+    const coords = polygon[1].split(",").map((p) => {
+      const [la, lo] = p.trim().split(/\s+/).map(Number);
+      return [lo, la];
+    });
+    return { type: "Feature", properties: { name: item.name, color: "#3bb2d0" }, geometry: { type: "Polygon", coordinates: [coords] } };
+  }
+  return null;
+};
 
 const MapGeofence = () => {
-  const theme = useTheme();
+  const dispatch = useDispatch();
   const geofences = useSelector((state) => state.geofences.items);
 
   useEffect(() => {
-    if (!map || !map.isStyleLoaded()) return;
-
-    const sourceId = "geofences-source";
-    const fillLayerId = "geofences-fill";
-    const lineLayerId = "geofences-line";
-
-    const serverFeatures = Object.values(geofences).map((g) => ({
-      type: "Feature",
-      properties: {
-        id: g.id,
-        name: g.name,
-        color: g.attributes?.color || theme.palette.geometry?.main || "#3b82f6",
-      },
-      geometry: {
-        type: "Polygon",
-        coordinates: [],
-      },
-    }));
-
-    const data = {
-      type: "FeatureCollection",
-      features: serverFeatures,
+    const load = async () => {
+      const res = await fetch("/api/geofences");
+      if (res.ok) dispatch(geofencesActions.refresh(await res.json()));
     };
+    load();
+    const timer = setInterval(load, 15000);
+    return () => clearInterval(timer);
+  }, [dispatch]);
 
-    if (!map.getSource(sourceId)) {
-      map.addSource(sourceId, {
-        type: "geojson",
-        data,
-      });
-    } else {
-      map.getSource(sourceId).setData(data);
-    }
+  useEffect(() => {
+    const draw = () => {
+      if (!map || !map.isStyleLoaded()) return;
+      const data = {
+        type: "FeatureCollection",
+        features: Object.values(geofences || {}).map(toFeature).filter(Boolean),
+      };
+      if (!map.getSource(SOURCE)) map.addSource(SOURCE, { type: "geojson", data });
+      else map.getSource(SOURCE).setData(data);
 
-    if (!map.getLayer(fillLayerId)) {
-      map.addLayer({
-        id: fillLayerId,
-        type: "fill",
-        source: sourceId,
-        paint: {
-          "fill-color": ["get", "color"],
-          "fill-opacity": 0.25,
-        },
-      });
-    }
-
-    if (!map.getLayer(lineLayerId)) {
-      map.addLayer({
-        id: lineLayerId,
-        type: "line",
-        source: sourceId,
-        paint: {
-          "line-color": ["get", "color"],
-          "line-width": 2,
-          "line-opacity": 0.9,
-        },
-      });
-    }
-  }, [geofences, theme]);
+      if (!map.getLayer("geofences-fill")) {
+        map.addLayer({ id: "geofences-fill", type: "fill", source: SOURCE, paint: { "fill-color": ["get", "color"], "fill-opacity": 0.2 } });
+      }
+      if (!map.getLayer("geofences-line")) {
+        map.addLayer({ id: "geofences-line", type: "line", source: SOURCE, paint: { "line-color": ["get", "color"], "line-width": 2 } });
+      }
+    };
+    draw();
+    map?.on("styledata", draw);
+    return () => { map?.off("styledata", draw); };
+  }, [geofences]);
 
   return null;
 };
