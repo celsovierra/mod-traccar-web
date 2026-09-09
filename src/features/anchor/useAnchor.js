@@ -44,7 +44,7 @@ export const useAnchor = (deviceId) => {
         const bad = dels.find((r) => !r.ok); if (!bad) { const r2 = await fetch(user?.administrator || user?.admin ? '/api/geofences?all=true' : '/api/geofences'); const rest = r2.ok ? (await r2.json()).filter((g) => isAnchorOf(g, deviceId)) : []; await Promise.all(rest.map((g) => fetch('/api/geofences/' + g.id, { method: 'DELETE' }))); }
         if (bad) { setIsAnchorActive(true); emit(true); window.alert('Falha ao excluir ancora: ' + bad.status + ' ' + (await bad.text())); return; }
       } else {
-        if (!position) { setIsAnchorActive(false); emit(false); window.alert('Sem posicao atual do veiculo para criar a ancora.'); return; }
+        if (!position) { setIsAnchorActive(false); emit(false); window.alert('Sem posicao atual do veiculo'); return; }
         const res = await fetch('/api/geofences', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -55,7 +55,7 @@ export const useAnchor = (deviceId) => {
             attributes: {},
           }),
         });
-        if (!res.ok) { setIsAnchorActive(false); emit(false); window.alert('Falha ao criar ancora: ' + (await res.text())); return; }
+        if (!res.ok) { setIsAnchorActive(false); emit(false); window.alert('Falha ao criar ancora: ' + (res.status + ' ' + await res.text())); return; }
         const geofence = await res.json();
 
         await link({ deviceId: Number(deviceId), geofenceId: geofence.id });
@@ -75,6 +75,7 @@ export const useAnchor = (deviceId) => {
 
   return { isAnchorActive, toggleAnchor, loadingAnchor };
 };
+
 
 
 
