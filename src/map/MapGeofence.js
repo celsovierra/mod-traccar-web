@@ -43,6 +43,7 @@ const toFeature = (item) => {
 const MapGeofence = () => {
   const dispatch = useDispatch();
   const geofences = useSelector((state) => state.geofences.items);
+  const devices = useSelector((state) => state.devices.items);
 
   useEffect(() => {
     const load = async () => {
@@ -50,16 +51,23 @@ const MapGeofence = () => {
       if (res.ok) dispatch(geofencesActions.refresh(await res.json()));
     };
     load();
-    const timer = setInterval(load, 15000);
+    const timer = setInterval(load, 10000);
     return () => clearInterval(timer);
   }, [dispatch]);
 
   useEffect(() => {
+    const visible = (item) => {
+      const anchor = String(item.name || "").match(/^ANCORA_(\d+)/);
+      if (!anchor) return true;
+      return Boolean(devices?.[Number(anchor[1])]);
+    };
+
     const draw = () => {
-      if (!map || !map.isStyleLoaded()) return;
+      if (!map) return;
+      if (!map.isStyleLoaded()) { map.once("idle", draw); return; }
       const data = {
         type: "FeatureCollection",
-        features: Object.values(geofences || {}).map(toFeature).filter(Boolean),
+        features: Object.values(geofences || {}).filter(visible).map(toFeature).filter(Boolean),
       };
       if (!map.getSource(SOURCE)) map.addSource(SOURCE, { type: "geojson", data });
       else map.getSource(SOURCE).setData(data);
@@ -71,10 +79,11 @@ const MapGeofence = () => {
         map.addLayer({ id: "geofences-line", type: "line", source: SOURCE, paint: { "line-color": ["get", "color"], "line-width": 2 } });
       }
     };
+
     draw();
     map?.on("styledata", draw);
     return () => { map?.off("styledata", draw); };
-  }, [geofences]);
+  }, [geofences, devices]);
 
   return null;
 };

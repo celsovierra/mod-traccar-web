@@ -70,3 +70,4 @@ export const useAnchor = (deviceId) => {
 
   return { isAnchorActive, toggleAnchor, loadingAnchor };
 };
+
