@@ -1,4 +1,4 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { map } from "./core/MapView";
 import { geofencesActions } from "../store";
@@ -44,22 +44,25 @@ const MapGeofence = () => {
   const dispatch = useDispatch();
   const geofences = useSelector((state) => state.geofences.items);
   const devices = useSelector((state) => state.devices.items);
+  const user = useSelector((state) => state.session.user);
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetch("/api/geofences");
+      const isAdmin = Boolean(user?.administrator || user?.admin);
+      const url = isAdmin ? "/api/geofences?all=true" : "/api/geofences";
+      const res = await fetch(url);
       if (res.ok) dispatch(geofencesActions.refresh(await res.json()));
     };
     load();
     const timer = setInterval(load, 10000);
     return () => clearInterval(timer);
-  }, [dispatch]);
+  }, [dispatch, user]);
 
   useEffect(() => {
     const visible = (item) => {
       const anchor = String(item.name || "").match(/^ANCORA_(\d+)/);
       if (!anchor) return true;
-      return Boolean(devices?.[Number(anchor[1])]);
+      if (user?.administrator) return true; return Boolean(devices?.[Number(anchor[1])] || devices?.[String(anchor[1])]);
     };
 
     const draw = () => {
@@ -83,7 +86,7 @@ const MapGeofence = () => {
     draw();
     map?.on("styledata", draw);
     return () => { map?.off("styledata", draw); };
-  }, [geofences, devices]);
+  }, [geofences, devices, user]);
 
   return null;
 };
