@@ -1,4 +1,4 @@
-ï»¿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './smsMarketModern.css';
 import './smsMarketMobile.css';
 import {
@@ -78,7 +78,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     try {
       setLoadingCommands(true);
       const response = await fetch('/api/commands');
-      if (!response.ok) throw new Error('NÃ£o foi possÃ­vel carregar os comandos do Traccar.');
+      if (!response.ok) throw new Error('Não foi possível carregar os comandos do Traccar.');
       const data = await response.json();
       const commands = Array.isArray(data) ? data : [];
       setSavedCommands(commands.filter((command) => command.type === 'custom' && !command.attributes?.smsMarketGroup));
@@ -103,7 +103,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description: name, type: 'custom', attributes: { text } })
       });
-      if (!response.ok) throw new Error('NÃ£o foi possÃ­vel salvar o comando no Traccar.');
+      if (!response.ok) throw new Error('Não foi possível salvar o comando no Traccar.');
       setCommandName('');
       setCommandText('');
       await loadCommands();
@@ -123,21 +123,19 @@ const SmsMarketModal = ({ device, onClose }) => {
     if (selectedCommandIds.length === 0) { alert('Selecione pelo menos um comando.'); return; }
     try {
       setLoadingGroups(true);
-  const [showCreateGroup, setShowCreateGroup] = useState(false);
       const response = await fetch('/api/commands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: name, type: 'custom', attributes: { smsMarketGroup: true, commandIds: selectedCommandIds } }) });
-      if (!response.ok) throw new Error('NÃ£o foi possÃ­vel salvar o grupo no Traccar.');
+      if (!response.ok) throw new Error('Não foi possível salvar o grupo no Traccar.');
       setGroupName('');
       setSelectedCommandIds([]);
       await loadCommands();
       alert('Grupo salvo com sucesso.');
     } catch (error) { alert(error.message || 'Erro ao salvar grupo.'); } finally { setLoadingGroups(false); }
-  const [showCreateGroup, setShowCreateGroup] = useState(false);
   };
 
   const sendGroup = async (group, phoneOverride = '') => {
     const ids = group.attributes?.commandIds || [];
     const commands = savedCommands.filter((command) => ids.includes(command.id));
-    if (commands.length === 0) { alert('Este grupo nÃ£o possui comandos vÃ¡lidos.'); return; }
+    if (commands.length === 0) { alert('Este grupo não possui comandos válidos.'); return; }
     if (!window.confirm('Enviar ' + commands.length + ' comando(s) por SMS?')) return;
     try {
       setSending(true);
@@ -185,12 +183,12 @@ const SmsMarketModal = ({ device, onClose }) => {
     /* GPRS: envia pelo servidor/API do Traccar, sem usar saldo SMS Market */
     if (type === 'GPRS') {
       if (!device?.id) {
-        alert('Nenhum veÃ­culo foi selecionado.');
+        alert('Nenhum veículo foi selecionado.');
         return;
       }
 
       if ((device?.status || '').toLowerCase() !== 'online') {
-        alert('Este veÃ­culo estÃ¡ offline. Use SMS para enviar o comando.');
+        alert('Este veículo está offline. Use SMS para enviar o comando.');
         return;
       }
 
@@ -209,7 +207,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
         if (!response.ok) {
           const detail = await response.text();
-          throw new Error(detail || 'O Traccar nÃ£o aceitou o comando GPRS.');
+          throw new Error(detail || 'O Traccar não aceitou o comando GPRS.');
         }
 
         setReports((prev) => [{
@@ -224,12 +222,12 @@ const SmsMarketModal = ({ device, onClose }) => {
           time: new Date().toLocaleTimeString('pt-BR'),
           text: message.trim(),
           phone: phone || '',
-          deviceName: device?.name || 'VeÃ­culo',
+          deviceName: device?.name || 'Veículo',
           response: { transport: 'Traccar GPRS' }
         }, ...prev]);
 
         setMessage('');
-        alert('Comando enviado via GPRS para o veÃ­culo online.');
+        alert('Comando enviado via GPRS para o veículo online.');
       } catch (error) {
         console.error('Erro ao enviar GPRS:', error);
 
@@ -245,7 +243,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           time: new Date().toLocaleTimeString('pt-BR'),
           text: message.trim(),
           phone: phone || '',
-          deviceName: device?.name || 'VeÃ­culo',
+          deviceName: device?.name || 'Veículo',
           error: error?.message || 'Erro ao enviar comando GPRS.'
         }, ...prev]);
 
@@ -259,7 +257,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
     /* SMS: usa a SMS Market e desconta saldo normalmente */
     if (!creds?.user?.trim() || !creds?.pass?.trim()) {
-      alert('Configure o usuÃ¡rio e a senha do ENVIAR COMANDO na engrenagem.');
+      alert('Configure o usuário e a senha do ENVIAR COMANDO na engrenagem.');
       setShowSettings(true);
       return;
     }
@@ -268,7 +266,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     try {
       normalizedPhone = normalizeBrazilPhone(phoneOverride || phone);
     } catch (err) {
-      alert(err?.message || 'Telefone invÃ¡lido.');
+      alert(err?.message || 'Telefone inválido.');
       return;
     }
 
@@ -292,7 +290,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         time: new Date().toLocaleTimeString('pt-BR'),
         text: message.trim(),
         phone: normalizedPhone,
-        deviceName: device?.name || 'VeÃ­culo',
+        deviceName: device?.name || 'Veículo',
         response: res
       };
 
@@ -321,7 +319,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         time: new Date().toLocaleTimeString('pt-BR'),
         text: message.trim(),
         phone: normalizedPhone || phone,
-        deviceName: device?.name || 'VeÃ­culo',
+        deviceName: device?.name || 'Veículo',
         error: error?.message || 'Erro desconhecido'
       }, ...prev]);
 
@@ -368,7 +366,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               };
             }
           } catch (e) {
-            // MantÃ©m o estado atual se falhar temporariamente
+            // Mantém o estado atual se falhar temporariamente
           }
           return rep;
         })
@@ -414,7 +412,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           <TextField
             size="small"
             fullWidth
-            label="UsuÃ¡rio / Login"
+            label="Usuário / Login"
             value={creds.user}
             onChange={(e) => setCreds({ ...creds, user: e.target.value })}
             sx={{ mb: 1, bgcolor: '#fff' }}
@@ -445,10 +443,10 @@ const SmsMarketModal = ({ device, onClose }) => {
         {tabValue !== 3 && (
         <Box mb={2.5} p={1.5} bgcolor="#fff" borderRadius="12px" border="1px solid #dbe7f5" display="flex" justifyContent="space-between" alignItems="center" boxShadow="0 2px 8px rgba(25,118,210,0.08)">
           <Typography variant="body2" color="textSecondary" fontWeight="medium">
-            Tel: {phone || 'NÃ£o cadastrado'}
+            Tel: {phone || 'Não cadastrado'}
           </Typography>
           <Typography variant="caption" fontWeight="bold" color={phone ? 'primary.main' : 'error.main'}>
-            {phone ? 'DisponÃ­vel' : 'Cadastre no veÃ­culo'}
+            {phone ? 'Disponível' : 'Cadastre no veículo'}
           </Typography>
         </Box>
 
@@ -464,7 +462,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               sx={{ cursor: 'pointer', userSelect: 'none' }}
             >
               <Typography variant="subtitle2" fontWeight="bold" color="primary">
-                {showCreateGroup ? 'âˆ’ OCULTAR CRIAÃ‡ÃƒO' : '+ CRIAR NOVO GRUPO'}
+                {showCreateGroup ? '- OCULTAR CRIAÇÃO' : '+ CRIAR NOVO GRUPO'}
               </Typography>
               <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 'bold' }}>
                 {showCreateGroup ? 'Fechar' : 'Abrir'}
@@ -498,7 +496,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                     }}
                   >
                     <Typography variant="body2" fontWeight="bold">
-                      {selectedCommandIds.includes(command.id) ? 'âœ“ ' : ''}{command.description}
+                      {selectedCommandIds.includes(command.id) ? '? ' : ''}{command.description}
                     </Typography>
                     <Typography variant="caption" color="textSecondary">
                       {command.attributes?.text || 'Sem texto configurado'}
@@ -571,7 +569,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               fullWidth
               size="small"
               label="Nome do comando"
-              placeholder="Exemplo: Bloquear veÃ­culo"
+              placeholder="Exemplo: Bloquear veículo"
               value={commandName}
               onChange={(e) => setCommandName(e.target.value)}
               disabled={loadingCommands}
@@ -783,7 +781,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} pt={1} borderTop="1px solid #dbe7f5">
           <Box display="flex" alignItems="center" gap={0.5}>
             <Typography variant="subtitle2" fontWeight="bold" color="#1976d2">
-              RELATÃ“RIO
+              RELATÓRIO
             </Typography>
             <Paper sx={{ px: 1, py: 0.1, bgcolor: '#1976d2', color: '#fff', fontSize: '11px', borderRadius: '10px', fontWeight: 'bold' }}>
               {reports.length}
@@ -847,7 +845,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
                 {rep.responseCode && (
                   <Typography variant="caption" color="textSecondary" display="block" mt={0.3}>
-                    CÃ³digo: {rep.responseCode}
+                    Código: {rep.responseCode}
                   </Typography>
                 )}
 
