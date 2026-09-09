@@ -1,16 +1,16 @@
-const BASE_URL = import.meta.env.DEV ? '/api-smsmarket' : 'https://api.smsmarket.com.br/webservice-rest';
+const BASE_URL = 'https://api.smsmarket.com.br/webservice-rest';
 const STORAGE_KEY = 'smsmarket_credentials';
 
 const STATUS_MAP = {
   '-11': 'FALHA NO ENVIO',
   '-10': 'FALHA NO ENVIO',
   '-9': 'SEM COBERTURA',
-  '-8': 'CONTEÚDO BLOQUEADO',
-  '-7': 'NÚMERO SEM WHATSAPP',
+  '-8': 'CONTEÃƒÅ¡DO BLOQUEADO',
+  '-7': 'NÃƒÅ¡MERO SEM WHATSAPP',
   '-6': 'CANCELADA',
   '-5': 'LISTA NEGRA',
-  '-4': 'NÚMERO FIXO',
-  '-3': 'NÚMERO INVÁLIDO',
+  '-4': 'NÃƒÅ¡MERO FIXO',
+  '-3': 'NÃƒÅ¡MERO INVÃƒÂLIDO',
   '-2': 'FALHA DE ENTREGA',
   '-1': 'ENFILEIRADA',
   '0': 'ENVIADA',
@@ -21,7 +21,7 @@ const STATUS_MAP = {
   '6': 'PAUSADA',
   '7': 'EXPIRADA',
   '8': 'REJEITADA',
-  '9': 'NÃO RECEBIDA',
+  '9': 'NÃƒÆ’O RECEBIDA',
 };
 
 export const getStatusInfo = (status) => {
@@ -74,7 +74,7 @@ const getAuthHeaders = () => {
   const { user, pass } = getCredentials();
 
   if (!user?.trim() || !pass?.trim()) {
-    throw new Error('Configure o usuário e a senha da SMSMarket.');
+    throw new Error('Configure o usuÃƒÂ¡rio e a senha da SMSMarket.');
   }
 
   return {
@@ -87,7 +87,7 @@ export const normalizeBrazilPhone = (phone) => {
   let digits = String(phone ?? '').replace(/\D/g, '');
 
   if (!digits) {
-    throw new Error('Telefone não informado.');
+    throw new Error('Telefone nÃƒÂ£o informado.');
   }
 
   if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
@@ -96,7 +96,7 @@ export const normalizeBrazilPhone = (phone) => {
 
   if (digits.length !== 10 && digits.length !== 11) {
     throw new Error(
-      'Telefone inválido. Informe DDD + número. Exemplo: 86999999999.'
+      'Telefone invÃƒÂ¡lido. Informe DDD + nÃƒÂºmero. Exemplo: 86999999999.'
     );
   }
 
@@ -130,7 +130,7 @@ const parseResponse = async (response) => {
       json?.message ||
       json?.error ||
       json?.description ||
-      'A SMSMarket recusou a solicitação.'
+      'A SMSMarket recusou a solicitaÃƒÂ§ÃƒÂ£o.'
     );
   }
 
@@ -257,7 +257,7 @@ export const getBalance = async () => {
 
 export const saveCredentials = async ({ user, pass }) => {
   if (!user?.trim() || !pass?.trim()) {
-    throw new Error('Informe o usuário e a senha da SMSMarket.');
+    throw new Error('Informe o usuÃƒÂ¡rio e a senha da SMSMarket.');
   }
 
   localStorage.setItem(
@@ -305,7 +305,7 @@ export const sendSms = async (phone, content, campaignId = null) => {
 
 export const getMessageStatus = async ({ id, campaignId } = {}) => {
   if (!id && !campaignId) {
-    throw new Error('Não há identificador para consultar o status do SMS.');
+    throw new Error('NÃƒÂ£o hÃƒÂ¡ identificador para consultar o status do SMS.');
   }
 
   const params = {
@@ -320,7 +320,7 @@ export const getMessageStatus = async ({ id, campaignId } = {}) => {
   const message = messages[0] || extractMessage(json);
 
   if (!message) {
-    throw new Error('A SMSMarket ainda não retornou o status desta mensagem.');
+    throw new Error('A SMSMarket ainda nÃƒÂ£o retornou o status desta mensagem.');
   }
 
   const status = extractMessageStatus(message, '-1');
