@@ -53,11 +53,13 @@ const SmsMarketModal = ({ device, onClose }) => {
   const [savedCommands, setSavedCommands] = useState([]);
   const [commandName, setCommandName] = useState('');
   const [commandText, setCommandText] = useState('');
+  const [showCreateCommand, setShowCreateCommand] = useState(false);
   const [loadingCommands, setLoadingCommands] = useState(false);
   const [savedGroups, setSavedGroups] = useState([]);
   const [groupName, setGroupName] = useState('');
   const [selectedCommandIds, setSelectedCommandIds] = useState([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('smsmarket_reports', JSON.stringify(reports));
@@ -121,6 +123,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     if (selectedCommandIds.length === 0) { alert('Selecione pelo menos um comando.'); return; }
     try {
       setLoadingGroups(true);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
       const response = await fetch('/api/commands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: name, type: 'custom', attributes: { smsMarketGroup: true, commandIds: selectedCommandIds } }) });
       if (!response.ok) throw new Error('Não foi possível salvar o grupo no Traccar.');
       setGroupName('');
@@ -128,6 +131,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       await loadCommands();
       alert('Grupo salvo com sucesso.');
     } catch (error) { alert(error.message || 'Erro ao salvar grupo.'); } finally { setLoadingGroups(false); }
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
   };
 
   const sendGroup = async (group, phoneOverride = '') => {
@@ -379,18 +383,18 @@ const SmsMarketModal = ({ device, onClose }) => {
   const displayBalance = balance === null || balance === undefined || balance === '' ? '--' : balance;
 
   return (
-    <Dialog className="sms-market-modal" open={true} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: '18px', m: { xs: 1, sm: 2 }, maxHeight: '92vh', overflow: 'hidden' } }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" px={{ xs: 2, sm: 3 }} py={2} bgcolor="#f8fbff" borderBottom="1px solid #e3f2fd">
+    <Dialog className="sms-market-modal" open={true} onClose={onClose} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: "18px", m: { xs: 0, sm: 2 }, width: { xs: "100%", sm: "440px" }, height: { xs: "100%", sm: "88vh" }, maxHeight: { xs: "100%", sm: "88vh" }, display: "flex", flexDirection: "column" } }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" px={2} py={1.5} bgcolor="#ffffff" borderBottom="1px solid #edf2f7" sx={{ flexShrink: 0 }}>
         <Box display="flex" alignItems="center" gap={0.5}>
           <FlashOnIcon color="primary" />
-          <Typography variant="h6" fontWeight="bold" color="#1976d2" sx={{ letterSpacing: 0.3 }}>
-            {/* Título ocultado para economizar espaço */}
+          <Typography variant="subtitle1" fontWeight="800" color="#1976d2" sx={{ letterSpacing: 0.5, whiteSpace: "nowrap" }}>
+            ENVIAR COMANDO
           </Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Paper variant="outlined" sx={{ px: 1.5, py: 0.3, bgcolor: '#e3f2fd', borderColor: '#90caf9', borderRadius: '8px', minWidth: '75px', textAlign: 'center' }}>
-            <Typography variant="body2" color={balance === null ? 'error' : 'primary'} fontWeight="bold">
-              {loadingBalance ? <CircularProgress size={14} thickness={5} /> : `SMS: ${displayBalance}`}
+          <Paper variant="outlined" sx={{ px: 1.5, py: 0.3, bgcolor: "#e8f0fe", borderColor: "#c2d7fa", borderRadius: "8px", minWidth: "70px", textAlign: "center", boxShadow: "none" }}>
+            <Typography variant="caption" color="primary" fontWeight="bold">
+              {loadingBalance ? <CircularProgress size={12} thickness={5} /> : `SMS: ${displayBalance}`}
             </Typography>
           </Paper>
           <IconButton onClick={() => setShowSettings(!showSettings)} size="small" color="primary">
@@ -451,53 +455,66 @@ const SmsMarketModal = ({ device, onClose }) => {
         )}
         
         {tabValue === 2 ? (
-          <Box sx={{ bgcolor: '#fff', border: '1px solid #e3edf8', borderRadius: '12px', p: 2, mb: 1 }}>
-            <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
-              CRIAR GRUPO DE COMANDOS
-            </Typography>
-
-            <TextField
-              fullWidth
-              size="small"
-              label="Nome do grupo"
-              placeholder="Exemplo: Bloqueio e alarme"
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              disabled={loadingGroups}
-              sx={{ mb: 1.5 }}
-            />
-
-            <Typography variant="body2" fontWeight="bold" mb={1}>
-              Selecione os comandos do grupo:
-            </Typography>
-
-            <Box display="flex" flexDirection="row" gap={0.5} mb={2} sx={{ maxHeight: 210, overflowY: 'auto', pr: 0.5 }}>
-              {savedCommands.map((command) => (
-                <Paper
-                  key={command.id}
-                  variant="outlined"
-                  onClick={() => toggleCommandInGroup(command.id)}
-                  sx={{
-                    p: 1.5, borderRadius: '10px',
-                    cursor: 'pointer',
-                    borderColor: selectedCommandIds.includes(command.id) ? '#1976d2' : '#e0e0e0',
-                    bgcolor: selectedCommandIds.includes(command.id) ? '#e3f2fd' : '#fff'
-                  }}
-                >
-                  <Typography variant="body2" fontWeight="bold">
-                    {selectedCommandIds.includes(command.id) ? '✓ ' : ''}{command.description}
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    {command.attributes?.text || 'Sem texto configurado'}
-                  </Typography>
-                </Paper>
-              ))}
+          <Box sx={{ bgcolor: '#fff', border: '1px solid #e3edf8', borderRadius: '12px', p: 1.5, mb: 1.5 }}>
+            <Box 
+              display="flex" 
+              justifyContent="space-between" 
+              alignItems="center" 
+              onClick={() => setShowCreateGroup(!showCreateGroup)} 
+              sx={{ cursor: 'pointer', userSelect: 'none' }}
+            >
+              <Typography variant="subtitle2" fontWeight="bold" color="primary">
+                {showCreateGroup ? '− OCULTAR CRIAÇÃO' : '+ CRIAR NOVO GRUPO'}
+              </Typography>
+              <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 'bold' }}>
+                {showCreateGroup ? 'Fechar' : 'Abrir'}
+              </Typography>
             </Box>
+            <Collapse in={showCreateGroup} sx={{ mt: showCreateGroup ? 1.5 : 0 }}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Nome do grupo"
+                placeholder="Exemplo: Bloqueio e alarme"
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                disabled={loadingGroups}
+                sx={{ mt: 1.5, mb: 1.5 }}
+              />
+              <Typography variant="body2" fontWeight="bold" mb={1}>
+                Selecione os comandos do grupo:
+              </Typography>
+              <Box display="flex" flexDirection="column" gap={0.8} mb={2} sx={{ maxHeight: 180, overflowY: 'auto', pr: 0.5 }}>
+                {savedCommands.map((command) => (
+                  <Paper
+                    key={command.id}
+                    variant="outlined"
+                    onClick={() => toggleCommandInGroup(command.id)}
+                    sx={{
+                      p: 1.2, borderRadius: '8px',
+                      cursor: 'pointer',
+                      borderColor: selectedCommandIds.includes(command.id) ? '#1976d2' : '#e0e0e0',
+                      bgcolor: selectedCommandIds.includes(command.id) ? '#e3f2fd' : '#fff'
+                    }}
+                  >
+                    <Typography variant="body2" fontWeight="bold">
+                      {selectedCommandIds.includes(command.id) ? '✓ ' : ''}{command.description}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {command.attributes?.text || 'Sem texto configurado'}
+                    </Typography>
+                  </Paper>
+                ))}
+              </Box>
+              <Button variant="contained" fullWidth onClick={saveGroup} disabled={loadingGroups} sx={{ mb: 1, py: 1.1, fontWeight: 'bold', borderRadius: '10px' }}>
+                {loadingGroups ? 'SALVANDO...' : 'SALVAR GRUPO'}
+              </Button>
+            </Collapse>
+          </Box>
+        ) : null}
 
-            <Button variant="contained" fullWidth onClick={saveGroup} disabled={loadingGroups} sx={{ mb: 2.5, py: 1.2, fontWeight: 'bold', borderRadius: '10px' }}>
-              {loadingGroups ? 'SALVANDO...' : 'SALVAR GRUPO'}
-            </Button>
-
+        {tabValue === 2 && (
+          <Box>
             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
               GRUPOS CADASTRADOS
             </Typography>
@@ -507,11 +524,11 @@ const SmsMarketModal = ({ device, onClose }) => {
               onClick={() => setShowSavedGroups(!showSavedGroups)}
               sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
             >
-              {showSavedGroups ? '▲ Fechar grupos' : '▼ Ver grupos criados'}
+              {showSavedGroups ? '? Fechar grupos' : '? Ver grupos criados'}
             </Button>
 
             <Button size="small" variant="contained" fullWidth onClick={() => setShowSavedGroups(!showSavedGroups)} sx={{ mb: 1.5, py: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}>
-              {showSavedGroups ? '▲ Fechar grupos' : '▼ Ver grupos criados'}
+              {showSavedGroups ? '? Fechar grupos' : '? Ver grupos criados'}
             </Button>
 
             {showSavedGroups && (savedGroups.length === 0 ? (
@@ -534,11 +551,22 @@ const SmsMarketModal = ({ device, onClose }) => {
             ))}
           </Box>
         ) : tabValue === 1 ? (
-          <Box sx={{ bgcolor: '#fff', border: '1px solid #e3edf8', borderRadius: '12px', p: 2, mb: 1 }}>
-            <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
-              CADASTRAR COMANDO PRONTO
-            </Typography>
-
+          <Box sx={{ bgcolor: '#fff', border: '1px solid #e3edf8', borderRadius: '12px', p: 1.5, mb: 1.5 }}>
+            <Box 
+              display="flex" 
+              justifyContent="space-between" 
+              alignItems="center" 
+              onClick={() => setShowCreateCommand(!showCreateCommand)} 
+              sx={{ cursor: 'pointer', userSelect: 'none' }}
+            >
+              <Typography variant="subtitle2" fontWeight="bold" color="primary">
+                {showCreateCommand ? '- OCULTAR CADASTRO' : '+ CADASTRAR NOVO COMANDO'}
+              </Typography>
+              <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 'bold' }}>
+                {showCreateCommand ? 'Fechar' : 'Abrir'}
+              </Typography>
+            </Box>
+            <Collapse in={showCreateCommand} sx={{ mt: showCreateCommand ? 1.5 : 0 }}>
             <TextField
               fullWidth
               size="small"
@@ -571,6 +599,7 @@ const SmsMarketModal = ({ device, onClose }) => {
             >
               {loadingCommands ? 'CARREGANDO...' : 'SALVAR COMANDO'}
             </Button>
+            </Collapse>
 
             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
               COMANDOS CADASTRADOS
@@ -581,11 +610,11 @@ const SmsMarketModal = ({ device, onClose }) => {
               onClick={() => setShowSavedCommands(!showSavedCommands)}
               sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
             >
-              {showSavedCommands ? '▲ Fechar comandos' : '▼ Ver comandos criados'}
+              {showSavedCommands ? '? Fechar comandos' : '? Ver comandos criados'}
             </Button>
 
             <Button size="small" variant="outlined" onClick={() => setShowSavedCommands(!showSavedCommands)} sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}>
-              {showSavedCommands ? '▲ Fechar comandos' : '▼ Ver comandos criados'}
+              {showSavedCommands ? '? Fechar comandos' : '? Ver comandos criados'}
             </Button>
 
             {showSavedCommands && (savedCommands.length === 0 ? (
@@ -807,7 +836,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 </Typography>
 
                 <Typography variant="caption" color="textSecondary" display="flex" alignItems="center" gap={0.5} mt={0.5}>
-                  🚗 {rep.deviceName} ({rep.phone})
+                  ?? {rep.deviceName} ({rep.phone})
                 </Typography>
 
                 {rep.smsMarketId && (

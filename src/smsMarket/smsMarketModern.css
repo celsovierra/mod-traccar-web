@@ -1,5 +1,11 @@
-Ôªø.sms-market-modal .MuiDialog-paper {
-  width: min(96vw, 480px);
+.sms-market-modal .MuiDialog-paper {
+  width: min(96vw, 440px) !important;
+  min-width: min(96vw, 440px) !important;
+  height: 85vh !important;
+  min-height: 85vh !important;
+  max-height: 85vh !important;
+  display: flex !important;
+  flex-direction: column !important;
   margin: 8px;
   overflow: hidden;
   border: 1px solid #dce5f2;
@@ -8,7 +14,12 @@
   box-shadow: 0 16px 42px rgba(35, 65, 110, .24);
 }
 
-.sms-market-modal .MuiDialogTitle-root {
+/* Header limpo */
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
   padding: 13px 16px 9px !important;
   background: #ffffff;
   color: #2463d9 !important;
@@ -17,6 +28,9 @@
   font-weight: 800 !important;
 }
 
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 .sms-market-modal .MuiDialogContent-root {
   padding: 10px 14px 14px !important;
   background: #ffffff;
@@ -94,7 +108,7 @@
   color: #263447 !important;
 }
 
-/* Blocos internos: escolha, listas e relat√≥rios */
+/* Blocos internos: escolha, listas e relatÛrios */
 .sms-market-modal .MuiPaper-root {
   border-radius: 9px;
   box-shadow: none !important;
@@ -110,7 +124,7 @@
   font-size: 10px !important;
 }
 
-/* Bot√µes */
+/* Botıes */
 .sms-market-modal .MuiButton-root {
   min-height: 36px;
   border-radius: 8px;
@@ -136,13 +150,13 @@
   border-color: #2563d9;
 }
 
-/* Bot√£o SMS amarelo, como no modelo */
+/* Bot„o SMS amarelo, como no modelo */
 .sms-market-modal .MuiButton-containedWarning,
 .sms-market-modal button[style*="orange"] {
   color: #ffffff !important;
 }
 
-/* Relat√≥rio */
+/* RelatÛrio */
 .sms-market-modal [style*="overflowY"] {
   padding-right: 5px;
   scrollbar-width: thin;
@@ -162,7 +176,7 @@
   border-radius: 8px;
 }
 
-/* Cart√µes de status mais limpos */
+/* Cartıes de status mais limpos */
 .sms-market-modal [style*="backgroundColor: '#e"] {
   border-radius: 8px !important;
 }
@@ -174,11 +188,19 @@
     border-radius: 13px;
   }
 
-  .sms-market-modal .MuiDialogTitle-root {
+/* Header limpo */
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
     padding: 11px 13px 7px !important;
     font-size: 15px !important;
   }
 
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   .sms-market-modal .MuiDialogContent-root {
     padding: 8px 10px 11px !important;
   }
@@ -198,12 +220,20 @@
   }
 }
 
-/* Oculta o t√≠tulo superior para economizar espa√ßo */
-.sms-market-modal .MuiDialogTitle-root {
+/* Oculta o tÌtulo superior para economizar espaÁo */
+/* Header limpo */
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
   display: none !important;
 }
 
 /* Aba GRUPO: estrutura mais simples e compacta */
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 .sms-market-modal .MuiDialogContent-root {
   gap: 0 !important;
 }
@@ -212,12 +242,12 @@
   box-shadow: none !important;
 }
 
-/* Reduz os espa√ßos gerais dos blocos */
+/* Reduz os espaÁos gerais dos blocos */
 .sms-market-modal .MuiDialogContent-root .MuiBox-root {
   margin-bottom: 6px;
 }
 
-/* T√≠tulos de criar grupo e grupos cadastrados */
+/* TÌtulos de criar grupo e grupos cadastrados */
 .sms-market-modal .MuiDialogContent-root .MuiTypography-subtitle2 {
   margin-top: 5px !important;
   margin-bottom: 5px !important;
@@ -229,20 +259,20 @@
   margin-bottom: 6px !important;
 }
 
-/* Bot√µes de salvar/enviar mais compactos */
+/* Botıes de salvar/enviar mais compactos */
 .sms-market-modal .MuiDialogContent-root .MuiButton-root {
   min-height: 35px !important;
   padding-top: 5px !important;
   padding-bottom: 5px !important;
 }
 
-/* Cart√µes internos mais finos */
+/* Cartıes internos mais finos */
 .sms-market-modal .MuiDialogContent-root .MuiPaper-root {
   padding: 9px !important;
   margin-bottom: 5px !important;
 }
 
-/* Textos secund√°rios menores */
+/* Textos secund·rios menores */
 .sms-market-modal .MuiDialogContent-root .MuiTypography-caption {
   font-size: 9px !important;
   line-height: 1.15 !important;
