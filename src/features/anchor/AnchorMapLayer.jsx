@@ -34,6 +34,8 @@ export const AnchorMapLayer = () => {
     return () => window.removeEventListener("anchor-local", handler);
   }, []);
 
+  useEffect(() => { const saved = new Set(Object.values(geofences || {}).map((g) => String(g.name || "").match(/^ANCORA_(\d+)/)?.[1]).filter(Boolean)); setLocal((prev) => { const next = { ...prev }; let changed = false; saved.forEach((id) => { if (next[id]) { delete next[id]; changed = true; } }); return changed ? next : prev; }); }, [geofences]);
+
   useEffect(() => {
     const allowed = (deviceId) => Boolean(user?.administrator) || Boolean(devices?.[Number(deviceId)] || devices?.[String(deviceId)]);
     const items = new Map();
@@ -72,6 +74,7 @@ export const AnchorMapLayer = () => {
 };
 
 export default AnchorMapLayer;
+
 
 
 
