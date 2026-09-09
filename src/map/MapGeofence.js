@@ -54,7 +54,7 @@ const MapGeofence = () => {
       if (res.ok) dispatch(geofencesActions.refresh(await res.json()));
     };
     load();
-    const timer = setInterval(load, 10000);
+    const timer = setInterval(load, 2000);
     return () => clearInterval(timer);
   }, [dispatch, user]);
 
