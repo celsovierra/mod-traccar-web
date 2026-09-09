@@ -54,7 +54,7 @@ export const useAnchor = (deviceId) => {
         const geofence = await res.json();
 
         await link({ deviceId: Number(deviceId), geofenceId: geofence.id });
-        if (user?.id) await link({ userId: user.id, geofenceId: geofence.id });
+        if (user?.id && !user.administrator) await link({ userId: user.id, geofenceId: geofence.id });
 
         const usersRes = await fetch(`/api/users?deviceId=${Number(deviceId)}`).catch(() => null);
         if (usersRes && usersRes.ok) {
@@ -70,4 +70,5 @@ export const useAnchor = (deviceId) => {
 
   return { isAnchorActive, toggleAnchor, loadingAnchor };
 };
+
 
