@@ -56,7 +56,7 @@ const MapRouteStops = ({ positions }) => {
 
       const el = document.createElement('div');
       el.style.cssText = 'display:flex;align-items:center;gap:4px;background:#ef4444;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.4);border:2px solid #fff;cursor:pointer;';
-      ['click','dblclick','mousedown','mouseup','touchstart','touchend','contextmenu'].forEach((ev) => el.addEventListener(ev, (e) => { e.stopPropagation(); }));
+      ['dblclick','mousedown','mouseup','touchstart','touchend','contextmenu'].forEach((ev) => el.addEventListener(ev, (e) => { e.stopPropagation(); }));
       el.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>${durationStr}`;
 
       const html = `
@@ -101,7 +101,9 @@ const MapRouteStops = ({ positions }) => {
         } catch (error) { /* silent */ }
       });
 
-      markers.push(new maplibregl.Marker({ element: el }).setLngLat([stop.lng, stop.lat]).setPopup(popup).addTo(map));
+      el.addEventListener('click', (e) => { e.stopPropagation(); if (popup.isOpen()) { popup.remove(); } else { popup.setLngLat([stop.lng, stop.lat]).addTo(map); } });
+      markers.push(new maplibregl.Marker({ element: el }).setLngLat([stop.lng, stop.lat]).addTo(map));
+      markers.push({ remove: () => popup.remove() });
     });
     return () => markers.forEach((m) => m.remove());
   }, [positions]);
