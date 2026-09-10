@@ -757,14 +757,14 @@ const SmsMarketModal = ({ device, onClose }) => {
           </>
         )}
 
-        <Box display="flex" gap={1.5} mb={2} sx={{ width: '100%', flexWrap: 'nowrap', '& .MuiButton-root': { borderRadius: '10px', boxShadow: 'none', flex: 1, minWidth: 0, pointerEvents: 'auto' } }}>
+        <Box display="flex" gap={1} mb={2} sx={{ width: '100%', flexWrap: 'nowrap', '& .MuiButton-root': { borderRadius: '10px', boxShadow: 'none', width: '140px', minWidth: '140px', pointerEvents: 'auto' } }}>
           <Button
             variant="contained"
             startIcon={sendingType === 'GPRS' ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
             type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSend('GPRS'); }}
             disabled={sendingType === 'GPRS'}
 
-            sx={{ flex: 1, minWidth: 0, py: 1.2, fontWeight: 'bold', bgcolor: '#90caf9', color: '#fff', '&:hover': { bgcolor: '#64b5f6' } }}
+            sx={{ flex: 1, minWidth: 0, py: 1.2, fontWeight: 'bold', bgcolor: '#1976d2', color: '#fff', '&:hover': { bgcolor: '#1565c0' } }}
           >
             GPRS
           </Button>
@@ -774,7 +774,7 @@ const SmsMarketModal = ({ device, onClose }) => {
             type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSend('SMS', tabValue === 3 ? avulsoPhone : ''); }}
             disabled={sendingType === 'SMS'}
 
-            sx={{ flex: 1, minWidth: 0, py: 1.2, fontWeight: 'bold', bgcolor: '#ffe0b2', color: '#e65100', '&:hover': { bgcolor: '#ffe0b2' } }}
+            sx={{ flex: 1, minWidth: 0, py: 1.2, fontWeight: 'bold', bgcolor: '#ef6c00', color: '#fff', '&:hover': { bgcolor: '#e65100' } }}
           >
             SMS
           </Button>
@@ -794,7 +794,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Typography>
         </Box>
 
-        <Box display=\x22flex\x22 flexDirection=\x22column\x22 gap={0.6} sx={{ pb: 1, height: 330, maxHeight: 330, overflowY: 'auto', overflowX: 'hidden', pr: 1.5, flexShrink: 0, scrollbarGutter: 'stable' }}>
+        <Box display="flex" flexDirection="column" gap={0.6} sx={{ pb: 1, height: 330, maxHeight: 330, overflowY: 'auto', overflowX: 'hidden', pr: 1.5, flexShrink: 0, scrollbarGutter: 'stable' }}>
           {reports.map((rep) => {
             const success = isSuccessStatus(rep.status);
             const pending = isPendingStatus(rep.status);
@@ -904,6 +904,12 @@ export default SmsMarketModal;
 
 
 // atualizacao
+
+
+
+
+
+
 
 
 
