@@ -44,6 +44,7 @@ const detectStops = (positions) => {
 const MapRouteStops = ({ positions }) => {
   useEffect(() => {
     const markers = [];
+    const popups = [];
     console.log('DEBUG paradas', (positions||[]).length, detectStops(positions||[]));
     detectStops(positions || []).forEach((stop) => {
       const startDate = new Date(stop.startTime);
@@ -103,8 +104,9 @@ const MapRouteStops = ({ positions }) => {
 
       el.addEventListener('mouseenter', () => {  });
       el.addEventListener('mouseleave', () => {  });
-      el.addEventListener('click', (e) => { e.stopPropagation(); if (popup.isOpen()) { popup.remove(); } else { popup.setLngLat([stop.lng, stop.lat]).addTo(map); } });
+      el.addEventListener('click', (e) => { e.stopPropagation(); if (popup.isOpen()) { popup.remove(); } else { popups.forEach((p) => p.remove()); popup.setLngLat([stop.lng, stop.lat]).addTo(map); } });
       markers.push(new maplibregl.Marker({ element: el }).setLngLat([stop.lng, stop.lat]).addTo(map));
+      popups.push(popup);
       markers.push({ remove: () => popup.remove() });
     });
     return () => markers.forEach((m) => m.remove());
@@ -114,4 +116,5 @@ const MapRouteStops = ({ positions }) => {
 };
 
 export default MapRouteStops;
+
 
