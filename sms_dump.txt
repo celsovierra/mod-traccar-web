@@ -1,0 +1,923 @@
+﻿1: import React, { useState, useEffect } from 'react';
+2: import './smsMarketModern.css';
+3: import './smsMarketMobile.css';
+4: import {
+5:   Dialog,
+6:   DialogContent,
+7:   Box,
+8:   Typography,
+9:   TextField,
+10:   Button,
+11:   IconButton,
+12:   Tabs,
+13:   Tab,
+14:   Collapse,
+15:   Paper,
+16:   CircularProgress
+17: } from '@mui/material';
+18: import FlashOnIcon from '@mui/icons-material/FlashOn';
+19: import CloseIcon from '@mui/icons-material/Close';
+20: import SettingsIcon from '@mui/icons-material/Settings';
+21: import EditIcon from '@mui/icons-material/Edit';
+22: import Inventory2Icon from '@mui/icons-material/Inventory2';
+23: import SmartphoneIcon from '@mui/icons-material/Smartphone';
+24: import SendIcon from '@mui/icons-material/Send';
+25: import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+26: import ScheduleIcon from '@mui/icons-material/Schedule';
+27: import ErrorIcon from '@mui/icons-material/Error';
+28: 
+29: import {
+30:   sendSms,
+31:   getBalance,
+32:   saveCredentials,
+33:   getCredentials,
+34:   normalizeBrazilPhone,
+35:   getStatusInfo,
+36:   getMessageStatus
+37: } from './smsMarketService';
+38: 
+39: const SmsMarketModal = ({ device, onClose }) => {
+40:   const [tabValue, setTabValue] = useState(0);
+41:   const [message, setMessage] = useState('');
+42:   const [phone, setPhone] = useState(device?.phone || '');
+43:   const [avulsoPhone, setAvulsoPhone] = useState('');
+44:   const [avulsoChoice, setAvulsoChoice] = useState('');
+45:   const [showSavedCommands, setShowSavedCommands] = useState(false);
+46:   const [showSavedGroups, setShowSavedGroups] = useState(false);
+47:   const [sending, setSending] = useState(false);
+48:   const [sendingType, setSendingType] = useState(null);
+49:   const [balance, setBalance] = useState(null);
+50:   const [loadingBalance, setLoadingBalance] = useState(false);
+51:   const [showSettings, setShowSettings] = useState(false);
+52:   const [creds, setCreds] = useState({ user: '', pass: '' });
+53:   const [reports, setReports] = useState(() => { try { return JSON.parse(localStorage.getItem('smsmarket_reports') || '[]'); } catch { return []; } });
+54:   const [savedCommands, setSavedCommands] = useState([]);
+55:   const [commandName, setCommandName] = useState('');
+56:   const [commandText, setCommandText] = useState('');
+57:   const [showCreateCommand, setShowCreateCommand] = useState(false);
+58:   const [loadingCommands, setLoadingCommands] = useState(false);
+59:   const [savedGroups, setSavedGroups] = useState([]);
+60:   const [groupName, setGroupName] = useState('');
+61:   const [selectedCommandIds, setSelectedCommandIds] = useState([]);
+62:   const [loadingGroups, setLoadingGroups] = useState(false);
+63:   const [showCreateGroup, setShowCreateGroup] = useState(false);
+64: 
+65:   useEffect(() => {
+66:     localStorage.setItem('smsmarket_reports', JSON.stringify(reports));
+67:   }, [reports]);
+68: 
+69:   useEffect(() => {
+70:     const loadedCreds = getCredentials();
+71:     setCreds(loadedCreds);
+72:     if (loadedCreds.user && loadedCreds.pass) {
+73:       loadBalance();
+74:     }
+75:     loadCommands();
+76:   }, []);
+77: 
+78:   const loadCommands = async () => {
+79:     try {
+80:       setLoadingCommands(true);
+81:       const response = await fetch('/api/commands');
+82:       if (!response.ok) throw new Error('Nï¿½o foi possï¿½vel carregar os comandos do Traccar.');
+83:       const data = await response.json();
+84:       const commands = Array.isArray(data) ? data : [];
+85:       setSavedCommands(commands.filter((command) => command.type === 'custom' && !command.attributes?.smsMarketGroup));
+86:       setSavedGroups(commands.filter((command) => command.type === 'custom' && command.attributes?.smsMarketGroup));
+87:     } catch (error) {
+88:       console.error('Erro ao carregar comandos:', error);
+89:     } finally {
+90:       setLoadingCommands(false);
+91:     }
+92:   };
+93: 
+94:   const saveCommand = async () => {
+95:     const name = commandName.trim();
+96:     const text = commandText.trim();
+97:     if (!name || !text) {
+98:       alert('Informe o nome e o texto do comando.');
+99:       return;
+100:     }
+101:     try {
+102:       const response = await fetch('/api/commands', {
+103:         method: 'POST',
+104:         headers: { 'Content-Type': 'application/json' },
+105:         body: JSON.stringify({ description: name, type: 'custom', attributes: { text } })
+106:       });
+107:       if (!response.ok) throw new Error('Nï¿½o foi possï¿½vel salvar o comando no Traccar.');
+108:       setCommandName('');
+109:       setCommandText('');
+110:       await loadCommands();
+111:       alert('Comando salvo para todos os aparelhos.');
+112:     } catch (error) {
+113:       alert(error.message || 'Erro ao salvar comando.');
+114:     }
+115:   };
+116: 
+117:   const toggleCommandInGroup = (id) => {
+118:     setSelectedCommandIds((previous) => previous.includes(id) ? previous.filter((item) => item !== id) : [...previous, id]);
+119:   };
+120: 
+121:   const saveGroup = async () => {
+122:     const name = groupName.trim();
+123:     if (!name) { alert('Informe o nome do grupo.'); return; }
+124:     if (selectedCommandIds.length === 0) { alert('Selecione pelo menos um comando.'); return; }
+125:     try {
+126:       setLoadingGroups(true);
+127:       const response = await fetch('/api/commands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: name, type: 'custom', attributes: { smsMarketGroup: true, commandIds: selectedCommandIds } }) });
+128:       if (!response.ok) throw new Error('Nï¿½o foi possï¿½vel salvar o grupo no Traccar.');
+129:       setGroupName('');
+130:       setSelectedCommandIds([]);
+131:       await loadCommands();
+132:       alert('Grupo salvo com sucesso.');
+133:     } catch (error) { alert(error.message || 'Erro ao salvar grupo.'); } finally { setLoadingGroups(false); }
+134:   };
+135: 
+136:   const sendGroup = async (group, phoneOverride = '') => {
+137:     const ids = group.attributes?.commandIds || [];
+138:     const commands = savedCommands.filter((command) => ids.includes(command.id));
+139:     if (commands.length === 0) { alert('Este grupo nï¿½o possui comandos vï¿½lidos.'); return; }
+140:     if (!window.confirm('Enviar ' + commands.length + ' comando(s) por SMS?')) return;
+141:     try {
+142:       setSending(true);
+143:       for (const command of commands) {
+144:         const text = command.attributes?.text || '';
+145:         if (text) await sendSms(normalizeBrazilPhone(phoneOverride || phone), text);
+146:       }
+147:       alert('Comandos do grupo enviados.');
+148:       await loadBalance();
+149:     } catch (error) { alert(error.message || 'Erro ao enviar o grupo.'); } finally { setSending(false);
+150:         setSendingType(null); }
+151:   };
+152: 
+153:   const loadBalance = async () => {
+154:     setLoadingBalance(true);
+155:     try {
+156:       const bal = await getBalance();
+157:       setBalance(bal);
+158:     } catch (e) {
+159:       setBalance('Erro');
+160:     } finally {
+161:       setLoadingBalance(false);
+162:     }
+163:   };
+164: 
+165:   const handleSaveCreds = async () => {
+166:     try {
+167:       setLoadingBalance(true);
+168:       const bal = await saveCredentials(creds);
+169:       setBalance(bal);
+170:       setShowSettings(false);
+171:       alert('Credenciais salvas e testadas com sucesso!');
+172:     } catch (error) {
+173:       alert(error?.message || 'Erro ao salvar credenciais.');
+174:     } finally {
+175:       setLoadingBalance(false);
+176:     }
+177:   };
+178: 
+179:   const handleSend = async (type, phoneOverride = '') => {
+180:     if (!message.trim()) {
+181:       alert('Digite uma mensagem ou comando antes de enviar.');
+182:       return;
+183:     }
+184: 
+185:     /* GPRS: envia pelo servidor/API do Traccar, sem usar saldo SMS Market */
+186:     if (type === 'GPRS') {
+187:       setSendingType('GPRS');
+188:       if (!device?.id) {
+189:         alert('Nenhum veï¿½culo foi selecionado.');
+190:         return;
+191:       }
+192: 
+193:       if ((device?.status || '').toLowerCase() !== 'online') {
+194:         alert('Este veï¿½culo estï¿½ offline. Use SMS para enviar o comando.');
+195:         return;
+196:       }
+197: 
+198:       try {
+199:         setSending(true);
+200: 
+201:         const response = await fetch('/api/commands/send', {
+202:           method: 'POST',
+203:           headers: { 'Content-Type': 'application/json' },
+204:           body: JSON.stringify({
+205:             deviceId: device.id,
+206:             type: 'custom',
+207:             text: message.trim()
+208:           })
+209:         });
+210: 
+211:         if (!response.ok) {
+212:           const detail = await response.text();
+213:           throw new Error(detail || 'O Traccar nï¿½o aceitou o comando GPRS.');
+214:         }
+215: 
+216:         setReports((prev) => [{
+217:           id: Date.now(),
+218:           smsMarketId: null,
+219:           campaignId: null,
+220:           responseCode: 'GPRS',
+221:           status: 'ENVIADA',
+222:           statusCode: 'GPRS',
+223:           terminal: true,
+224:           type: 'GPRS',
+225:           time: new Date().toLocaleTimeString('pt-BR'),
+226:           text: message.trim(),
+227:           phone: phone || '',
+228:           deviceName: device?.name || 'Veï¿½culo',
+229:           response: { transport: 'Traccar GPRS' }
+230:         }, ...prev]);
+231: 
+232:         setMessage('');
+233:         alert('Comando enviado via GPRS para o veï¿½culo online.');
+234:       } catch (error) {
+235:         console.error('Erro ao enviar GPRS:', error);
+236: 
+237:         setReports((prev) => [{
+238:           id: Date.now(),
+239:           smsMarketId: null,
+240:           campaignId: null,
+241:           responseCode: 'GPRS_ERRO',
+242:           status: 'FALHA',
+243:           statusCode: '-11',
+244:           terminal: true,
+245:           type: 'GPRS',
+246:           time: new Date().toLocaleTimeString('pt-BR'),
+247:           text: message.trim(),
+248:           phone: phone || '',
+249:           deviceName: device?.name || 'Veï¿½culo',
+250:           error: error?.message || 'Erro ao enviar comando GPRS.'
+251:         }, ...prev]);
+252: 
+253:         alert(error?.message || 'Erro ao enviar comando via GPRS.');
+254:       } finally {
+255:         setSending(false);
+256:         setSendingType(null);
+257:       }
+258: 
+259:       return;
+260:     }
+261: 
+262:     /* SMS: usa a SMS Market e desconta saldo normalmente */
+263:     setSendingType('SMS');
+264:     if (!creds?.user?.trim() || !creds?.pass?.trim()) {
+265:       alert('Configure o usuï¿½rio e a senha do ENVIAR COMANDO na engrenagem.');
+266:       setShowSettings(true);
+267:       return;
+268:     }
+269: 
+270:     let normalizedPhone = '';
+271:     try {
+272:       normalizedPhone = normalizeBrazilPhone(phoneOverride || phone);
+273:     } catch (err) {
+274:       alert(err?.message || 'Telefone invï¿½lido.');
+275:       return;
+276:     }
+277: 
+278:     try {
+279:       setSending(true);
+280:       const res = await sendSms(normalizedPhone, message.trim());
+281:       const messageId = res?.id || null;
+282:       const responseCode = res?.responseCode || '000';
+283:       const initialStatus = responseCode === '000' ? 'ENFILEIRADA' : 'ACEITA';
+284:       const statusInfo = getStatusInfo(initialStatus === 'ENFILEIRADA' ? '-1' : '0');
+285: 
+286:       const report = {
+287:         id: Date.now(),
+288:         smsMarketId: messageId,
+289:         campaignId: res?.campaignId || null,
+290:         responseCode,
+291:         status: initialStatus,
+292:         statusCode: initialStatus === 'ENFILEIRADA' ? '-1' : '0',
+293:         terminal: false,
+294:         type: 'SMS',
+295:         time: new Date().toLocaleTimeString('pt-BR'),
+296:         text: message.trim(),
+297:         phone: normalizedPhone,
+298:         deviceName: device?.name || 'Veï¿½culo',
+299:         response: res
+300:       };
+301: 
+302:       setReports((prev) => [report, ...prev]);
+303:       setMessage('');
+304:       await loadBalance();
+305: 
+306:       if (responseCode === '000') {
+307:         alert(messageId ? `Mensagem aceita.` + "\nID: " + messageId : 'Mensagem enfileirada.');
+308:       } else {
+309:         alert('A SMSMarket retornou uma resposta inesperada.');
+310:       }
+311:     } catch (error) {
+312:       console.error('Erro ao enviar SMS:', error);
+313:       const errInfo = getStatusInfo('-11');
+314: 
+315:       setReports((prev) => [{
+316:         id: Date.now(),
+317:         smsMarketId: null,
+318:         campaignId: null,
+319:         responseCode: error?.responseCode || null,
+320:         status: errInfo.label,
+321:         statusCode: '-11',
+322:         terminal: errInfo.terminal,
+323:         type: 'SMS',
+324:         time: new Date().toLocaleTimeString('pt-BR'),
+325:         text: message.trim(),
+326:         phone: normalizedPhone || phone,
+327:         deviceName: device?.name || 'Veï¿½culo',
+328:         error: error?.message || 'Erro desconhecido'
+329:       }, ...prev]);
+330: 
+331:       alert(error?.message || 'Erro ao enviar mensagem.');
+332:     } finally {
+333:       setSending(false);
+334:         setSendingType(null);
+335:     }
+336:   };
+337:   const isSuccessStatus = (status) => {
+338:     return ['ENTREGUE', 'LIDA', 'ENVIADA', 'RESPONDIDA'].includes(status);
+339:   };
+340: 
+341:   const isPendingStatus = (status) => {
+342:     return ['ENFILEIRADA', 'ACEITA', 'AGUARDANDO', 'PREPARANDO', 'PAUSADA'].includes(status);
+343:   };
+344: 
+345:   useEffect(() => {
+346:     const interval = setInterval(async () => {
+347:       if (!reports || reports.length === 0) return;
+348: 
+349:       const hasPending = reports.some(r => r.smsMarketId && (!r.terminal && r.status !== 'ENTREGUE' && r.status !== 'LIDA'));
+350:       if (!hasPending) return;
+351: 
+352:       const updatedReports = await Promise.all(
+353:         reports.map(async (rep) => {
+354:           if (rep.terminal || !rep.smsMarketId || rep.status === 'ENTREGUE' || rep.status === 'LIDA') {
+355:             return rep;
+356:           }
+357: 
+358:           try {
+359:             console.log('CONSULTANDO STATUS PARA ID:', rep.smsMarketId);
+360:             const statusRes = await getMessageStatus({
+361:               id: rep.smsMarketId,
+362:               campaignId: rep.campaignId
+363:             });
+364: 
+365:             if (statusRes && statusRes.statusInfo) {
+366:               return {
+367:                 ...rep,
+368:                 status: statusRes.statusInfo.label,
+369:                 statusCode: statusRes.status,
+370:                 terminal: statusRes.statusInfo.terminal,
+371:                 carrier: statusRes.carrier || rep.carrier
+372:               };
+373:             }
+374:           } catch (e) {
+375:             // Mantï¿½m o estado atual se falhar temporariamente
+376:           }
+377:           return rep;
+378:         })
+379:       );
+380: 
+381:       setReports(updatedReports);
+382:     }, 4000);
+383: 
+384:     return () => clearInterval(interval);
+385:   }, [reports]);
+386: 
+387:   const displayBalance = balance === null || balance === undefined || balance === '' ? '--' : balance;
+388: 
+389:   return (
+390:     <Dialog className="sms-market-modal" open={true} onClose={onClose} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: "18px", m: { xs: 0, sm: 2 }, width: { xs: "100%", sm: "440px" }, height: { xs: "100%", sm: "88vh" }, maxHeight: { xs: "100%", sm: "88vh" }, display: "flex", flexDirection: "column" } }}>
+391:       <Box display="flex" justifyContent="space-between" alignItems="center" px={2} py={1.5} bgcolor="#ffffff" borderBottom="1px solid #edf2f7" sx={{ flexShrink: 0 }}>
+392:         <Box display="flex" alignItems="center" gap={0.5}>
+393:           <FlashOnIcon color="primary" />
+394:           <Typography variant="subtitle1" fontWeight="800" color="#1976d2" sx={{ letterSpacing: 0.5, whiteSpace: "nowrap" }}>
+395:             ENVIAR COMANDO
+396:           </Typography>
+397:         </Box>
+398:         <Box display="flex" alignItems="center" gap={0.5}>
+399:           <Paper variant="outlined" sx={{ px: 1.5, py: 0.3, bgcolor: "#e8f0fe", borderColor: "#c2d7fa", borderRadius: "8px", minWidth: "70px", textAlign: "center", boxShadow: "none" }}>
+400:             <Typography variant="caption" color="primary" fontWeight="bold">
+401:               {loadingBalance ? <CircularProgress size={12} thickness={5} /> : `SMS: ${displayBalance}`}
+402:             </Typography>
+403:           </Paper>
+404:           <IconButton onClick={() => setShowSettings(!showSettings)} size="small" color="primary">
+405:             <SettingsIcon />
+406:           </IconButton>
+407:           <IconButton onClick={onClose} size="small">
+408:             <CloseIcon />
+409:           </IconButton>
+410:         </Box>
+411:       </Box>
+412: 
+413:       <Collapse in={showSettings} sx={{ mb: 2 }}>
+414:         <Box p={2} mb={2} bgcolor="#f1f8e9" borderRadius="8px" border="1px solid #c8e6c9">
+415:           <Typography variant="subtitle2" fontWeight="bold" color="success.dark" mb={1}>
+416:             Configurar Credenciais ENVIAR COMANDO
+417:           </Typography>
+418:           <TextField
+419:             size="small"
+420:             fullWidth
+421:             label="Usuï¿½rio / Login"
+422:             value={creds.user}
+423:             onChange={(e) => setCreds({ ...creds, user: e.target.value })}
+424:             sx={{ mb: 1, bgcolor: '#fff' }}
+425:           />
+426:           <TextField
+427:             size="small"
+428:             fullWidth
+429:             type="password"
+430:             label="Senha"
+431:             value={creds.pass}
+432:             onChange={(e) => setCreds({ ...creds, pass: e.target.value })}
+433:             sx={{ mb: 1, bgcolor: '#fff' }}
+434:           />
+435:           <Button variant="contained" size="small" color="success" onClick={handleSaveCreds} disabled={loadingBalance} fullWidth>
+436:             {loadingBalance ? 'VALIDANDO...' : 'SALVAR CREDENCIAIS'}
+437:           </Button>
+438:         </Box>
+439:       </Collapse>
+440: 
+441:       <Tabs value={tabValue} onChange={(e, value) => setTabValue(value)} variant="fullWidth" sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 0, sm: 2 }, pt: 1, bgcolor: '#fff', '& .MuiTab-root': { minHeight: 68, fontSize: { xs: '0.65rem', sm: '0.75rem' }, fontWeight: 'bold' }, '& .Mui-selected': { color: '#1565c0' } }}>
+442:         <Tab icon={<EditIcon />} label="Personalizado" iconPosition="top" />
+443:         <Tab icon={<FlashOnIcon />} label="Cmd Pronto" iconPosition="top" />
+444:         <Tab icon={<Inventory2Icon />} label="Grupo" iconPosition="top" />
+445:         <Tab icon={<SmartphoneIcon />} label="SMS Avulso" iconPosition="top" />
+446:       </Tabs>
+447: 
+448:       <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: 2.5, bgcolor: '#f7f9fc', overflow: 'hidden' }}>
+449:         {tabValue !== 3 && (
+450:         <Box mb={2.5} p={1.5} bgcolor="#fff" borderRadius="12px" border="1px solid #dbe7f5" display="flex" justifyContent="space-between" alignItems="center" boxShadow="0 2px 8px rgba(25,118,210,0.08)">
+451:           <Typography variant="body2" color="textSecondary" fontWeight="medium">
+452:             Tel: {phone || 'Nï¿½o cadastrado'}
+453:           </Typography>
+454:           <Typography variant="caption" fontWeight="bold" color={phone ? 'primary.main' : 'error.main'}>
+455:             {phone ? 'Disponï¿½vel' : 'Cadastre no veï¿½culo'}
+456:           </Typography>
+457:         </Box>
+458: 
+459:         )}
+460:         
+461:         {tabValue === 2 ? (
+462:           <Box sx={{ bgcolor: '#fff', border: '1px solid #e3edf8', borderRadius: '12px', p: 1.5, mb: 1.5 }}>
+463:             <Box 
+464:               display="flex" 
+465:               justifyContent="space-between" 
+466:               alignItems="center" 
+467:               onClick={() => setShowCreateGroup(!showCreateGroup)} 
+468:               sx={{ cursor: 'pointer', userSelect: 'none' }}
+469:             >
+470:               <Typography variant="subtitle2" fontWeight="bold" color="primary">
+471:                 {showCreateGroup ? '- OCULTAR CRIAï¿½ï¿½O' : '+ CRIAR NOVO GRUPO'}
+472:               </Typography>
+473:               <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 'bold' }}>
+474:                 {showCreateGroup ? 'Fechar' : 'Abrir'}
+475:               </Typography>
+476:             </Box>
+477:             <Collapse in={showCreateGroup} sx={{ mt: showCreateGroup ? 1.5 : 0 }}>
+478:               <TextField
+479:                 fullWidth
+480:                 size="small"
+481:                 label="Nome do grupo"
+482:                 placeholder="Exemplo: Bloqueio e alarme"
+483:                 value={groupName}
+484:                 onChange={(e) => setGroupName(e.target.value)}
+485:                 disabled={loadingGroups}
+486:                 sx={{ mt: 1.5, mb: 1.5 }}
+487:               />
+488:               <Typography variant="body2" fontWeight="bold" mb={1}>
+489:                 Selecione os comandos do grupo:
+490:               </Typography>
+491:               <Box display="flex" flexDirection="column" gap={0.8} mb={2} sx={{ maxHeight: 180, overflowY: 'auto', pr: 0.5 }}>
+492:                 {savedCommands.map((command) => (
+493:                   <Paper
+494:                     key={command.id}
+495:                     variant="outlined"
+496:                     onClick={() => toggleCommandInGroup(command.id)}
+497:                     sx={{
+498:                       p: 1.2, borderRadius: '8px',
+499:                       cursor: 'pointer',
+500:                       borderColor: selectedCommandIds.includes(command.id) ? '#1976d2' : '#e0e0e0',
+501:                       bgcolor: selectedCommandIds.includes(command.id) ? '#e3f2fd' : '#fff'
+502:                     }}
+503:                   >
+504:                     <Typography variant="body2" fontWeight="bold">
+505:                       {selectedCommandIds.includes(command.id) ? '? ' : ''}{command.description}
+506:                     </Typography>
+507:                     <Typography variant="caption" color="textSecondary">
+508:                       {command.attributes?.text || 'Sem texto configurado'}
+509:                     </Typography>
+510:                   </Paper>
+511:                 ))}
+512:               </Box>
+513:               <Button variant="contained" fullWidth onClick={saveGroup} disabled={loadingGroups} sx={{ mb: 1, py: 1.1, fontWeight: 'bold', borderRadius: '10px' }}>
+514:                 {loadingGroups ? 'SALVANDO...' : 'SALVAR GRUPO'}
+515:               </Button>
+516:             </Collapse>
+517:           </Box>
+518:         ) : null}
+519: 
+520:         {tabValue === 2 ? (
+521:           <Box>
+522:             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
+523:               GRUPOS CADASTRADOS
+524:             </Typography>
+525:             <Button
+526:               size="small"
+527:               variant="outlined"
+528:               onClick={() => setShowSavedGroups(!showSavedGroups)}
+529:               sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
+530:             >
+531:               {showSavedGroups ? '? Fechar grupos' : '? Ver grupos criados'}
+532:             </Button>
+533: 
+534:             <Button size="small" variant="contained" fullWidth onClick={() => setShowSavedGroups(!showSavedGroups)} sx={{ mb: 1.5, py: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}>
+535:               {showSavedGroups ? '? Fechar grupos' : '? Ver grupos criados'}
+536:             </Button>
+537: 
+538:             {showSavedGroups && (savedGroups.length === 0 ? (
+539:               <Typography variant="body2" color="textSecondary">Nenhum grupo cadastrado ainda.</Typography>
+540:             ) : (
+541:               
+542:               <Box display="flex" flexDirection="row" gap={0.5} sx={{ display: showSavedGroups ? 'flex' : 'none' }}>
+543:                 {savedGroups.map((group) => (
+544:                   <Paper key={group.id} variant="outlined" sx={{ p: 1.5, borderRadius: '10px', borderColor: '#dbe7f5', bgcolor: '#fbfdff' }}>
+545:                     <Typography variant="body2" fontWeight="bold">{group.description}</Typography>
+546:                     <Typography variant="caption" color="textSecondary" display="block" mb={1}>
+547:                       {(group.attributes?.commandIds || []).length} comando(s) selecionado(s)
+548:                     </Typography>
+549:                     <Button size="small" variant="contained" onClick={() => sendGroup(group)} disabled={sending} sx={{ borderRadius: '8px', fontWeight: 'bold' }}>
+550:                       ENVIAR GRUPO POR SMS
+551:                     </Button>
+552:                   </Paper>
+553:                 ))}
+554:               </Box>
+555:             ))}
+556:           </Box>
+557:         ) : tabValue === 1 ? (
+558:           <Box sx={{ bgcolor: '#fff', border: '1px solid #e3edf8', borderRadius: '12px', p: 1.5, mb: 1.5 }}>
+559:             <Box 
+560:               display="flex" 
+561:               justifyContent="space-between" 
+562:               alignItems="center" 
+563:               onClick={() => setShowCreateCommand(!showCreateCommand)} 
+564:               sx={{ cursor: 'pointer', userSelect: 'none' }}
+565:             >
+566:               <Typography variant="subtitle2" fontWeight="bold" color="primary">
+567:                 {showCreateCommand ? '- OCULTAR CADASTRO' : '+ CADASTRAR NOVO COMANDO'}
+568:               </Typography>
+569:               <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 'bold' }}>
+570:                 {showCreateCommand ? 'Fechar' : 'Abrir'}
+571:               </Typography>
+572:             </Box>
+573:             <Collapse in={showCreateCommand} sx={{ mt: showCreateCommand ? 1.5 : 0 }}>
+574:             <TextField
+575:               fullWidth
+576:               size="small"
+577:               label="Nome do comando"
+578:               placeholder="Exemplo: Bloquear veï¿½culo"
+579:               value={commandName}
+580:               onChange={(e) => setCommandName(e.target.value)}
+581:               disabled={loadingCommands}
+582:               sx={{ mb: 1.5 }}
+583:             />
+584: 
+585:             <TextField
+586:               fullWidth
+587:               multiline
+588:               rows={2}
+589:               label="Texto do comando"
+590:               placeholder="Exemplo: bloqueio123"
+591:               value={commandText}
+592:               onChange={(e) => setCommandText(e.target.value)}
+593:               disabled={loadingCommands}
+594:               sx={{ mb: 1.5 }}
+595:             />
+596: 
+597:             <Button
+598:               variant="contained"
+599:               fullWidth
+600:               onClick={saveCommand}
+601:               disabled={loadingCommands}
+602:               sx={{ mb: 2.5, py: 1.2, fontWeight: 'bold', borderRadius: '10px' }}
+603:             >
+604:               {loadingCommands ? 'CARREGANDO...' : 'SALVAR COMANDO'}
+605:             </Button>
+606:             </Collapse>
+607: 
+608:             <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
+609:               COMANDOS CADASTRADOS
+610:             </Typography>
+611:             <Button
+612:               size="small"
+613:               variant="outlined"
+614:               onClick={() => setShowSavedCommands(!showSavedCommands)}
+615:               sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
+616:             >
+617:               {showSavedCommands ? '? Fechar comandos' : '? Ver comandos criados'}
+618:             </Button>
+619: 
+620:             {showSavedCommands && (savedCommands.length === 0 ? (
+621:               <Typography variant="body2" color="textSecondary">
+622:                 Nenhum comando cadastrado ainda.
+623:               </Typography>
+624:             ) : (
+625:               
+626:               <Box sx={{ display: showSavedCommands ? 'flex' : 'none', flexDirection: 'column', gap: 0.5, width: '100%', maxHeight: 200, overflowY: 'auto', pr: 0.5 }}>
+627:                 {savedCommands.map((command) => (
+628:                   <Paper
+629:                     key={command.id}
+630:                     variant="outlined"
+631:                     onClick={() => setMessage(command.attributes?.text || '')}
+632:                     sx={{
+633:                       p: 1.5, width: '100%', boxSizing: 'border-box', flexShrink: 0, borderRadius: '10px', borderColor: '#dbe7f5', bgcolor: '#fbfdff',
+634:                       cursor: 'pointer',
+635:                       '&:hover': { bgcolor: '#e3f2fd' }
+636:                     }}
+637:                   >
+638:                     <Typography variant="body2" fontWeight="bold">
+639:                       {command.description}
+640:                     </Typography>
+641:                     <Typography variant="caption" color="textSecondary">
+642:                       {command.attributes?.text || 'Sem texto configurado'}
+643:                     </Typography>
+644:                   </Paper>
+645:                 ))}
+646:               </Box>
+647:             ))}
+648:           </Box>
+649:         ) : (
+650:           <>
+651:             {tabValue === 3 && (
+652:               <>
+653: 
+654:                 <TextField
+655:                   fullWidth
+656:                   size="small"
+657:                   label="Telefone para SMS avulso"
+658:                   placeholder="DDD + numero. Exemplo: 11999998888"
+659:                   value={avulsoPhone}
+660:                   onChange={(e) => setAvulsoPhone(e.target.value)}
+661:                   disabled={sending}
+662:                   sx={{ mb: 1.5, bgcolor: '#fff', '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+663:                 />
+664: 
+665:                 <Box sx={{ mb: 2, p: 1.5, border: '1px solid #dbe7f5', borderRadius: '10px', bgcolor: '#f8fbff' }}>
+666:                   <Typography variant="caption" fontWeight="bold" color="#1976d2" display="block" mb={1}>
+667:                     ESCOLHA O QUE DESEJA ENVIAR
+668:                   </Typography>
+669: 
+670:                   <Box display="flex" gap={0.5} mb={avulsoChoice ? 1.5 : 0}>
+671:                     <Button
+672:                       variant={avulsoChoice === 'command' ? 'contained' : 'outlined'}
+673:                       sx={{ flex: 1, minWidth: 0, textTransform: 'none' }}
+674:                       size="small"
+675:                       onClick={() => setAvulsoChoice(avulsoChoice === 'command' ? '' : 'command')}
+676:                       disabled={sending}
+677: 
+678:                     >
+679:                       Comandos prontos
+680:                     </Button>
+681: 
+682:                     <Button
+683:                       variant={avulsoChoice === 'group' ? 'contained' : 'outlined'}
+684:                       sx={{ flex: 1, minWidth: 0, textTransform: 'none' }}
+685:                       size="small"
+686:                       onClick={() => setAvulsoChoice(avulsoChoice === 'group' ? '' : 'group')}
+687:                       disabled={sending}
+688: 
+689:                     >
+690:                       Grupos
+691:                     </Button>
+692:                   </Box>
+693: 
+694:                   {avulsoChoice === 'command' && (
+695:                     <Box>
+696:                       <Typography variant="caption" color="textSecondary" display="block" mb={0.15}>
+697:                         COMANDOS PRONTOS
+698:                       </Typography>
+699:                       {savedCommands.length > 0 ? savedCommands.map((command) => (
+700:                         <Button
+701:                           key={command.id}
+702:                           variant="outlined"
+703:                           size="small"
+704:                           fullWidth
+705:                           disabled={sending}
+706:                           onClick={() => setMessage(command.attributes?.text || '')}
+707:                           sx={{ mb: 0.8, justifyContent: 'flex-start', textTransform: 'none' }}
+708:                         >
+709:                           {command.description}
+710:                         </Button>
+711:                       )) : (
+712:                         <Typography variant="caption" color="textSecondary">
+713:                           Nenhum comando pronto cadastrado.
+714:                         </Typography>
+715:                       )}
+716:                     </Box>
+717:                   )}
+718: 
+719:                   {avulsoChoice === 'group' && (
+720:                     <Box>
+721:                       <Typography variant="caption" color="textSecondary" display="block" mb={0.15}>
+722:                         GRUPOS CADASTRADOS
+723:                       </Typography>
+724:                       {savedGroups.length > 0 ? savedGroups.map((group) => (
+725:                         <Button
+726:                           key={group.id}
+727:                           variant="contained"
+728:                           size="small"
+729:                           fullWidth
+730:                           disabled={sending || !avulsoPhone.trim()}
+731:                           onClick={() => sendGroup(group, avulsoPhone)}
+732:                           sx={{ mb: 0.8, justifyContent: 'flex-start', textTransform: 'none', bgcolor: '#1976d2' }}
+733:                         >
+734:                           Enviar grupo: {group.description}
+735:                         </Button>
+736:                       )) : (
+737:                         <Typography variant="caption" color="textSecondary">
+738:                           Nenhum grupo cadastrado.
+739:                         </Typography>
+740:                       )}
+741:                     </Box>
+742:                   )}
+743:                 </Box>
+744:               </>
+745:             )}
+746:             <TextField
+747:               fullWidth
+748:               multiline
+749:               rows={3}
+750:               placeholder={tabValue === 3 ? 'Digite a mensagem SMS...' : 'Digite o comando ou mensagem...'}
+751:               value={message}
+752:               onChange={(e) => setMessage(e.target.value)}
+753:               variant="outlined"
+754:               disabled={sending}
+755:               sx={{ mb: 2.5, bgcolor: '#fff', '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+756:             />
+757:           </>
+758:         )}
+759: 
+760:         <Box display="flex" gap={1} mb={2} sx={{ width: '100%', flexWrap: 'nowrap', '& .MuiButton-root': { borderRadius: '10px', boxShadow: 'none', width: '140px', minWidth: '140px', pointerEvents: 'auto' } }}>
+761:           <Button
+762:             variant="contained"
+763:             startIcon={sendingType === 'GPRS' ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+764:             type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSend('GPRS'); }}
+765:             disabled={sendingType === 'GPRS'}
+766: 
+767:             sx={{ flex: 1, minWidth: 0, py: 1.2, fontWeight: 'bold', bgcolor: '#1976d2', color: '#fff', '&:hover': { bgcolor: '#1565c0' } }}
+768:           >
+769:             GPRS
+770:           </Button>
+771:           <Button
+772:             variant="contained"
+773:             startIcon={sendingType === 'SMS' ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+774:             type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSend('SMS', tabValue === 3 ? avulsoPhone : ''); }}
+775:             disabled={sendingType === 'SMS'}
+776: 
+777:             sx={{ flex: 1, minWidth: 0, py: 1.2, fontWeight: 'bold', bgcolor: '#ef6c00', color: '#fff', '&:hover': { bgcolor: '#e65100' } }}
+778:           >
+779:             SMS
+780:           </Button>
+781:         </Box>
+782: 
+783:         <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} pt={1} borderTop="1px solid #dbe7f5">
+784:           <Box display="flex" alignItems="center" gap={0.5}>
+785:             <Typography variant="subtitle2" fontWeight="bold" color="#1976d2">
+786:               RELATï¿½RIO
+787:             </Typography>
+788:             <Paper sx={{ px: 1, py: 0.1, bgcolor: '#1976d2', color: '#fff', fontSize: '11px', borderRadius: '10px', fontWeight: 'bold' }}>
+789:               {reports.length}
+790:             </Paper>
+791:           </Box>
+792:           <Typography variant="caption" color="error" sx={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setReports([])}>
+793:             LIMPAR
+794:           </Typography>
+795:         </Box>
+796: 
+797:         <Box display="flex" flexDirection="column" gap={0.6} sx={{ pb: 1, height: 330, maxHeight: 330, overflowY: 'auto', overflowX: 'hidden', pr: 1.5, flexShrink: 0, scrollbarGutter: 'stable' }}>
+798:           {reports.map((rep) => {
+799:             const success = isSuccessStatus(rep.status);
+800:             const pending = isPendingStatus(rep.status);
+801: 
+802:             return (
+803:               <Paper
+804:                 key={rep.id}
+805:                 variant="outlined"
+806:                 sx={{
+807:                   p: 1, mb: 0.8, overflow: 'hidden', boxShadow: 'none', wordBreak: 'break-word', '& .MuiTypography-root': { lineHeight: 1.35 },
+808:                   borderRadius: '12px',
+809:                   borderColor: success ? '#a5d6a7' : pending ? '#90caf9' : '#ef9a9a',
+810:                   bgcolor: success ? '#f1f8e9' : pending ? '#e3f2fd' : '#ffebee'
+811:                 }}
+812:               >
+813:                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.15}>
+814:                   <Box display="flex" alignItems="center" gap={0.5}>
+815:                     {pending ? (
+816:                       <CircularProgress size={14} thickness={5} color="primary" />
+817:                     ) : success ? (
+818:                       <CheckCircleIcon color="success" fontSize="small" />
+819:                     ) : (
+820:                       <ErrorIcon color="error" fontSize="small" />
+821:                     )}
+822:                     <Typography variant="body2" fontWeight="bold" color={success ? 'success.main' : pending ? 'primary.main' : 'error.main'}>
+823:                       {rep.status}
+824:                     </Typography>
+825:                     <Typography variant="caption" bgcolor="#e0e0e0" px={1} py={0.2} borderRadius="4px" fontWeight="bold">
+826:                       {rep.type}
+827:                     </Typography>
+828:                   </Box>
+829:                   <Typography variant="caption" color="textSecondary">
+830:                     {rep.time}
+831:                   </Typography>
+832:                 </Box>
+833: 
+834:                 <Typography variant="body2" fontFamily="monospace" fontWeight="bold">
+835:                   {rep.text}
+836:                 </Typography>
+837: 
+838:                 <Typography variant="caption" color="textSecondary" display="flex" alignItems="center" gap={0.5} mt={0.5}>
+839:                   ?? {rep.deviceName} ({rep.phone})
+840:                 </Typography>
+841: 
+842:                 {rep.smsMarketId && (
+843:                   <Typography variant="caption" color="textSecondary" display="block" mt={0.5}>
+844:                     ID SMSMarket: {rep.smsMarketId}
+845:                   </Typography>
+846:                 )}
+847: 
+848:                 {rep.responseCode && (
+849:                   <Typography variant="caption" color="textSecondary" display="block" mt={0.3}>
+850:                     Cï¿½digo: {rep.responseCode}
+851:                   </Typography>
+852:                 )}
+853: 
+854:                 {rep.error && (
+855:                   <Typography variant="caption" color="error" display="block" mt={0.5}>
+856:                     {rep.error}
+857:                   </Typography>
+858:                 )}
+859:               </Paper>
+860:             );
+861:           })}
+862:         </Box>
+863:       </DialogContent>
+864:     </Dialog>
+865:   );
+866: };
+867: 
+868: export default SmsMarketModal;
+869: 
+870: 
+871: 
+872: 
+873: 
+874: 
+875: 
+876: 
+877: 
+878: 
+879: 
+880: 
+881: 
+882: 
+883: 
+884: 
+885: 
+886: 
+887: 
+888: 
+889: 
+890: 
+891: 
+892: 
+893: 
+894: 
+895: 
+896: 
+897: 
+898: 
+899: 
+900: 
+901: 
+902: 
+903: 
+904: 
+905: 
+906: // atualizacao
+907: 
+908: 
+909: 
+910: 
+911: 
+912: 
+913: 
+914: 
+915: 
+916: 
+917: 
+918: 
+919: 
+920: 
+921: 
+922: 
+923: 
