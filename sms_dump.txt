@@ -794,7 +794,7 @@
 794:           </Typography>
 795:         </Box>
 796: 
-797:         <Box display="flex" flexDirection="column" gap={0.6} sx={{ pb: 1, height: 330, maxHeight: 330, overflowY: 'auto', overflowX: 'hidden', pr: 1.5, flexShrink: 0, scrollbarGutter: 'stable' }}>
+797:         <Box display="flex" flexDirection="column" gap={0.4} sx={{ pb: 1, height: 330, maxHeight: 330, overflowY: 'auto', overflowX: 'hidden', pr: 1.5, flexShrink: 0, scrollbarGutter: 'stable' }}>
 798:           {reports.map((rep) => {
 799:             const success = isSuccessStatus(rep.status);
 800:             const pending = isPendingStatus(rep.status);
@@ -804,7 +804,7 @@
 804:                 key={rep.id}
 805:                 variant="outlined"
 806:                 sx={{
-807:                   p: 1, mb: 0.8, overflow: 'hidden', boxShadow: 'none', wordBreak: 'break-word', '& .MuiTypography-root': { lineHeight: 1.35 },
+807:                   p: 0.6, mb: 0, overflow: 'hidden', boxShadow: 'none', wordBreak: 'break-word', '& .MuiTypography-root': { lineHeight: 1.2, fontSize: '11px' },
 808:                   borderRadius: '12px',
 809:                   borderColor: success ? '#a5d6a7' : pending ? '#90caf9' : '#ef9a9a',
 810:                   bgcolor: success ? '#f1f8e9' : pending ? '#e3f2fd' : '#ffebee'
@@ -835,24 +835,24 @@
 835:                   {rep.text}
 836:                 </Typography>
 837: 
-838:                 <Typography variant="caption" color="textSecondary" display="flex" alignItems="center" gap={0.5} mt={0.5}>
+838:                 <Typography variant="caption" color="textSecondary" display="flex" alignItems="center" gap={0.5} mt={0.2}>
 839:                   ?? {rep.deviceName} ({rep.phone})
 840:                 </Typography>
 841: 
 842:                 {rep.smsMarketId && (
-843:                   <Typography variant="caption" color="textSecondary" display="block" mt={0.5}>
+843:                   <Typography variant="caption" color="textSecondary" display="block" mt={0.2}>
 844:                     ID SMSMarket: {rep.smsMarketId}
 845:                   </Typography>
 846:                 )}
 847: 
 848:                 {rep.responseCode && (
-849:                   <Typography variant="caption" color="textSecondary" display="block" mt={0.3}>
+849:                   <Typography variant="caption" color="textSecondary" display="block" mt={0.2}>
 850:                     Cï¿½digo: {rep.responseCode}
 851:                   </Typography>
 852:                 )}
 853: 
 854:                 {rep.error && (
-855:                   <Typography variant="caption" color="error" display="block" mt={0.5}>
+855:                   <Typography variant="caption" color="error" display="block" mt={0.2}>
 856:                     {rep.error}
 857:                   </Typography>
 858:                 )}
@@ -921,3 +921,6 @@
 921: 
 922: 
 923: 
+924: 
+925: 
+926: 

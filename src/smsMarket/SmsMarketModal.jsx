@@ -794,7 +794,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Typography>
         </Box>
 
-        <Box display="flex" flexDirection="column" gap={0.4} sx={{ pb: 1, height: 330, maxHeight: 330, overflowY: 'auto', overflowX: 'hidden', pr: 1.5, flexShrink: 0, scrollbarGutter: 'stable' }}>
+        <Box display="flex" flexDirection="column" gap={0.25} sx={{ pb: 1, height: 330, maxHeight: 330, overflowY: 'auto', overflowX: 'hidden', pr: 1.5, flexShrink: 0, scrollbarGutter: 'stable' }}>
           {reports.map((rep) => {
             const success = isSuccessStatus(rep.status);
             const pending = isPendingStatus(rep.status);
@@ -804,7 +804,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 key={rep.id}
                 variant="outlined"
                 sx={{
-                  p: 0.6, mb: 0, overflow: 'hidden', boxShadow: 'none', wordBreak: 'break-word', '& .MuiTypography-root': { lineHeight: 1.2, fontSize: '11px' },
+                  p: 0.4, mb: 0, overflow: 'hidden', boxShadow: 'none', wordBreak: 'break-word', '& .MuiTypography-root': { lineHeight: 1.1, fontSize: '10px' },
                   borderRadius: '12px',
                   borderColor: success ? '#a5d6a7' : pending ? '#90caf9' : '#ef9a9a',
                   bgcolor: success ? '#f1f8e9' : pending ? '#e3f2fd' : '#ffebee'
@@ -835,24 +835,24 @@ const SmsMarketModal = ({ device, onClose }) => {
                   {rep.text}
                 </Typography>
 
-                <Typography variant="caption" color="textSecondary" display="flex" alignItems="center" gap={0.5} mt={0.2}>
+                <Typography variant="caption" color="textSecondary" display="flex" alignItems="center" gap={0.5} mt={0}>
                   ?? {rep.deviceName} ({rep.phone})
                 </Typography>
 
                 {rep.smsMarketId && (
-                  <Typography variant="caption" color="textSecondary" display="block" mt={0.2}>
+                  <Typography variant="caption" color="textSecondary" display="block" mt={0}>
                     ID SMSMarket: {rep.smsMarketId}
                   </Typography>
                 )}
 
                 {rep.responseCode && (
-                  <Typography variant="caption" color="textSecondary" display="block" mt={0.2}>
+                  <Typography variant="caption" color="textSecondary" display="block" mt={0}>
                     Cï¿½digo: {rep.responseCode}
                   </Typography>
                 )}
 
                 {rep.error && (
-                  <Typography variant="caption" color="error" display="block" mt={0.2}>
+                  <Typography variant="caption" color="error" display="block" mt={0}>
                     {rep.error}
                   </Typography>
                 )}
@@ -904,6 +904,9 @@ export default SmsMarketModal;
 
 
 // atualizacao
+
+
+
 
 
 
