@@ -804,7 +804,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 key={rep.id}
                 variant="outlined"
                 sx={{
-                  p: 0.7, minHeight: 0, maxHeight: 180, overflow: 'visible', boxShadow: 'none',
+                  p: 1, mb: 0.8, overflow: 'hidden', boxShadow: 'none', wordBreak: 'break-word', '& .MuiTypography-root': { lineHeight: 1.35 },
                   borderRadius: '12px',
                   borderColor: success ? '#a5d6a7' : pending ? '#90caf9' : '#ef9a9a',
                   bgcolor: success ? '#f1f8e9' : pending ? '#e3f2fd' : '#ffebee'
@@ -904,6 +904,7 @@ export default SmsMarketModal;
 
 
 // atualizacao
+
 
 
 

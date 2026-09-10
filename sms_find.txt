@@ -1,0 +1,5 @@
+﻿C:\mod-traccar-web\src\main\DeviceRow.jsx
+C:\mod-traccar-web\src\smsMarket\credentialSync.js
+C:\mod-traccar-web\src\smsMarket\SmsMarketModal.jsx
+C:\mod-traccar-web\src\smsMarket\smsMarketService.js
+C:\mod-traccar-web\src\index.jsx
