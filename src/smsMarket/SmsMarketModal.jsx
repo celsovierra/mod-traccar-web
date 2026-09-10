@@ -45,6 +45,7 @@ const SmsMarketModal = ({ device, onClose }) => {
   const [showSavedCommands, setShowSavedCommands] = useState(false);
   const [showSavedGroups, setShowSavedGroups] = useState(false);
   const [sending, setSending] = useState(false);
+  const [sendingType, setSendingType] = useState(null);
   const [balance, setBalance] = useState(null);
   const [loadingBalance, setLoadingBalance] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -145,7 +146,8 @@ const SmsMarketModal = ({ device, onClose }) => {
       }
       alert('Comandos do grupo enviados.');
       await loadBalance();
-    } catch (error) { alert(error.message || 'Erro ao enviar o grupo.'); } finally { setSending(false); }
+    } catch (error) { alert(error.message || 'Erro ao enviar o grupo.'); } finally { setSending(false);
+        setSendingType(null); }
   };
 
   const loadBalance = async () => {
@@ -182,6 +184,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
     /* GPRS: envia pelo servidor/API do Traccar, sem usar saldo SMS Market */
     if (type === 'GPRS') {
+      setSendingType('GPRS');
       if (!device?.id) {
         alert('Nenhum veï¿½culo foi selecionado.');
         return;
@@ -250,12 +253,14 @@ const SmsMarketModal = ({ device, onClose }) => {
         alert(error?.message || 'Erro ao enviar comando via GPRS.');
       } finally {
         setSending(false);
+        setSendingType(null);
       }
 
       return;
     }
 
     /* SMS: usa a SMS Market e desconta saldo normalmente */
+    setSendingType('SMS');
     if (!creds?.user?.trim() || !creds?.pass?.trim()) {
       alert('Configure o usuï¿½rio e a senha do ENVIAR COMANDO na engrenagem.');
       setShowSettings(true);
@@ -326,6 +331,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       alert(error?.message || 'Erro ao enviar mensagem.');
     } finally {
       setSending(false);
+        setSendingType(null);
     }
   };
   const isSuccessStatus = (status) => {
@@ -404,7 +410,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         </Box>
       </Box>
 
-      <Collapse in={showSettings}>
+      <Collapse in={showSettings} sx={{ mb: 2 }}>
         <Box p={2} mb={2} bgcolor="#f1f8e9" borderRadius="8px" border="1px solid #c8e6c9">
           <Typography variant="subtitle2" fontWeight="bold" color="success.dark" mb={1}>
             Configurar Credenciais ENVIAR COMANDO
@@ -617,14 +623,14 @@ const SmsMarketModal = ({ device, onClose }) => {
               </Typography>
             ) : (
               
-              <Box display="flex" flexDirection="row" gap={0.5} sx={{ display: showSavedCommands ? 'flex' : 'none' }}>
+              <Box sx={{ display: showSavedCommands ? 'flex' : 'none', flexDirection: 'column', gap: 0.5, width: '100%', maxHeight: 200, overflowY: 'auto', pr: 0.5 }}>
                 {savedCommands.map((command) => (
                   <Paper
                     key={command.id}
                     variant="outlined"
                     onClick={() => setMessage(command.attributes?.text || '')}
                     sx={{
-                      p: 1.5, borderRadius: '10px', borderColor: '#dbe7f5', bgcolor: '#fbfdff',
+                      p: 1.5, width: '100%', boxSizing: 'border-box', flexShrink: 0, borderRadius: '10px', borderColor: '#dbe7f5', bgcolor: '#fbfdff',
                       cursor: 'pointer',
                       '&:hover': { bgcolor: '#e3f2fd' }
                     }}
@@ -751,12 +757,12 @@ const SmsMarketModal = ({ device, onClose }) => {
           </>
         )}
 
-        <Box display="flex" gap={1} mb={2} sx={{ width: '100%', flexWrap: 'nowrap', '& .MuiButton-root': { borderRadius: '10px', boxShadow: 'none', flex: 1, minWidth: 0 } }}>
+        <Box display="flex" gap={1.5} mb={2} sx={{ width: '100%', flexWrap: 'nowrap', '& .MuiButton-root': { borderRadius: '10px', boxShadow: 'none', flex: 1, minWidth: 0, pointerEvents: 'auto' } }}>
           <Button
             variant="contained"
-            startIcon={sending ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
-            onClick={() => handleSend('GPRS')}
-            disabled={sending}
+            startIcon={sendingType === 'GPRS' ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+            type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSend('GPRS'); }}
+            disabled={sendingType === 'GPRS'}
 
             sx={{ flex: 1, minWidth: 0, py: 1.2, fontWeight: 'bold', bgcolor: '#90caf9', color: '#fff', '&:hover': { bgcolor: '#64b5f6' } }}
           >
@@ -764,9 +770,9 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Button>
           <Button
             variant="contained"
-            startIcon={sending ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
-            onClick={() => handleSend('SMS', tabValue === 3 ? avulsoPhone : '')}
-            disabled={sending}
+            startIcon={sendingType === 'SMS' ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+            type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSend('SMS', tabValue === 3 ? avulsoPhone : ''); }}
+            disabled={sendingType === 'SMS'}
 
             sx={{ flex: 1, minWidth: 0, py: 1.2, fontWeight: 'bold', bgcolor: '#ffe0b2', color: '#e65100', '&:hover': { bgcolor: '#ffe0b2' } }}
           >
@@ -788,7 +794,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           </Typography>
         </Box>
 
-        <Box display="flex" flexDirection="column" gap={1.5} sx={{ pb: 1, height: 120, maxHeight: 120, overflowY: 'scroll', overflowX: 'hidden', pr: 1.5, flexShrink: 0, scrollbarGutter: 'stable' }}>
+        <Box display=\x22flex\x22 flexDirection=\x22column\x22 gap={0.6} sx={{ pb: 1, height: 330, maxHeight: 330, overflowY: 'auto', overflowX: 'hidden', pr: 1.5, flexShrink: 0, scrollbarGutter: 'stable' }}>
           {reports.map((rep) => {
             const success = isSuccessStatus(rep.status);
             const pending = isPendingStatus(rep.status);
@@ -798,7 +804,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 key={rep.id}
                 variant="outlined"
                 sx={{
-                  p: 0.35, minHeight: 0, maxHeight: 78, overflow: 'hidden', boxShadow: 'none',
+                  p: 0.7, minHeight: 0, maxHeight: 180, overflow: 'visible', boxShadow: 'none',
                   borderRadius: '12px',
                   borderColor: success ? '#a5d6a7' : pending ? '#90caf9' : '#ef9a9a',
                   bgcolor: success ? '#f1f8e9' : pending ? '#e3f2fd' : '#ffebee'
@@ -898,4 +904,13 @@ export default SmsMarketModal;
 
 
 // atualizacao
+
+
+
+
+
+
+
+
+
 
