@@ -2,6 +2,13 @@
 import * as maplibregl from 'maplibre-gl';
 import { map } from './core/MapView';
 
+if (typeof document !== 'undefined' && !document.getElementById('stop-popup-style')) {
+  const s = document.createElement('style');
+  s.id = 'stop-popup-style';
+  s.textContent = '.stop-popup .maplibregl-popup-content{border-radius:18px;padding:14px 16px;box-shadow:0 12px 32px rgba(0,0,0,0.18);border:1px solid rgba(0,0,0,0.06);background:#fff;}.stop-popup .maplibregl-popup-tip{display:none;}.stop-popup .maplibregl-popup-close-button{font-size:18px;color:#999;padding:2px 8px;border-radius:999px;}.stop-popup .maplibregl-popup-close-button:hover{background:#f1f1f1;color:#333;}';
+  document.head.appendChild(s);
+}
+
 const MIN_STOP_MS = 1 * 60 * 1000;
 
 const formatDuration = (ms) => {
@@ -56,7 +63,7 @@ const MapRouteStops = ({ positions }) => {
       const uid = `${stop.lat.toFixed(5)}-${startDate.getTime()}`;
 
       const el = document.createElement('div');
-      el.style.cssText = 'display:flex;align-items:center;gap:4px;padding:4px 10px;background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff;font-size:12px;font-weight:600;border-radius:999px;border:2px solid #fff;box-shadow:0 4px 10px rgba(225,29,72,0.45);cursor:pointer;transition:transform 0.15s ease;white-space:nowrap;';
+      el.style.cssText = 'display:flex;align-items:center;gap:4px;padding:4px 10px;background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff;font-size:12px;font-weight:600;border-radius:999px;border:2px solid #fff;box-shadow:0 4px 10px rgba(225,29,72,0.45);cursor:pointer;white-space:nowrap;';
       ['dblclick','mousedown','mouseup','touchstart','touchend','contextmenu'].forEach((ev) => el.addEventListener(ev, (e) => { e.stopPropagation(); }));
       el.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>${durationStr}`;
 
@@ -75,7 +82,7 @@ const MapRouteStops = ({ positions }) => {
           <button id="stop-share-${uid}" style="margin-top:12px;width:100%;background:#7c3aed;color:#fff;border:none;padding:10px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">Compartilhar</button>
         </div>`;
 
-      const popup = new maplibregl.Popup({ maxWidth: '300px', offset: 16 }).setHTML(html);
+      const popup = new maplibregl.Popup({ maxWidth: '300px', offset: 16, className: 'stop-popup' }).setHTML(html);
 
       popup.on('open', async () => {
         const shareBtn = document.getElementById(`stop-share-${uid}`);
@@ -105,7 +112,7 @@ const MapRouteStops = ({ positions }) => {
       el.addEventListener('mouseenter', () => {  });
       el.addEventListener('mouseleave', () => {  });
       el.addEventListener('click', (e) => { e.stopPropagation(); if (popup.isOpen()) { popup.remove(); } else { popups.forEach((p) => p.remove()); popup.setLngLat([stop.lng, stop.lat]).addTo(map); } });
-      markers.push(new maplibregl.Marker({ element: el }).setLngLat([stop.lng, stop.lat]).addTo(map));
+      markers.push(new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([stop.lng, stop.lat]).addTo(map));
       popups.push(popup);
       markers.push({ remove: () => popup.remove() });
     });
@@ -116,5 +123,7 @@ const MapRouteStops = ({ positions }) => {
 };
 
 export default MapRouteStops;
+
+
 
 

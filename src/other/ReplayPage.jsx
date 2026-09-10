@@ -228,48 +228,6 @@ const ReplayPage = () => {
         <Collapse in={!collapsed} timeout={300}>
           <Paper className={classes.content} square>
           <HistoryPanel positions={positions} loading={loading} onSelect={handleQuickPeriod} />
-          {loaded && !filterOpen && (
-            <>
-              <Typography variant="subtitle1" align="center">
-                {deviceName}
-              </Typography>
-              <Slider
-                className={classes.slider}
-                max={positions.length - 1}
-                step={null}
-                marks={positions.map((_, index) => ({ value: index }))}
-                value={index}
-                onChange={(_, index) => setIndex(index)}
-              />
-              <div className={classes.controls}>
-                <Typography variant="caption">{`${index + 1}/${positions.length}`}</Typography>
-                <IconButton
-                  onClick={() => setIndex((index) => index - 1)}
-                  disabled={playing || index <= 0}
-                >
-                  <FastRewindIcon />
-                </IconButton>
-                <IconButton
-                  onClick={() => setPlaying(!playing)}
-                  disabled={index >= positions.length - 1}
-                >
-                  {playing ? <PauseIcon /> : <PlayArrowIcon />}
-                </IconButton>
-                <IconButton
-                  onClick={() => setIndex((index) => index + 1)}
-                  disabled={playing || index >= positions.length - 1}
-                >
-                  <FastForwardIcon />
-                </IconButton>
-                <Typography variant="caption">
-                  {formatTime(positions[index].fixTime, 'seconds')}
-                </Typography>
-              </div>
-            </>
-          )}
-          <div style={{ display: loaded && !filterOpen ? 'none' : 'block' }}>
-            <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
-          </div>
         </Paper>
         </Collapse>
       </div>
@@ -286,3 +244,4 @@ const ReplayPage = () => {
 };
 
 export default ReplayPage;
+
