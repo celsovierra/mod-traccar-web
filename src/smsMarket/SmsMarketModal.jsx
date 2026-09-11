@@ -531,10 +531,6 @@ const SmsMarketModal = ({ device, onClose }) => {
               {showSavedGroups ? 'Fechar grupos' : 'Ver grupos criados'}
             </Button>
 
-            <Button size="small" variant="contained" fullWidth onClick={() => setShowSavedGroups(!showSavedGroups)} sx={{ mb: 1.5, py: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}>
-              {showSavedGroups ? 'Fechar grupos' : 'Ver grupos criados'}
-            </Button>
-
             {showSavedGroups && (savedGroups.length === 0 ? (
               <Typography variant="body2" color="textSecondary">Nenhum grupo cadastrado ainda.</Typography>
             ) : (
@@ -900,6 +896,8 @@ export default SmsMarketModal;
 
 
 // atualizacao
+
+
 
 
 
