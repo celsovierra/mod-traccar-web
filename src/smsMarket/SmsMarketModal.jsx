@@ -178,6 +178,7 @@ const [selectedGroup, setSelectedGroup] = useState(null);
   };
 
   const handleSend = async (type, phoneOverride = '') => {
+    if (tabValue === 2) setShowSavedGroups(false);
     if (tabValue !== 2 && !message.trim()) {
       alert('Digite uma mensagem ou comando antes de enviar.');
       return;
@@ -268,6 +269,68 @@ const [selectedGroup, setSelectedGroup] = useState(null);
       return;
     }
 
+    if (tabValue === 2 && selectedGroup) {
+      const commandIds = selectedGroup.attributes?.commandIds || [];
+      const groupCommands = savedCommands.filter((command) => commandIds.includes(command.id));
+
+      if (groupCommands.length === 0) {
+        alert('O grupo selecionado não possui comandos válidos.');
+        return;
+      }
+
+      let groupPhone = '';
+      try {
+        groupPhone = normalizeBrazilPhone(phoneOverride || phone);
+      } catch (err) {
+        alert(err?.message || 'Telefone inválido.');
+        return;
+      }
+
+      try {
+        setSending(true);
+
+        for (const command of groupCommands) {
+          const commandText = command.attributes?.text || '';
+
+          if (!commandText.trim()) {
+            continue;
+          }
+
+          const res = await sendSms(groupPhone, commandText.trim());
+          const messageId = res?.id || null;
+          const responseCode = res?.responseCode || '000';
+
+          setReports((prev) => [{
+            id: Date.now() + Math.random(),
+            smsMarketId: messageId,
+            campaignId: res?.campaignId || null,
+            responseCode,
+            status: responseCode === '000' ? 'ENFILEIRADA' : 'ACEITA',
+            statusCode: responseCode === '000' ? '-1' : '0',
+            terminal: false,
+            type: 'SMS',
+            time: new Date().toLocaleTimeString('pt-BR'),
+            text: commandText.trim(),
+            phone: groupPhone,
+            deviceName: device?.name || 'Veículo',
+            response: res
+          }, ...prev]);
+        }
+
+        setSelectedGroup(null);
+        setMessage('');
+        await loadBalance();
+        alert('Todos os comandos do grupo foram enviados por SMS.');
+      } catch (error) {
+        console.error('Erro ao enviar grupo por SMS:', error);
+        alert(error?.message || 'Erro ao enviar o grupo por SMS.');
+      } finally {
+        setSending(false);
+        setSendingType(null);
+      }
+
+      return;
+    }
     let normalizedPhone = '';
     try {
       normalizedPhone = normalizeBrazilPhone(phoneOverride || phone);
@@ -748,7 +811,7 @@ const [selectedGroup, setSelectedGroup] = useState(null);
           <Button
             variant="contained"
             startIcon={sendingType === 'GPRS' ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
-            type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSend('GPRS'); }}
+            type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowSavedGroups(false); handleSend('GPRS'); }}
             disabled={sendingType === 'GPRS'}
 
             sx={{ flex: 1, minWidth: 0, py: 1.2, fontWeight: 'bold', bgcolor: '#1976d2', color: '#fff', '&:hover': { bgcolor: '#1565c0' } }}
@@ -891,6 +954,10 @@ export default SmsMarketModal;
 
 
 // atualizacao
+
+
+
+
 
 
 
