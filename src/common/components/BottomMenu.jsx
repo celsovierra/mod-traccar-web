@@ -1,8 +1,9 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Paper,
+  Box,
   BottomNavigation,
   BottomNavigationAction,
   Menu,
@@ -126,51 +127,137 @@ const BottomMenu = () => {
   };
 
   return (
-    <Paper square elevation={3}>
-      <BottomNavigation value={currentSelection()} onChange={handleSelection} showLabels>
+    <Paper
+      square
+      elevation={0}
+      sx={{
+        borderTop: '1px solid #edf0f4',
+        boxShadow: '0 -4px 18px rgba(15,23,42,0.08)',
+      }}
+    >
+      <BottomNavigation
+        value={currentSelection()}
+        onChange={handleSelection}
+        showLabels
+        sx={{
+          height: 68,
+          bgcolor: '#ffffff',
+          '& .MuiBottomNavigationAction-root': {
+            color: '#8a94a6',
+            minWidth: 0,
+            paddingTop: '6px',
+          },
+          '& .MuiBottomNavigationAction-root.Mui-selected': {
+            color: '#1e293b',
+          },
+          '& .MuiBottomNavigationAction-label': {
+            fontSize: '10.5px',
+            fontWeight: 600,
+            marginTop: '4px',
+          },
+          '& .MuiBottomNavigationAction-label.Mui-selected': {
+            fontWeight: 700,
+          },
+        }}
+      >
         <BottomNavigationAction
-          label={t('mapTitle')}
+          label={t("mapTitle")}
           icon={
             <Badge color="error" variant="dot" overlap="circular" invisible={socket !== false}>
-              <MapIcon />
+              <Box
+                sx={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: currentSelection() === 'map' ? 'linear-gradient(135deg, #42a5f5, #1565c0)' : 'transparent',
+                  boxShadow: currentSelection() === 'map' ? '0 4px 10px rgba(21,101,192,0.4)' : 'none',
+                  transition: 'all 0.25s ease',
+                }}
+              >
+                <MapIcon sx={{ fontSize: 20, color: currentSelection() === 'map' ? '#fff' : '#8a94a6' }} />
+              </Box>
             </Badge>
           }
           value="map"
         />
         {!disableReports && (
           <BottomNavigationAction
-            label={t('reportTitle')}
-            icon={<DescriptionIcon />}
+            label={t("reportTitle")}
+            icon={
+              <Box
+                sx={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: currentSelection() === 'reports' ? 'linear-gradient(135deg, #ab47bc, #6a1b9a)' : 'transparent',
+                  boxShadow: currentSelection() === 'reports' ? '0 4px 10px rgba(106,27,154,0.4)' : 'none',
+                  transition: 'all 0.25s ease',
+                }}
+              >
+                <DescriptionIcon sx={{ fontSize: 20, color: currentSelection() === 'reports' ? '#fff' : '#8a94a6' }} />
+              </Box>
+            }
             value="reports"
           />
         )}
         {!readonly && (
           <BottomNavigationAction
-            label={t('settingsTitle')}
-            icon={<SettingsIcon />}
+            label={t("settingsTitle")}
+            icon={
+              <Box
+                sx={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: currentSelection() === 'settings' ? 'linear-gradient(135deg, #ffa726, #ef6c00)' : 'transparent',
+                  boxShadow: currentSelection() === 'settings' ? '0 4px 10px rgba(239,108,0,0.4)' : 'none',
+                  transition: 'all 0.25s ease',
+                }}
+              >
+                <SettingsIcon sx={{ fontSize: 20, color: currentSelection() === 'settings' ? '#fff' : '#8a94a6' }} />
+              </Box>
+            }
             value="settings"
           />
         )}
         {readonly ? (
           <BottomNavigationAction
-            label={t('loginLogout')}
-            icon={<ExitToAppIcon />}
+            label={t("loginLogout")}
+            icon={
+              <Box
+                sx={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'transparent',
+                }}
+              >
+                <ExitToAppIcon sx={{ fontSize: 20, color: '#8a94a6' }} />
+              </Box>
+            }
             value="logout"
           />
         ) : (
-          <BottomNavigationAction label={t('settingsUser')} icon={<PersonIcon />} value="account" />
+          <BottomNavigationAction
+            label={t("settingsUser")}
+            icon={
+              <Box
+                sx={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: currentSelection() === 'account' ? 'linear-gradient(135deg, #66bb6a, #2e7d32)' : 'transparent',
+                  boxShadow: currentSelection() === 'account' ? '0 4px 10px rgba(46,125,50,0.4)' : 'none',
+                  transition: 'all 0.25s ease',
+                }}
+              >
+                <PersonIcon sx={{ fontSize: 20, color: currentSelection() === 'account' ? '#fff' : '#8a94a6' }} />
+              </Box>
+            }
+            value="account"
+          />
         )}
       </BottomNavigation>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-        <MenuItem onClick={handleAccount}>
-          <Typography color="textPrimary">{t('settingsUser')}</Typography>
-        </MenuItem>
-        <MenuItem onClick={handleLogout}>
-          <Typography color="error">{t('loginLogout')}</Typography>
-        </MenuItem>
-      </Menu>
     </Paper>
   );
 };
 
 export default BottomMenu;
+
+
+

@@ -90,6 +90,8 @@
 @media (max-width: 480px) {
   .sms-market-modal .MuiDialog-paper {
     width: calc(100% - 12px);
+    height: calc(100dvh - 12px) !important;
+    min-height: calc(100dvh - 12px) !important;
     max-height: calc(100dvh - 12px) !important;
     margin: 6px;
     border-radius: 14px !important;
@@ -117,3 +119,5 @@
     padding: 10px !important;
   }
 }
+
+
