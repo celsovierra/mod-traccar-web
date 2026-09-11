@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import './smsMarketModern.css';
 import './smsMarketMobile.css';
 import {
@@ -538,6 +538,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           m: { xs: 0, sm: 2 },
           width: { xs: '100%', sm: '440px' },
           height: { xs: '100%', sm: '88vh' },
+          minHeight: { xs: '100%', sm: '88vh' },
           maxHeight: { xs: '100%', sm: '88vh' },
           display: 'flex',
           flexDirection: 'column',
@@ -1166,7 +1167,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         >
           <Box display="flex" alignItems="center" gap={0.5}>
             <Typography variant="subtitle2" fontWeight="bold" color="#1976d2">
-              RELAT�RIO
+              RELATÓRIO
             </Typography>
             <Paper
               sx={{
@@ -1198,8 +1199,8 @@ const SmsMarketModal = ({ device, onClose }) => {
           gap={0.1}
           sx={{
             pb: 1,
-            height: 170,
-            maxHeight: 170,
+            height: 230,
+            maxHeight: 230,
             overflowY: 'auto',
             overflowX: 'hidden',
             pr: 1.5,
@@ -1216,12 +1217,12 @@ const SmsMarketModal = ({ device, onClose }) => {
                 key={rep.id}
                 variant="outlined"
                 sx={{
-                  p: 0.25,
+                  p: 0.15,
                   mb: 0,
                   overflow: 'hidden',
                   boxShadow: 'none',
                   wordBreak: 'break-word',
-                  '& .MuiTypography-root': { lineHeight: 1.1, fontSize: '10px' },
+                  '& .MuiTypography-root': { lineHeight: 0.9, fontSize: '8px' },
                   borderRadius: '8px',
                   borderColor: success ? '#a5d6a7' : pending ? '#90caf9' : '#ef9a9a',
                   bgcolor: success ? '#f1f8e9' : pending ? '#e3f2fd' : '#ffebee',
@@ -1303,4 +1304,8 @@ const SmsMarketModal = ({ device, onClose }) => {
 export default SmsMarketModal;
 
 // atualizacao
+
+
+
+
 
