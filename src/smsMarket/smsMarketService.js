@@ -122,7 +122,7 @@ const parseResponse = async (response) => {
       text ||
       `Erro na SMSMarket: ${response.status}`;
 
-    throw new Error(message);
+    console.error('SMSMARKET_ERRO_REAL:', message, json); throw new Error(message);
   }
 
   if (json?.success === false || json?.status === false) {
@@ -340,4 +340,5 @@ export const statusPorId = async (id) => getMessageStatus({ id });
 
 export const statusPorCampanha = async (campaignId) =>
   getMessageStatus({ campaignId });
+
 
