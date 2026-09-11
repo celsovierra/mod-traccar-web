@@ -14,6 +14,8 @@ import {
   Collapse,
   Paper,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import CloseIcon from '@mui/icons-material/Close';
@@ -69,6 +71,12 @@ const SmsMarketModal = ({ device, onClose }) => {
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
+
+  const showToast = (message, severity = 'info') => {
+    setToast({ open: true, message, severity });
+  };
+
 
   useEffect(() => {
     localStorage.setItem('smsmarket_reports', JSON.stringify(reports));
@@ -123,7 +131,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     const name = commandName.trim();
     const text = commandText.trim();
     if (!name || !text) {
-      alert('Informe o nome e o texto do comando.');
+      showToast('Informe o nome e o texto do comando.');
       return;
     }
     try {
@@ -136,9 +144,9 @@ const SmsMarketModal = ({ device, onClose }) => {
       setCommandName('');
       setCommandText('');
       await loadCommands();
-      alert('Comando salvo para todos os aparelhos.');
+      showToast('Comando salvo para todos os aparelhos.');
     } catch (error) {
-      alert(error.message || 'Erro ao salvar comando.');
+      showToast(error.message || 'Erro ao salvar comando.');
     }
   };
 
@@ -149,7 +157,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       if (!response.ok) throw new Error('Nao foi possivel excluir o comando.');
       await loadCommands();
     } catch (error) {
-      alert(error.message || 'Erro ao excluir comando.');
+      showToast(error.message || 'Erro ao excluir comando.');
     }
   };
 
@@ -160,7 +168,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       if (!response.ok) throw new Error('Nao foi possivel excluir o grupo.');
       await loadCommands();
     } catch (error) {
-      alert(error.message || 'Erro ao excluir grupo.');
+      showToast(error.message || 'Erro ao excluir grupo.');
     }
   };
 
@@ -173,11 +181,11 @@ const SmsMarketModal = ({ device, onClose }) => {
   const saveGroup = async () => {
     const name = groupName.trim();
     if (!name) {
-      alert('Informe o nome do grupo.');
+      showToast('Informe o nome do grupo.');
       return;
     }
     if (selectedCommandIds.length === 0) {
-      alert('Selecione pelo menos um comando.');
+      showToast('Selecione pelo menos um comando.');
       return;
     }
     try {
@@ -195,9 +203,9 @@ const SmsMarketModal = ({ device, onClose }) => {
       setGroupName('');
       setSelectedCommandIds([]);
       await loadCommands();
-      alert('Grupo salvo com sucesso.');
+      showToast('Grupo salvo com sucesso.');
     } catch (error) {
-      alert(error.message || 'Erro ao salvar grupo.');
+      showToast(error.message || 'Erro ao salvar grupo.');
     } finally {
       setLoadingGroups(false);
     }
@@ -207,7 +215,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     const ids = group.attributes?.commandIds || [];
     const commands = savedCommands.filter((command) => ids.includes(command.id));
     if (commands.length === 0) {
-      alert('Este grupo n�o possui comandos v�lidos.');
+      showToast('Este grupo n�o possui comandos v�lidos.');
       return;
     }
     if (!window.confirm('Enviar ' + commands.length + ' comando(s) por SMS?')) return;
@@ -217,10 +225,10 @@ const SmsMarketModal = ({ device, onClose }) => {
         const text = command.attributes?.text || '';
         if (text) await sendSms(normalizeBrazilPhone(phoneOverride || phone), text);
       }
-      alert('Comandos do grupo enviados.');
+      showToast('Comandos do grupo enviados.');
       await loadBalance();
     } catch (error) {
-      alert(error.message || 'Erro ao enviar o grupo.');
+      showToast(error.message || 'Erro ao enviar o grupo.');
     } finally {
       setSending(false);
       setSendingType(null);
@@ -245,9 +253,9 @@ const SmsMarketModal = ({ device, onClose }) => {
       const bal = await saveCredentials(creds);
       setBalance(bal);
       setShowSettings(false);
-      alert('Credenciais salvas e testadas com sucesso!');
+      showToast('Credenciais salvas e testadas com sucesso!');
     } catch (error) {
-      alert(error?.message || 'Erro ao salvar credenciais.');
+      showToast(error?.message || 'Erro ao salvar credenciais.');
     } finally {
       setLoadingBalance(false);
     }
@@ -256,7 +264,7 @@ const SmsMarketModal = ({ device, onClose }) => {
   const handleSend = async (type, phoneOverride = '') => {
     if (tabValue === 2) setShowSavedGroups(false);
     if (tabValue !== 2 && !message.trim()) {
-      alert('Digite uma mensagem ou comando antes de enviar.');
+      showToast('Digite uma mensagem ou comando antes de enviar.');
       return;
     }
 
@@ -264,12 +272,12 @@ const SmsMarketModal = ({ device, onClose }) => {
     if (type === 'GPRS') {
       setSendingType('GPRS');
       if (!device?.id) {
-        alert('Nenhum ve�culo foi selecionado.');
+        showToast('Nenhum ve�culo foi selecionado.');
         return;
       }
 
       if ((device?.status || '').toLowerCase() !== 'online') {
-        alert('Este ve�culo est� offline. Use SMS para enviar o comando.');
+        showToast('Este ve�culo est� offline. Use SMS para enviar o comando.');
         return;
       }
 
@@ -311,7 +319,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         ]);
 
         setMessage('');
-        alert('Comando enviado via GPRS para o ve�culo online.');
+        showToast('Comando enviado via GPRS para o ve�culo online.');
       } catch (error) {
         console.error('Erro ao enviar GPRS:', error);
 
@@ -334,7 +342,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           ...prev,
         ]);
 
-        alert(error?.message || 'Erro ao enviar comando via GPRS.');
+        showToast(error?.message || 'Erro ao enviar comando via GPRS.');
       } finally {
         setSending(false);
         setSendingType(null);
@@ -346,7 +354,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     /* SMS: usa a SMS Market e desconta saldo normalmente */
     setSendingType('SMS');
     if (!creds?.user?.trim() || !creds?.pass?.trim()) {
-      alert('Configure o usu�rio e a senha do ENVIAR COMANDO na engrenagem.');
+      showToast('Configure o usu�rio e a senha do ENVIAR COMANDO na engrenagem.');
       setShowSettings(true);
       return;
     }
@@ -356,7 +364,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       const groupCommands = savedCommands.filter((command) => commandIds.includes(command.id));
 
       if (groupCommands.length === 0) {
-        alert('O grupo selecionado n�o possui comandos v�lidos.');
+        showToast('O grupo selecionado n�o possui comandos v�lidos.');
         return;
       }
 
@@ -364,7 +372,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       try {
         groupPhone = normalizeBrazilPhone(phoneOverride || phone);
       } catch (err) {
-        alert(err?.message || 'Telefone inv�lido.');
+        showToast(err?.message || 'Telefone inv�lido.');
         return;
       }
 
@@ -405,10 +413,10 @@ const SmsMarketModal = ({ device, onClose }) => {
         setSelectedGroup(null);
         setMessage('');
         await loadBalance();
-        alert('Todos os comandos do grupo foram enviados por SMS.');
+        showToast('Todos os comandos do grupo foram enviados por SMS.');
       } catch (error) {
         console.error('Erro ao enviar grupo por SMS:', error);
-        alert(
+        showToast(
           'Nao foi possivel enviar o grupo por SMS. Verifique o saldo da SMS Market e tente novamente.',
         );
       } finally {
@@ -422,7 +430,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     try {
       normalizedPhone = normalizeBrazilPhone(phoneOverride || phone);
     } catch (err) {
-      alert(err?.message || 'Telefone inv�lido.');
+      showToast(err?.message || 'Telefone inv�lido.');
       return;
     }
 
@@ -455,9 +463,9 @@ const SmsMarketModal = ({ device, onClose }) => {
       await loadBalance();
 
       if (responseCode === '000') {
-        alert(messageId ? `Mensagem aceita.` + '\nID: ' + messageId : 'Mensagem enfileirada.');
+        showToast(messageId ? `Mensagem aceita.` + '\nID: ' + messageId : 'Mensagem enfileirada.');
       } else {
-        alert('A SMSMarket retornou uma resposta inesperada.');
+        showToast('A SMSMarket retornou uma resposta inesperada.');
       }
     } catch (error) {
       console.error('Erro ao enviar SMS:', error);
@@ -482,7 +490,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         ...prev,
       ]);
 
-      alert(error?.message || 'Erro ao enviar mensagem.');
+      showToast(error?.message || 'Erro ao enviar mensagem.');
     } finally {
       setSending(false);
       setSendingType(null);
@@ -579,14 +587,13 @@ const SmsMarketModal = ({ device, onClose }) => {
         sx={{ flexShrink: 0 }}
       >
         <Box display="flex" alignItems="center" gap={0.5}>
-          <FlashOnIcon color="primary" />
           <Typography
             variant="subtitle1"
             fontWeight="800"
             color="#1976d2"
-            sx={{ letterSpacing: 0.5, whiteSpace: 'nowrap' }}
+            sx={{ letterSpacing: 0.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
           >
-            ENVIAR COMANDO
+            {device?.name || 'Veiculo'}
           </Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
@@ -1345,6 +1352,21 @@ const SmsMarketModal = ({ device, onClose }) => {
           })}
         </Box>
       </DialogContent>
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={3000}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+          severity={toast.severity}
+          variant="filled"
+          sx={{ borderRadius: '12px', fontWeight: 600, boxShadow: '0 6px 18px rgba(0,0,0,0.25)' }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };
@@ -1352,6 +1374,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 export default SmsMarketModal;
 
 // atualizacao
+
 
 
 
