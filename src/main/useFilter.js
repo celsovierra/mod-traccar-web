@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 
@@ -37,6 +37,18 @@ export default (
         return [device.name, device.uniqueId, device.phone, device.model, device.contact].some(
           (s) => normalize(s).includes(q)
         );
+      })
+      .filter((device) => {
+        if (!isOldOfflineOnly) return true;
+        const isOffline = device.status === 'offline' || device.status === 'unknown';
+        if (!isOffline) return false;
+        if (!device.lastUpdate) return true;
+        return dayjs(device.lastUpdate).valueOf() <= twoDaysAgo;
+      })
+      .filter((device) => {
+        if (!isMovingOnly) return true;
+        const pos = positions[device.id];
+        return device.status === 'online' && pos && pos.speed > 0 && pos.attributes?.ignition === true;
       });
 
     switch (filterSort) {
