@@ -25,6 +25,7 @@ import SendIcon from '@mui/icons-material/Send';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ErrorIcon from '@mui/icons-material/Error';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import {
   sendSms,
@@ -138,6 +139,28 @@ const SmsMarketModal = ({ device, onClose }) => {
       alert('Comando salvo para todos os aparelhos.');
     } catch (error) {
       alert(error.message || 'Erro ao salvar comando.');
+    }
+  };
+
+  const deleteCommand = async (id) => {
+    if (!window.confirm('Excluir este comando?')) return;
+    try {
+      const response = await fetch(`/api/commands/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Nao foi possivel excluir o comando.');
+      await loadCommands();
+    } catch (error) {
+      alert(error.message || 'Erro ao excluir comando.');
+    }
+  };
+
+  const deleteGroup = async (id) => {
+    if (!window.confirm('Excluir este grupo?')) return;
+    try {
+      const response = await fetch(`/api/commands/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Nao foi possivel excluir o grupo.');
+      await loadCommands();
+    } catch (error) {
+      alert(error.message || 'Erro ao excluir grupo.');
     }
   };
 
@@ -809,16 +832,15 @@ const SmsMarketModal = ({ device, onClose }) => {
                     <Paper
                       key={group.id}
                       variant="outlined"
-                      onClick={() =>
-                        setSelectedGroup(selectedGroup?.id === group.id ? null : group)
-                      }
                       sx={{
                         p: 0.8,
                         width: '100%',
                         boxSizing: 'border-box',
                         flexShrink: 0,
                         borderRadius: '8px',
-                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                         borderColor: selectedGroup?.id === group.id ? '#1976d2' : '#dbe7f5',
                         bgcolor: selectedGroup?.id === group.id ? '#e3f2fd' : '#fbfdff',
                       }}
@@ -826,10 +848,22 @@ const SmsMarketModal = ({ device, onClose }) => {
                       <Typography
                         variant="body2"
                         fontWeight="bold"
-                        sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                        onClick={() =>
+                          setSelectedGroup(selectedGroup?.id === group.id ? null : group)
+                        }
+                        sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, cursor: 'pointer' }}
                       >
                         {group.description}
                       </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteGroup(group.id);
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" color="error" />
+                      </IconButton>
                     </Paper>
                   ))}
                 </Box>
@@ -919,7 +953,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                     pr: 0.5,
                   }}
                 >
-                  {savedCommands.map((command) => (
+                {savedCommands.map((command) => (
                     <Paper
                       key={command.id}
                       variant="outlined"
@@ -933,15 +967,29 @@ const SmsMarketModal = ({ device, onClose }) => {
                         borderColor: '#dbe7f5',
                         bgcolor: '#fbfdff',
                         cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                         '&:hover': { bgcolor: '#e3f2fd' },
                       }}
                     >
-                      <Typography variant="body2" fontWeight="bold">
-                        {command.description}
-                      </Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        {command.attributes?.text || 'Sem texto configurado'}
-                      </Typography>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography variant="body2" fontWeight="bold">
+                          {command.description}
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          {command.attributes?.text || 'Sem texto configurado'}
+                        </Typography>
+                      </Box>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteCommand(command.id);
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" color="error" />
+                      </IconButton>
                     </Paper>
                   ))}
                 </Box>

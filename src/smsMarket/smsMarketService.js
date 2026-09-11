@@ -1,4 +1,4 @@
-const BASE_URL = '/api-smsmarket';
+﻿const BASE_URL = '/api-smsmarket';
 const STORAGE_KEY = 'smsmarket_credentials';
 
 const STATUS_MAP = {
@@ -114,15 +114,18 @@ const parseResponse = async (response) => {
     json = { raw: text };
   }
 
-  if (!response.ok) {
-    const message =
-      json?.message ||
-      json?.error ||
-      json?.description ||
-      text ||
-      `Erro na SMSMarket: ${response.status}`;
+  if (!response.ok || json?.success === false) {
+    const rawMsg = json?.responseDescription || json?.message || json?.error || json?.description;
 
-    console.error('SMSMARKET_ERRO_REAL:', message, json); throw new Error(message);
+    let message = rawMsg;
+    if (json?.responseCode === '080' || /insufficient|expired balance/i.test(rawMsg || '')) {
+      message = 'Saldo insuficiente ou expirado na SMSMarket. Adicione creditos para enviar SMS.';
+    }
+    if (!message) {
+      message = text || `Erro na SMSMarket: ${response.status}`;
+    }
+
+    throw new Error(message);
   }
 
   if (json?.success === false || json?.status === false) {
