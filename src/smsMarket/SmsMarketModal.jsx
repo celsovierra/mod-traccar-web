@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './smsMarketModern.css';
 import './smsMarketMobile.css';
 import {
@@ -61,6 +61,7 @@ const SmsMarketModal = ({ device, onClose }) => {
   const [selectedCommandIds, setSelectedCommandIds] = useState([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+const [selectedGroup, setSelectedGroup] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('smsmarket_reports', JSON.stringify(reports));
@@ -79,11 +80,11 @@ const SmsMarketModal = ({ device, onClose }) => {
     try {
       setLoadingCommands(true);
       const response = await fetch('/api/commands');
-      if (!response.ok) throw new Error('Nï¿½o foi possï¿½vel carregar os comandos do Traccar.');
+      if (!response.ok) throw new Error('N�o foi poss�vel carregar os comandos do Traccar.');
       const data = await response.json();
       const commands = Array.isArray(data) ? data : [];
       setSavedCommands(commands.filter((command) => command.type === 'custom' && !command.attributes?.smsMarketGroup));
-      setSavedGroups(commands.filter((command) => command.type === 'custom' && command.attributes?.smsMarketGroup));
+      setSavedGroups(commands.filter((command) => command.type === 'custom' && command.attributes?.smsMarketGroup)); console.log('TOTAL GRUPOS:', commands.filter((command) => command.type === 'custom' && command.attributes?.smsMarketGroup).length); console.log('GRUPOS:', commands.filter((command) => command.type === 'custom' && command.attributes?.smsMarketGroup));
     } catch (error) {
       console.error('Erro ao carregar comandos:', error);
     } finally {
@@ -104,7 +105,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description: name, type: 'custom', attributes: { text } })
       });
-      if (!response.ok) throw new Error('Nï¿½o foi possï¿½vel salvar o comando no Traccar.');
+      if (!response.ok) throw new Error('N�o foi poss�vel salvar o comando no Traccar.');
       setCommandName('');
       setCommandText('');
       await loadCommands();
@@ -125,7 +126,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     try {
       setLoadingGroups(true);
       const response = await fetch('/api/commands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: name, type: 'custom', attributes: { smsMarketGroup: true, commandIds: selectedCommandIds } }) });
-      if (!response.ok) throw new Error('Nï¿½o foi possï¿½vel salvar o grupo no Traccar.');
+      if (!response.ok) throw new Error('N�o foi poss�vel salvar o grupo no Traccar.');
       setGroupName('');
       setSelectedCommandIds([]);
       await loadCommands();
@@ -136,7 +137,7 @@ const SmsMarketModal = ({ device, onClose }) => {
   const sendGroup = async (group, phoneOverride = '') => {
     const ids = group.attributes?.commandIds || [];
     const commands = savedCommands.filter((command) => ids.includes(command.id));
-    if (commands.length === 0) { alert('Este grupo nï¿½o possui comandos vï¿½lidos.'); return; }
+    if (commands.length === 0) { alert('Este grupo n�o possui comandos v�lidos.'); return; }
     if (!window.confirm('Enviar ' + commands.length + ' comando(s) por SMS?')) return;
     try {
       setSending(true);
@@ -177,7 +178,7 @@ const SmsMarketModal = ({ device, onClose }) => {
   };
 
   const handleSend = async (type, phoneOverride = '') => {
-    if (!message.trim()) {
+    if (tabValue !== 2 && !message.trim()) {
       alert('Digite uma mensagem ou comando antes de enviar.');
       return;
     }
@@ -186,12 +187,12 @@ const SmsMarketModal = ({ device, onClose }) => {
     if (type === 'GPRS') {
       setSendingType('GPRS');
       if (!device?.id) {
-        alert('Nenhum veï¿½culo foi selecionado.');
+        alert('Nenhum ve�culo foi selecionado.');
         return;
       }
 
       if ((device?.status || '').toLowerCase() !== 'online') {
-        alert('Este veï¿½culo estï¿½ offline. Use SMS para enviar o comando.');
+        alert('Este ve�culo est� offline. Use SMS para enviar o comando.');
         return;
       }
 
@@ -210,7 +211,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
         if (!response.ok) {
           const detail = await response.text();
-          throw new Error(detail || 'O Traccar nï¿½o aceitou o comando GPRS.');
+          throw new Error(detail || 'O Traccar n�o aceitou o comando GPRS.');
         }
 
         setReports((prev) => [{
@@ -225,12 +226,12 @@ const SmsMarketModal = ({ device, onClose }) => {
           time: new Date().toLocaleTimeString('pt-BR'),
           text: message.trim(),
           phone: phone || '',
-          deviceName: device?.name || 'Veï¿½culo',
+          deviceName: device?.name || 'Ve�culo',
           response: { transport: 'Traccar GPRS' }
         }, ...prev]);
 
         setMessage('');
-        alert('Comando enviado via GPRS para o veï¿½culo online.');
+        alert('Comando enviado via GPRS para o ve�culo online.');
       } catch (error) {
         console.error('Erro ao enviar GPRS:', error);
 
@@ -246,7 +247,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           time: new Date().toLocaleTimeString('pt-BR'),
           text: message.trim(),
           phone: phone || '',
-          deviceName: device?.name || 'Veï¿½culo',
+          deviceName: device?.name || 'Ve�culo',
           error: error?.message || 'Erro ao enviar comando GPRS.'
         }, ...prev]);
 
@@ -262,7 +263,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     /* SMS: usa a SMS Market e desconta saldo normalmente */
     setSendingType('SMS');
     if (!creds?.user?.trim() || !creds?.pass?.trim()) {
-      alert('Configure o usuï¿½rio e a senha do ENVIAR COMANDO na engrenagem.');
+      alert('Configure o usu�rio e a senha do ENVIAR COMANDO na engrenagem.');
       setShowSettings(true);
       return;
     }
@@ -271,7 +272,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     try {
       normalizedPhone = normalizeBrazilPhone(phoneOverride || phone);
     } catch (err) {
-      alert(err?.message || 'Telefone invï¿½lido.');
+      alert(err?.message || 'Telefone inv�lido.');
       return;
     }
 
@@ -295,7 +296,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         time: new Date().toLocaleTimeString('pt-BR'),
         text: message.trim(),
         phone: normalizedPhone,
-        deviceName: device?.name || 'Veï¿½culo',
+        deviceName: device?.name || 'Ve�culo',
         response: res
       };
 
@@ -324,7 +325,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         time: new Date().toLocaleTimeString('pt-BR'),
         text: message.trim(),
         phone: normalizedPhone || phone,
-        deviceName: device?.name || 'Veï¿½culo',
+        deviceName: device?.name || 'Ve�culo',
         error: error?.message || 'Erro desconhecido'
       }, ...prev]);
 
@@ -372,7 +373,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               };
             }
           } catch (e) {
-            // Mantï¿½m o estado atual se falhar temporariamente
+            // Mant�m o estado atual se falhar temporariamente
           }
           return rep;
         })
@@ -418,7 +419,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           <TextField
             size="small"
             fullWidth
-            label="Usuï¿½rio / Login"
+            label="Usu�rio / Login"
             value={creds.user}
             onChange={(e) => setCreds({ ...creds, user: e.target.value })}
             sx={{ mb: 1, bgcolor: '#fff' }}
@@ -449,10 +450,10 @@ const SmsMarketModal = ({ device, onClose }) => {
         {tabValue !== 3 && (
         <Box mb={2.5} p={1.5} bgcolor="#fff" borderRadius="12px" border="1px solid #dbe7f5" display="flex" justifyContent="space-between" alignItems="center" boxShadow="0 2px 8px rgba(25,118,210,0.08)">
           <Typography variant="body2" color="textSecondary" fontWeight="medium">
-            Tel: {phone || 'Nï¿½o cadastrado'}
+            Tel: {phone || 'N�o cadastrado'}
           </Typography>
           <Typography variant="caption" fontWeight="bold" color={phone ? 'primary.main' : 'error.main'}>
-            {phone ? '' : 'Cadastre no veï¿½culo'}
+            {phone ? '' : 'Cadastre no ve�culo'}
           </Typography>
         </Box>
 
@@ -468,7 +469,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               sx={{ cursor: 'pointer', userSelect: 'none' }}
             >
               <Typography variant="subtitle2" fontWeight="bold" color="primary">
-                {showCreateGroup ? '- OCULTAR CRIAï¿½ï¿½O' : '+ CRIAR NOVO GRUPO'}
+                {showCreateGroup ? '- OCULTAR CRIA��O' : '+ CRIAR NOVO GRUPO'}
               </Typography>
               <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 'bold' }}>
                 {showCreateGroup ? 'Fechar' : 'Abrir'}
@@ -488,7 +489,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               <Typography variant="body2" fontWeight="bold" mb={1}>
                 Selecione os comandos do grupo:
               </Typography>
-              <Box display="flex" flexDirection="column" gap={0.8} mb={2} sx={{ maxHeight: 180, overflowY: 'auto', pr: 0.5 }}>
+              <Box display="flex" flexDirection="column" gap={1} mb={2} sx={{ height: 300, maxHeight: 300, overflowY: 'scroll', pr: 0.5 }}>
                 {savedCommands.map((command) => (
                   <Paper
                     key={command.id}
@@ -535,16 +536,10 @@ const SmsMarketModal = ({ device, onClose }) => {
               <Typography variant="body2" color="textSecondary">Nenhum grupo cadastrado ainda.</Typography>
             ) : (
               
-              <Box display="flex" flexDirection="row" gap={0.5} sx={{ display: showSavedGroups ? 'flex' : 'none' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%', maxHeight: 300, overflowY: 'auto', overflowX: 'hidden', pr: 0.5 }}>
                 {savedGroups.map((group) => (
-                  <Paper key={group.id} variant="outlined" sx={{ p: 1.5, borderRadius: '10px', borderColor: '#dbe7f5', bgcolor: '#fbfdff' }}>
-                    <Typography variant="body2" fontWeight="bold">{group.description}</Typography>
-                    <Typography variant="caption" color="textSecondary" display="block" mb={1}>
-                      {(group.attributes?.commandIds || []).length} comando(s) selecionado(s)
-                    </Typography>
-                    <Button size="small" variant="contained" onClick={() => sendGroup(group)} disabled={sending} sx={{ borderRadius: '8px', fontWeight: 'bold' }}>
-                      ENVIAR GRUPO POR SMS
-                    </Button>
+                  <Paper key={group.id} variant="outlined" onClick={() => setSelectedGroup(selectedGroup?.id === group.id ? null : group)} sx={{ p: 1.5, width: '100%', boxSizing: 'border-box', flexShrink: 0, borderRadius: '10px', cursor: 'pointer', borderColor: selectedGroup?.id === group.id ? '#1976d2' : '#dbe7f5', bgcolor: selectedGroup?.id === group.id ? '#e3f2fd' : '#fbfdff' }}>
+                    <Typography variant="body2" fontWeight="bold" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{group.description}</Typography>
                   </Paper>
                 ))}
               </Box>
@@ -571,7 +566,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               fullWidth
               size="small"
               label="Nome do comando"
-              placeholder="Exemplo: Bloquear veï¿½culo"
+              placeholder="Exemplo: Bloquear ve�culo"
               value={commandName}
               onChange={(e) => setCommandName(e.target.value)}
               disabled={loadingCommands}
@@ -775,7 +770,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} pt={1} borderTop="1px solid #dbe7f5">
           <Box display="flex" alignItems="center" gap={0.5}>
             <Typography variant="subtitle2" fontWeight="bold" color="#1976d2">
-              RELATÓRIO
+              RELAT�RIO
             </Typography>
             <Paper sx={{ px: 1, py: 0.1, bgcolor: '#1976d2', color: '#fff', fontSize: '11px', borderRadius: '10px', fontWeight: 'bold' }}>
               {reports.length}
@@ -839,7 +834,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
                 {rep.responseCode && (
                   <Typography variant="caption" color="textSecondary" display="block" mt={0}>
-                    Cï¿½digo: {rep.responseCode}
+                    C�digo: {rep.responseCode}
                   </Typography>
                 )}
 
@@ -896,6 +891,21 @@ export default SmsMarketModal;
 
 
 // atualizacao
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
