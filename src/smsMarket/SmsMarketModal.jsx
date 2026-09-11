@@ -452,7 +452,7 @@ const SmsMarketModal = ({ device, onClose }) => {
             Tel: {phone || 'Nï¿½o cadastrado'}
           </Typography>
           <Typography variant="caption" fontWeight="bold" color={phone ? 'primary.main' : 'error.main'}>
-            {phone ? 'Disponï¿½vel' : 'Cadastre no veï¿½culo'}
+            {phone ? '' : 'Cadastre no veï¿½culo'}
           </Typography>
         </Box>
 
@@ -528,11 +528,11 @@ const SmsMarketModal = ({ device, onClose }) => {
               onClick={() => setShowSavedGroups(!showSavedGroups)}
               sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
             >
-              {showSavedGroups ? '? Fechar grupos' : '? Ver grupos criados'}
+              {showSavedGroups ? 'Fechar grupos' : 'Ver grupos criados'}
             </Button>
 
             <Button size="small" variant="contained" fullWidth onClick={() => setShowSavedGroups(!showSavedGroups)} sx={{ mb: 1.5, py: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}>
-              {showSavedGroups ? '? Fechar grupos' : '? Ver grupos criados'}
+              {showSavedGroups ? 'Fechar grupos' : 'Ver grupos criados'}
             </Button>
 
             {showSavedGroups && (savedGroups.length === 0 ? (
@@ -604,17 +604,13 @@ const SmsMarketModal = ({ device, onClose }) => {
               {loadingCommands ? 'CARREGANDO...' : 'SALVAR COMANDO'}
             </Button>
             </Collapse>
-
-            <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
-              COMANDOS CADASTRADOS
-            </Typography>
             <Button
               size="small"
               variant="outlined"
               onClick={() => setShowSavedCommands(!showSavedCommands)}
               sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
             >
-              {showSavedCommands ? '? Fechar comandos' : '? Ver comandos criados'}
+              {showSavedCommands ? 'Fechar comandos' : 'Ver comandos criados'}
             </Button>
 
             {showSavedCommands && (savedCommands.length === 0 ? (
@@ -783,7 +779,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} pt={1} borderTop="1px solid #dbe7f5">
           <Box display="flex" alignItems="center" gap={0.5}>
             <Typography variant="subtitle2" fontWeight="bold" color="#1976d2">
-              RELATï¿½RIO
+              RELATÓRIO
             </Typography>
             <Paper sx={{ px: 1, py: 0.1, bgcolor: '#1976d2', color: '#fff', fontSize: '11px', borderRadius: '10px', fontWeight: 'bold' }}>
               {reports.length}
@@ -904,6 +900,12 @@ export default SmsMarketModal;
 
 
 // atualizacao
+
+
+
+
+
+
 
 
 
