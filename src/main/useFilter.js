@@ -49,6 +49,11 @@ export default (
         if (!isMovingOnly) return true;
         const pos = positions[device.id];
         return device.status === 'online' && pos && pos.speed > 0 && pos.attributes?.ignition === true;
+      })
+      .filter((device) => {
+        if (isMovingOnly || isOldOfflineOnly) return true;
+        if (!filter.statuses || filter.statuses.length === 0) return true;
+        return filter.statuses.includes(device.status);
       });
 
     switch (filterSort) {
@@ -91,3 +96,4 @@ export default (
     setFilteredPositions,
   ]);
 };
+
