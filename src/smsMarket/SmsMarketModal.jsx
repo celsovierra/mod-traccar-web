@@ -281,6 +281,98 @@ const SmsMarketModal = ({ device, onClose }) => {
         return;
       }
 
+      if (tabValue === 2 && selectedGroup) {
+        const commandIds = selectedGroup.attributes?.commandIds || [];
+        const groupCommands = savedCommands.filter((command) => commandIds.includes(command.id));
+
+        if (groupCommands.length === 0) {
+          showToast('O grupo selecionado nao possui comandos validos.', 'error');
+          setSendingType(null);
+          return;
+        }
+
+        try {
+          setSending(true);
+          let successCount = 0;
+          let failCount = 0;
+
+          for (const command of groupCommands) {
+            const commandText = command.attributes?.text || '';
+            if (!commandText.trim()) continue;
+
+            try {
+              const response = await fetch('/api/commands/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  deviceId: device.id,
+                  type: 'custom',
+                  text: commandText.trim(),
+                }),
+              });
+
+              if (!response.ok) {
+                const detail = await response.text();
+                throw new Error(detail || 'O Traccar nao aceitou o comando GPRS.');
+              }
+
+              successCount += 1;
+
+              setReports((prev) => [
+                {
+                  id: Date.now() + Math.random(),
+                  smsMarketId: null,
+                  campaignId: null,
+                  responseCode: 'GPRS',
+                  status: 'ENVIADA',
+                  statusCode: 'GPRS',
+                  terminal: true,
+                  type: 'GPRS',
+                  time: new Date().toLocaleTimeString('pt-BR'),
+                  text: commandText.trim(),
+                  phone: phone || '',
+                  deviceName: device?.name || 'Veiculo',
+                  response: { transport: 'Traccar GPRS' },
+                },
+                ...prev,
+              ]);
+            } catch (cmdError) {
+              failCount += 1;
+
+              setReports((prev) => [
+                {
+                  id: Date.now() + Math.random(),
+                  smsMarketId: null,
+                  campaignId: null,
+                  responseCode: 'GPRS_ERRO',
+                  status: 'FALHA',
+                  statusCode: '-11',
+                  terminal: true,
+                  type: 'GPRS',
+                  time: new Date().toLocaleTimeString('pt-BR'),
+                  text: commandText.trim(),
+                  phone: phone || '',
+                  deviceName: device?.name || 'Veiculo',
+                  error: cmdError?.message || 'Erro ao enviar este comando via GPRS.',
+                },
+                ...prev,
+              ]);
+            }
+          }
+
+          setSelectedGroup(null);
+          setMessage('');
+          showToast(Grupo enviado via GPRS:  ok,  falha(s)., failCount > 0 ? 'warning' : 'success');
+        } catch (error) {
+          showToast(error?.message || 'Erro ao enviar grupo via GPRS.', 'error');
+        } finally {
+          setSending(false);
+          setSendingType(null);
+        }
+
+        return;
+      }
+
       try {
         setSending(true);
 
