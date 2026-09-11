@@ -224,22 +224,22 @@ const DeviceRow = ({ devices, index, style }) => {
             secondary: { component: 'div', noWrap: false },
           }}
         />
-        {position && (
+        {(position || admin) && (
           <Box className={classes.iconsBox}>
-            {position.attributes.hasOwnProperty('alarm') && (
+            {position?.attributes?.hasOwnProperty?.('alarm') && (
               <Tooltip title={`${t('eventAlarm')}: ${formatAlarm(position.attributes.alarm, t)}`}>
                 <IconButton size="small">
                   <ErrorIcon fontSize="small" className={classes.error} />
                 </IconButton>
               </Tooltip>
-            )}          {position.attributes.hasOwnProperty("power") && (
+            )}          {position?.attributes?.hasOwnProperty?.("power") && (
             <Tooltip title={`TensÃ£o da Bateria: ${position.attributes.power}V`}>
               <Box component="span" sx={{ display: "inline-flex", alignItems: "center", px: "5px", py: "1px", borderRadius: "4px", bgcolor: "action.hover", border: "1px solid", borderColor: "divider", fontSize: "0.65rem", fontWeight: 700, color: "text.secondary", ml: 0.5, letterSpacing: "0.2px" }}>
                 {Number(position.attributes.power).toFixed(1)}V
               </Box>
             </Tooltip>
           )}
-            {position.attributes.hasOwnProperty('batteryLevel') && (
+            {position?.attributes?.hasOwnProperty?.('batteryLevel') && (
               <Tooltip
                 title={`${t('positionBatteryLevel')}: ${formatPercentage(position.attributes.batteryLevel)}`}
               >
@@ -270,5 +270,7 @@ const DeviceRow = ({ devices, index, style }) => {
 };
 
 export default DeviceRow;
+
+
 
 
