@@ -824,7 +824,6 @@ const SmsMarketModal = ({ device, onClose }) => {
               mb: 1.5,
             }}
           >
-            <Box
             <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
               <Button
                 fullWidth
@@ -1483,7 +1482,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 export default SmsMarketModal;
 
 // atualizacao
-
 
 
 
