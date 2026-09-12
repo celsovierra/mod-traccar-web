@@ -856,6 +856,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 {showSavedGroups ? "Fechar grupos" : "Ver grupos criados"}
               </Button>
             </Box>
+              <Collapse in={showCreateGroup} sx={{ mt: showCreateGroup ? 1.5 : 0 }}>
               <TextField
                 fullWidth
                 size="small"
@@ -1482,7 +1483,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 export default SmsMarketModal;
 
 // atualizacao
-
 
 
 
