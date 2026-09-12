@@ -90,13 +90,11 @@ const DevicePage = () => {
   const { saveDeviceEdits } = useDeviceEdit(item, setItem);
   const handleCustomSave = useCatch(async () => {
     
-    navigate(-1);
     // Usa o módulo isolado de edição para garantir salvamento seguro para admin e usuário comum
     const success = await saveDeviceEdits({ name: item.name, uniqueId: item.uniqueId });
     if (!success) {
       throw new Error("Erro ao salvar alterações do veículo.");
     }
-    navigate(-1);
     const payload = {
       ...item,
       model: localModel,
