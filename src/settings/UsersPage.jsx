@@ -1,4 +1,4 @@
-import { useCallback, useReducer, useState } from 'react';
+﻿import { useCallback, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -68,10 +68,10 @@ const UsersPage = () => {
 
   const loadItems = useCallback(
     async (offset, signal) => {
-      const query = new URLSearchParams({ excludeAttributes: false, limit: pageSize, offset });
+      const query = new URLSearchParams({ excludeAttributes: true, limit: pageSize, offset });
       const response = await fetchOrThrow(`/api/users?${query.toString()}`, { signal });
       const data = await response.json();
-      console.log('API Users Data Loaded:', data);
+
 
       setItems((previous) => {
         const combined = offset ? [...previous, ...data] : data;
