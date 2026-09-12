@@ -90,12 +90,12 @@ const MapPositions = ({
         const coords = toMapCoordinates(targetPos.longitude, targetPos.latitude);
 
         setTimeout(() => {
-          map.flyTo({
+          map.jumpTo({
             center: coords,
             zoom: 17,
-            speed: 1.6,
-            curve: 1,
-            essential: true,
+
+
+
           });
         }, 60);
       }
@@ -159,12 +159,12 @@ const MapPositions = ({
         prevSelectedId.current = devId;
 
         setTimeout(() => {
-          map.flyTo({
+          map.jumpTo({
             center: coords,
             zoom: 17,
-            speed: 1.6,
-            curve: 1,
-            essential: true,
+
+
+
           });
         }, 60);
 
@@ -529,4 +529,5 @@ const MapPositions = ({
 };
 
 export default MapPositions;
+
 
