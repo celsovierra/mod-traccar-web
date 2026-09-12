@@ -70,6 +70,27 @@ const MapPositions = ({
   const animatedPositions = useRef({});
   const animationFrameRef = useRef(null);
   const prevSelectedId = useRef(null);
+  const cardExpandedRef = useRef(false);
+
+  useEffect(() => {
+    const handleCardExpanded = (e) => {
+      cardExpandedRef.current = Boolean(e.detail?.expanded);
+      if (selectedDeviceId) {
+        const posList = positions?.length ? positions : Object.values(reduxPositions || {});
+        const targetPos = posList.find((p) => Number(p.deviceId) === Number(selectedDeviceId));
+        if (targetPos) {
+          const coords = toMapCoordinates(targetPos.longitude, targetPos.latitude);
+          map.jumpTo({
+            center: coords,
+            zoom: map.getZoom(),
+            padding: { top: 0, right: 0, bottom: cardExpandedRef.current ? 320 : 0, left: 0 },
+          });
+        }
+      }
+    };
+    window.addEventListener('statusCardExpanded', handleCardExpanded);
+    return () => window.removeEventListener('statusCardExpanded', handleCardExpanded);
+  }, [selectedDeviceId, positions, reduxPositions]);
 
   const [anchorVersion, setAnchorVersion] = useState(0);
 
@@ -93,6 +114,7 @@ const MapPositions = ({
           map.jumpTo({
             center: coords,
             zoom: 17,
+            padding: { top: 0, right: 0, bottom: cardExpandedRef.current ? 320 : 0, left: 0 },
 
 
 
@@ -162,6 +184,7 @@ const MapPositions = ({
           map.jumpTo({
             center: coords,
             zoom: 17,
+            padding: { top: 0, right: 0, bottom: cardExpandedRef.current ? 320 : 0, left: 0 },
 
 
 

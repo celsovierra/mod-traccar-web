@@ -563,6 +563,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const dotColor = isOnline ? '#16a34a' : '#dc2626';
 
   const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('statusCardExpanded', { detail: { expanded } }));
+  }, [expanded]);
   const { isAnchorActive, toggleAnchor, loadingAnchor } = useAnchor(deviceId, device, position);
   const prevDeviceIdRef = useRef(null);
   const [loadingCommand, setLoadingCommand] = useState(false);
