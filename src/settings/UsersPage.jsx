@@ -137,7 +137,7 @@ const UsersPage = () => {
           boxSizing: 'border-box',
         }}
       >
-        {/* CABEÇALHO 100% FIXO */}
+        {/* CABEï¿½ALHO 100% FIXO */}
         <Box
           sx={{
             flexShrink: 0,
@@ -176,7 +176,7 @@ const UsersPage = () => {
           </Box>
         </Box>
 
-        {/* ÁREA COM ROLAGEM INDEPENDENTE */}
+        {/* ï¿½REA COM ROLAGEM INDEPENDENTE */}
         <Box
           sx={{
             flexGrow: 1,
@@ -195,7 +195,7 @@ const UsersPage = () => {
               backgroundColor: '#ffffff',
             }}
           >
-            {/* VISUALIZAÇÃO EM CARDS PARA SMARTPHONE */}
+            {/* VISUALIZAï¿½ï¿½O EM CARDS PARA SMARTPHONE */}
             <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', p: 1.5, gap: 1.5 }}>
               {filteredItems.map((item) => {
                 const avatarStyle = getAvatarColor(item);
@@ -248,7 +248,7 @@ const UsersPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, px: 0.5 }}>
                       <AccessTimeIcon sx={{ fontSize: 15, color: '#7c3aed' }} />
                       <Typography sx={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600 }}>
-                        Último Acesso: {lastAccess ? formatTime(lastAccess, format) : 'Nunca acessou'}
+                        ï¿½ltimo Acesso: {lastAccess ? formatTime(lastAccess, format) : 'Nunca acessou'}
                       </Typography>
                     </Box>
 
@@ -315,7 +315,7 @@ const UsersPage = () => {
                       {t('userEmail')}
                     </TableCell>
                     <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8, whiteSpace: 'nowrap' }}>
-                      Último Acesso
+                      ï¿½ltimo Acesso
                     </TableCell>
                     <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8 }}>
                       {t('sharedDisabled')}
