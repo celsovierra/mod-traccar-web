@@ -548,6 +548,36 @@ const MapPositions = ({
     selectedDeviceId,
   ]);
 
+  const followCoordRef = useRef(null);
+
+  useEffect(() => {
+    if (!selectedDeviceId) {
+      followCoordRef.current = null;
+      return;
+    }
+    const posList = positions?.length ? positions : Object.values(reduxPositions || {});
+    const targetPos = posList.find((p) => Number(p.deviceId) === Number(selectedDeviceId));
+    if (!targetPos) return;
+
+    const coords = toMapCoordinates(targetPos.longitude, targetPos.latitude);
+    const last = followCoordRef.current;
+
+    if (last && last[0] === coords[0] && last[1] === coords[1]) return;
+    if (last === null) {
+      followCoordRef.current = coords;
+      return;
+    }
+
+    followCoordRef.current = coords;
+
+    map.easeTo({
+      center: coords,
+      padding: { top: 0, right: 0, bottom: cardExpandedRef.current ? 320 : 0, left: 0 },
+      duration: 1000,
+      easing: (t) => t,
+    });
+  }, [selectedDeviceId, positions, reduxPositions]);
+
   return null;
 };
 
