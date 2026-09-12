@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './smsMarketModern.css';
 import './smsMarketMobile.css';
 import {
@@ -825,20 +825,38 @@ const SmsMarketModal = ({ device, onClose }) => {
             }}
           >
             <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              onClick={() => setShowCreateGroup(!showCreateGroup)}
-              sx={{ cursor: 'pointer', userSelect: 'none' }}
-            >
-              <Typography variant="subtitle2" fontWeight="bold" color="primary">
-                {showCreateGroup ? '- OCULTAR CRIA��O' : '+ CRIAR NOVO GRUPO'}
-              </Typography>
-              <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 'bold' }}>
-                {showCreateGroup ? 'Fechar' : 'Abrir'}
-              </Typography>
+            <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
+              <Button
+                fullWidth
+                size="small"
+                onClick={() => setShowCreateGroup(!showCreateGroup)}
+                sx={{
+                  backgroundColor: "#fbbf24",
+                  color: "#1e293b",
+                  fontWeight: "bold",
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  "&:hover": { backgroundColor: "#f59e0b" },
+                }}
+              >
+                {showCreateGroup ? "- Ocultar Criacao" : "+ Novo Grupo"}
+              </Button>
+              <Button
+                fullWidth
+                size="small"
+                onClick={() => setShowSavedGroups(!showSavedGroups)}
+                sx={{
+                  backgroundColor: "#fbbf24",
+                  color: "#1e293b",
+                  fontWeight: "bold",
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  "&:hover": { backgroundColor: "#f59e0b" },
+                }}
+              >
+                {showSavedGroups ? "Fechar grupos" : "Ver grupos criados"}
+              </Button>
             </Box>
-            <Collapse in={showCreateGroup} sx={{ mt: showCreateGroup ? 1.5 : 0 }}>
               <TextField
                 fullWidth
                 size="small"
@@ -897,17 +915,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 
         {tabValue === 2 ? (
           <Box>
-            <Typography variant="subtitle2" fontWeight="bold" color="primary" mb={1}>
-              GRUPOS CADASTRADOS
-            </Typography>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => setShowSavedGroups(!showSavedGroups)}
-              sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
-            >
-              {showSavedGroups ? 'Fechar grupos' : 'Ver grupos criados'}
-            </Button>
 
             {showSavedGroups &&
               (savedGroups.length === 0 ? (
@@ -978,19 +985,37 @@ const SmsMarketModal = ({ device, onClose }) => {
               mb: 1.5,
             }}
           >
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              onClick={() => setShowCreateCommand(!showCreateCommand)}
-              sx={{ cursor: 'pointer', userSelect: 'none' }}
-            >
-              <Typography variant="subtitle2" fontWeight="bold" color="primary">
-                {showCreateCommand ? '- OCULTAR CADASTRO' : '+ CADASTRAR NOVO COMANDO'}
-              </Typography>
-              <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 'bold' }}>
-                {showCreateCommand ? 'Fechar' : 'Abrir'}
-              </Typography>
+            <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
+              <Button
+                fullWidth
+                size="small"
+                onClick={() => setShowCreateCommand(!showCreateCommand)}
+                sx={{
+                  backgroundColor: "#fbbf24",
+                  color: "#1e293b",
+                  fontWeight: "bold",
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  "&:hover": { backgroundColor: "#f59e0b" },
+                }}
+              >
+                {showCreateCommand ? "- Ocultar Cadastro" : "+ Novo Comando"}
+              </Button>
+              <Button
+                fullWidth
+                size="small"
+                onClick={() => setShowSavedCommands(!showSavedCommands)}
+                sx={{
+                  backgroundColor: "#fbbf24",
+                  color: "#1e293b",
+                  fontWeight: "bold",
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  "&:hover": { backgroundColor: "#f59e0b" },
+                }}
+              >
+                {showSavedCommands ? "Fechar comandos" : "Ver comandos criados"}
+              </Button>
             </Box>
             <Collapse in={showCreateCommand} sx={{ mt: showCreateCommand ? 1.5 : 0 }}>
               <TextField
@@ -1026,14 +1051,6 @@ const SmsMarketModal = ({ device, onClose }) => {
                 {loadingCommands ? 'CARREGANDO...' : 'SALVAR COMANDO'}
               </Button>
             </Collapse>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => setShowSavedCommands(!showSavedCommands)}
-              sx={{ mb: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 'bold' }}
-            >
-              {showSavedCommands ? 'Fechar comandos' : 'Ver comandos criados'}
-            </Button>
 
             {showSavedCommands &&
               (savedCommands.length === 0 ? (
@@ -1466,9 +1483,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 export default SmsMarketModal;
 
 // atualizacao
-
-
-
 
 
 
