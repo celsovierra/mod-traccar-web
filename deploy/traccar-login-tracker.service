@@ -1,0 +1,12 @@
+﻿[Unit]
+Description=Traccar Login Tracker
+After=network.target mysql.service
+
+[Service]
+Type=simple
+ExecStart=/opt/traccar/scripts/track_logins.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

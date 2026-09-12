@@ -1,4 +1,4 @@
-Ôªøimport { useCallback, useReducer, useState } from 'react';
+import { useCallback, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -120,7 +120,7 @@ const UsersPage = () => {
   };
 
   const getLastAccessTime = (item) => {
-    return item.lastUpdate || item.attributes?.lastUpdate || new Date().toISOString();
+    return item.lastUpdate || item.attributes?.lastUpdate || null;
   };
 
   return (
@@ -137,7 +137,7 @@ const UsersPage = () => {
           boxSizing: 'border-box',
         }}
       >
-        {/* CABE√áALHO 100% FIXO */}
+        {/* CABE«ALHO 100% FIXO */}
         <Box
           sx={{
             flexShrink: 0,
@@ -176,7 +176,7 @@ const UsersPage = () => {
           </Box>
         </Box>
 
-        {/* √ÅREA COM ROLAGEM INDEPENDENTE */}
+        {/* ¡REA COM ROLAGEM INDEPENDENTE */}
         <Box
           sx={{
             flexGrow: 1,
@@ -195,7 +195,7 @@ const UsersPage = () => {
               backgroundColor: '#ffffff',
             }}
           >
-            {/* VISUALIZA√á√ÉO EM CARDS PARA SMARTPHONE */}
+            {/* VISUALIZA«√O EM CARDS PARA SMARTPHONE */}
             <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', p: 1.5, gap: 1.5 }}>
               {filteredItems.map((item) => {
                 const avatarStyle = getAvatarColor(item);
@@ -248,7 +248,7 @@ const UsersPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, px: 0.5 }}>
                       <AccessTimeIcon sx={{ fontSize: 15, color: '#7c3aed' }} />
                       <Typography sx={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600 }}>
-                        √öltimo Acesso: {lastAccess ? formatTime(lastAccess, format) : 'Nunca acessou'}
+                        ⁄ltimo Acesso: {lastAccess ? formatTime(lastAccess, format) : 'Nunca acessou'}
                       </Typography>
                     </Box>
 
@@ -315,7 +315,7 @@ const UsersPage = () => {
                       {t('userEmail')}
                     </TableCell>
                     <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8, whiteSpace: 'nowrap' }}>
-                      √öltimo Acesso
+                      ⁄ltimo Acesso
                     </TableCell>
                     <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8 }}>
                       {t('sharedDisabled')}
