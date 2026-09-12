@@ -1043,10 +1043,19 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const handleSavePlate = async () => {
     setSavingPlate(true);
     try {
+      const getResponse = await fetch(`/api/devices/${deviceId}`, {
+        method: 'GET',
+        credentials: 'same-origin',
+      });
+      if (!getResponse.ok) {
+        throw new Error('Nao foi possivel carregar os dados do veiculo.');
+      }
+      const currentDevice = await getResponse.json();
+
       const updatedDevice = {
-        ...device,
+        ...currentDevice,
         model: editModel,
-        attributes: { ...device.attributes, plate: editPlate },
+        attributes: { ...currentDevice.attributes, plate: editPlate },
       };
       const response = await fetch(`/api/devices/${deviceId}`, {
         method: 'PUT',
@@ -1055,13 +1064,18 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         body: JSON.stringify(updatedDevice),
       });
       if (!response.ok) {
-        throw new Error('Nao foi possivel salvar.');
+        const detail = await response.text();
+        throw new Error(detail || 'Nao foi possivel salvar.');
       }
       dispatch(devicesActions.update([updatedDevice]));
+      const refreshRes = await fetch('/api/devices', { credentials: 'same-origin' });
+      if (refreshRes.ok) {
+        dispatch(devicesActions.refresh(await refreshRes.json()));
+      }
       setEditPlateOpen(false);
       setToast({ message: 'Placa e modelo atualizados.', severity: 'success' });
     } catch (e) {
-      setToast({ message: 'Erro ao salvar placa e modelo.', severity: 'error' });
+      setToast({ message: e?.message || 'Erro ao salvar placa e modelo.', severity: 'error' });
     } finally {
       setSavingPlate(false);
     }
@@ -1244,7 +1258,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         </Box>
                       )}
 
-                      <Box className={classes.mercosulPlateContainer} onClick={handleOpenPlateEdit} sx={{ cursor: 'pointer' }}>
+                      <Box className={classes.mercosulPlateContainer} onClick={admin ? handleOpenPlateEdit : undefined} sx={{ cursor: admin ? 'pointer' : 'default' }}>
                         <Box className={classes.mercosulTopBar}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                             <svg width="7" height="7" viewBox="0 0 10 10">
