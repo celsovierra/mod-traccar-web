@@ -119,6 +119,16 @@ const UserPage = () => {
     if (result.id === currentUser.id) {
       dispatch(sessionActions.updateUser(result));
     }
+    if (!item.id) {
+      const notificationIds = result.administrator ? [139] : [160, 139];
+      notificationIds.forEach((notificationId) => {
+        fetchOrThrow('/api/permissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: result.id, notificationId }),
+        });
+      });
+    }
   };
 
   const validate = () =>
