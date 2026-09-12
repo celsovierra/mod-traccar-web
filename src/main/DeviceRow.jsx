@@ -30,12 +30,13 @@ import {
   formatPercentage,
   formatStatus,
   getStatusColor,
+  formatSpeed,
 } from '../common/util/formatter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { mapIconKey, mapIcons } from '../map/core/preloadImages';
 import { useAdministrator } from '../common/util/permissions';
 
-import { useAttributePreference } from '../common/util/preferences';
+import { useAttributePreference, usePreference } from '../common/util/preferences';
 import GeofencesValue from '../common/components/GeofencesValue';
 import DriverValue from '../common/components/DriverValue';
 import MotionBar from './components/MotionBar';
@@ -134,6 +135,7 @@ const DeviceRow = ({ devices, index, style }) => {
 
   const imageUrl = getImageUrl(item);
 
+  const speedUnit = usePreference('speedUnit');
   const devicePrimary = useAttributePreference('devicePrimary', 'name');
   const deviceSecondary = useAttributePreference('deviceSecondary', '');
 
@@ -159,7 +161,15 @@ const DeviceRow = ({ devices, index, style }) => {
 
   const secondaryText = () => {
     let status;
-    if (item.status === 'online' || !item.lastUpdate) {
+    const isMoving =
+      item.status === 'online' &&
+      position &&
+      position.speed > 0 &&
+      position.attributes?.ignition === true;
+
+    if (isMoving) {
+      status = `Em movimento - ${formatSpeed(position.speed, speedUnit, t)}`;
+    } else if (item.status === 'online' || !item.lastUpdate) {
       status = formatStatus(item.status, t);
     } else {
       status = 'Modo de economia';
