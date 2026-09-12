@@ -253,6 +253,14 @@ const BottomMenu = () => {
           />
         )}
       </BottomNavigation>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+        <MenuItem onClick={handleAccount}>
+          <Typography color="textPrimary">{t('settingsUser')}</Typography>
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <Typography color="error">{t('loginLogout')}</Typography>
+        </MenuItem>
+      </Menu>
     </Paper>
   );
 };
