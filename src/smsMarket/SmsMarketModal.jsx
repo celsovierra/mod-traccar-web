@@ -362,7 +362,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
           setSelectedGroup(null);
           setMessage('');
-          showToast(Grupo enviado via GPRS:  ok,  falha(s)., failCount > 0 ? 'warning' : 'success');
+          showToast(`Grupo enviado via GPRS: ${successCount} ok, ${failCount} falha(s).`, failCount > 0 ? 'warning' : 'success');
         } catch (error) {
           showToast(error?.message || 'Erro ao enviar grupo via GPRS.', 'error');
         } finally {

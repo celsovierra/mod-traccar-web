@@ -1,4 +1,4 @@
-import { AnchorButton } from "../../features/anchor/AnchorButton";
+﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
 import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -607,6 +607,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const positionItems = 'fixTime,address';
 
   const [removing, setRemoving] = useState(false);
+  const [editPlateOpen, setEditPlateOpen] = useState(false);
+  const [editModel, setEditModel] = useState('');
+  const [editPlate, setEditPlate] = useState('');
+  const [savingPlate, setSavingPlate] = useState(false);
   const [confirmLock, setConfirmLock] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -1030,6 +1034,39 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     }
   };
 
+  const handleOpenPlateEdit = () => {
+    setEditModel(device?.model || '');
+    setEditPlate(device?.attributes?.plate || '');
+    setEditPlateOpen(true);
+  };
+
+  const handleSavePlate = async () => {
+    setSavingPlate(true);
+    try {
+      const updatedDevice = {
+        ...device,
+        model: editModel,
+        attributes: { ...device.attributes, plate: editPlate },
+      };
+      const response = await fetch(`/api/devices/${deviceId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(updatedDevice),
+      });
+      if (!response.ok) {
+        throw new Error('Nao foi possivel salvar.');
+      }
+      dispatch(devicesActions.update([updatedDevice]));
+      setEditPlateOpen(false);
+      setToast({ message: 'Placa e modelo atualizados.', severity: 'success' });
+    } catch (e) {
+      setToast({ message: 'Erro ao salvar placa e modelo.', severity: 'error' });
+    } finally {
+      setSavingPlate(false);
+    }
+  };
+
   const handleRemove = useCatch(async (removed) => {
     if (removed) {
       const response = await fetchOrThrow('/api/devices');
@@ -1207,7 +1244,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         </Box>
                       )}
 
-                      <Box className={classes.mercosulPlateContainer}>
+                      <Box className={classes.mercosulPlateContainer} onClick={handleOpenPlateEdit} sx={{ cursor: 'pointer' }}>
                         <Box className={classes.mercosulTopBar}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                             <svg width="7" height="7" viewBox="0 0 10 10">
@@ -1709,6 +1746,69 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
           )
         )}
       </Snackbar>
+
+      <Dialog
+        open={editPlateOpen}
+        onClose={() => setEditPlateOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+            Editar Veiculo
+          </Typography>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="caption" sx={{ fontWeight: 600, color: "#6b7280" }}>Modelo</Typography>
+            <input
+              type="text"
+              value={editModel}
+              onChange={(e) => setEditModel(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                marginTop: '4px',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                fontSize: '0.9rem',
+                boxSizing: 'border-box',
+              }}
+            />
+          </Box>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="caption" sx={{ fontWeight: 600, color: "#6b7280" }}>Placa do Veiculo</Typography>
+            <input
+              type="text"
+              value={editPlate}
+              onChange={(e) => setEditPlate(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                marginTop: '4px',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                fontSize: '0.9rem',
+                boxSizing: 'border-box',
+              }}
+            />
+          </Box>
+          <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+            <Button
+              onClick={() => setEditPlateOpen(false)}
+              sx={{ flex: 1, borderRadius: 2, color: "#6b7280", border: "1px solid #e5e7eb", textTransform: "none", fontWeight: 600 }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSavePlate}
+              variant="contained"
+              disabled={savingPlate}
+              sx={{ flex: 1, borderRadius: 2, backgroundColor: "#3b82f6", textTransform: "none", fontWeight: 700, boxShadow: "none" }}
+            >
+              {savingPlate ? 'Salvando...' : 'Guardar'}
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
 
       <RemoveDialog
         open={removing}
