@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 DB_USER="traccar_user"
 DB_PASS="Traccar@2026#Sec"
 DB_NAME="traccar"
