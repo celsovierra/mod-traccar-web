@@ -72,14 +72,14 @@ const SettingsMenu = () => {
         {!readonly && (
           <>
             <MenuItem
-              title={t('deviceTitle')}
+              title="Veículos"
               link="/settings/devices"
               icon={<DnsIcon fontSize="small" />}
               selected={location.pathname.startsWith('/settings/device')}
             />
             {manager && (
               <MenuItem
-                title="Contas"
+                title="Usuários"
                 link="/settings/users"
                 icon={<PeopleIcon fontSize="small" />}
                 selected={
@@ -88,12 +88,6 @@ const SettingsMenu = () => {
                 }
               />
             )}
-            <MenuItem
-              title="Usuário"
-              link={`/settings/user/${userId}`}
-              icon={<PersonIcon fontSize="small" />}
-              selected={location.pathname === `/settings/user/${userId}`}
-            />
             <MenuItem
               title={t('sharedGeofences')}
               link="/geofences"
