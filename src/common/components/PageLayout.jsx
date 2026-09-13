@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   AppBar,
   Box,
@@ -15,6 +15,7 @@ import { makeStyles } from 'tss-react/mui';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import MenuIcon from '@mui/icons-material/Menu';
+import MapIcon from '@mui/icons-material/Map';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from './LocalizationProvider';
 import BackIcon from './BackIcon';
@@ -194,6 +195,14 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
           <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1e293b' }}>
             Voltar
           </Typography>
+          <IconButton
+            color="inherit"
+            edge="end"
+            sx={{ ml: "auto", color: "#6d28d9" }}
+            onClick={() => navigate('/')}
+          >
+            <MapIcon />
+          </IconButton>
         </Box>
       )}
 

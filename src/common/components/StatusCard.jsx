@@ -30,6 +30,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import RouteIcon from '@mui/icons-material/Route';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
@@ -1085,6 +1086,33 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     }
   };
 
+  const handleShareWhatsapp = () => {
+    const statusLine = isOnline ? "\uD83D\uDFE2 Online" : "\uD83D\uDD34 Offline";
+    const ignitionLine = isIgnitionOn ? "\uD83D\uDD11 Ligado" : "\uD83D\uDD11 Desligado";
+    const lockLine = isBlocked ? "\uD83D\uDD12 Bloqueado" : "\uD83D\uDD13 Desbloqueado";
+    const speedLine = `\uD83D\uDE97 ${position ? formatSpeed(position.speed, speedUnit, t) : "0 km/h"}`;
+
+    let stoppedLine = "";
+    if (stoppedStatus) {
+      const diffMs = Date.now() - new Date(stoppedStatus.stoppedSince).getTime();
+      const hours = Math.floor(diffMs / 3600000);
+      const minutes = Math.floor((diffMs % 3600000) / 60000);
+      const durationText = hours > 0 ? `${hours}h ${minutes}min` : `${minutes}min`;
+      stoppedLine = `\u23F1\uFE0F Parado ha ${durationText}\n`;
+    }
+
+    const addressLine = position?.address || "Endereco nao disponivel";
+    const dateLine = position?.fixTime ? formatDateTimeBr(position.fixTime) : "-";
+    const mapsLine = position
+      ? `https://www.google.com/maps?q=${position.latitude},${position.longitude}`
+      : '';
+
+    const message =
+      `*${device.name}*\n\n${statusLine}\n${ignitionLine}\n${lockLine}\n${speedLine}\n${stoppedLine}\uD83D\uDCCD ${addressLine}\n\uD83D\uDCC5 ${dateLine}\n\uD83D\uDCCC ${mapsLine}`;
+
+    window.open(https://wa.me/?text=, '_blank');
+  };
+
   const handleRemove = useCatch(async (removed) => {
     if (removed) {
       const response = await fetchOrThrow('/api/devices');
@@ -1391,6 +1419,15 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
                 {admin && (
                   <>
+                    <ButtonBase
+                      className={classes.actionItemBtn}
+                      onClick={handleShareWhatsapp}
+                      disabled={disableActions}
+                    >
+                      <WhatsAppIcon sx={{ fontSize: 22, color: "#25D366" }} />
+                      <Typography className={classes.actionText}>Whatsapp</Typography>
+                    </ButtonBase>
+
                     <ButtonBase
                       className={classes.actionItemBtn}
                       onClick={() => navigate(`/settings/device/${deviceId}`)}
