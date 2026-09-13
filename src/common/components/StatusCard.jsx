@@ -1110,7 +1110,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     const message =
       `*${device.name}*\n\n${statusLine}\n${ignitionLine}\n${lockLine}\n${speedLine}\n${stoppedLine}\uD83D\uDCCD ${addressLine}\n\uD83D\uDCC5 ${dateLine}\n\uD83D\uDCCC ${mapsLine}`;
 
-    window.open(https://wa.me/?text=, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const handleRemove = useCatch(async (removed) => {
