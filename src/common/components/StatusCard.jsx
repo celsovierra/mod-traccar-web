@@ -1,4 +1,4 @@
-import { AnchorButton } from "../../features/anchor/AnchorButton";
+﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
 import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -356,6 +356,7 @@ const useStyles = makeStyles()((theme) => ({
     borderTop: '1px solid #f3f4f6',
     marginTop: 6,
     gap: 6,
+    [theme.breakpoints.down('sm')]: { gap: 2, paddingLeft: 2, paddingRight: 2 },
   },
   lockRectangleBtn: {
     display: 'flex',
@@ -384,6 +385,7 @@ const useStyles = makeStyles()((theme) => ({
     alignItems: 'center',
     gap: 3,
     padding: '4px 6px',
+    [theme.breakpoints.down('sm')]: { padding: '2px 2px', gap: 1, '& .MuiSvgIcon-root': { fontSize: '18px !important' } },
     borderRadius: 10,
     cursor: 'pointer',
     transition: 'all 0.2s',
@@ -397,6 +399,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   actionText: {
     fontSize: '0.68rem',
+    [theme.breakpoints.down('sm')]: { fontSize: '0.56rem' },
     fontWeight: 600,
     color: '#4b5563',
   },
@@ -1088,10 +1091,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   };
 
   const handleShareWhatsapp = () => {
-    const statusLine = isOnline ? "\uD83D\uDFE2 Online" : "\uD83D\uDD34 Offline";
-    const ignitionLine = isIgnitionOn ? "\uD83D\uDD11 Ligado" : "\uD83D\uDD11 Desligado";
-    const lockLine = isBlocked ? "\uD83D\uDD12 Bloqueado" : "\uD83D\uDD13 Desbloqueado";
-    const speedLine = `\uD83D\uDE97 ${position ? formatSpeed(position.speed, speedUnit, t) : "0 km/h"}`;
+    const statusLine = isOnline ? "[Online]" : "[Offline]";
+    const ignitionLine = isIgnitionOn ? "Ignicao: Ligado" : "Ignicao: Desligado";
+    const lockLine = isBlocked ? "Bloqueado" : "Desbloqueado";
+    const speedLine = `Velocidade: ${position ? formatSpeed(position.speed, speedUnit, t) : "0 km/h"}`;
 
     let stoppedLine = "";
     if (stoppedStatus) {
@@ -1099,7 +1102,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       const hours = Math.floor(diffMs / 3600000);
       const minutes = Math.floor((diffMs % 3600000) / 60000);
       const durationText = hours > 0 ? `${hours}h ${minutes}min` : `${minutes}min`;
-      stoppedLine = `\u23F1\uFE0F Parado ha ${durationText}\n`;
+      stoppedLine = `Parado ha: ${durationText}\n`;
     }
 
     const addressLine = position?.address || "Endereco nao disponivel";
@@ -1109,9 +1112,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       : '';
 
     const message =
-      `*${device.name}*\n\n${statusLine}\n${ignitionLine}\n${lockLine}\n${speedLine}\n${stoppedLine}\uD83D\uDCCD ${addressLine}\n\uD83D\uDCC5 ${dateLine}\n\uD83D\uDCCC ${mapsLine}`;
+      `*${device.name}*\n\n${statusLine}\n${ignitionLine}\n${lockLine}\n${speedLine}\n${stoppedLine}Endereco: ${addressLine}\nData: ${dateLine}\nMapa: ${mapsLine}`;
 
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const handleRemove = useCatch(async (removed) => {

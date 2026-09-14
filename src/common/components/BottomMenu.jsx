@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -20,7 +20,7 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 import { sessionActions } from '../../store';
 import { useTranslation } from './LocalizationProvider';
-import { useRestriction } from '../util/permissions';
+import { useRestriction, useAdministrator } from '../util/permissions';
 import { nativePostMessage } from './NativeInterface';
 
 const BottomMenu = () => {
@@ -30,6 +30,7 @@ const BottomMenu = () => {
   const t = useTranslation();
 
   const readonly = useRestriction('readonly');
+  const admin = useAdministrator();
   const disableReports = useRestriction('disableReports');
   const devices = useSelector((state) => state.devices.items);
   const user = useSelector((state) => state.session.user);
@@ -160,6 +161,7 @@ const BottomMenu = () => {
           },
         }}
       >
+        {admin && (
         <BottomNavigationAction
           label={t("mapTitle")}
           icon={
@@ -179,7 +181,8 @@ const BottomMenu = () => {
           }
           value="map"
         />
-        {!disableReports && (
+        )}
+        {admin && !disableReports && (
           <BottomNavigationAction
             label={t("reportTitle")}
             icon={
@@ -198,7 +201,7 @@ const BottomMenu = () => {
             value="reports"
           />
         )}
-        {!readonly && (
+        {admin && !readonly && (
           <BottomNavigationAction
             label={t("settingsTitle")}
             icon={
@@ -255,7 +258,7 @@ const BottomMenu = () => {
       </BottomNavigation>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
         <MenuItem onClick={handleAccount}>
-          <Typography color="textPrimary">{t('settingsUser')}</Typography>
+          <Typography color="textPrimary">Alterar Senha</Typography>
         </MenuItem>
         <MenuItem onClick={handleLogout}>
           <Typography color="error">{t('loginLogout')}</Typography>
@@ -266,6 +269,5 @@ const BottomMenu = () => {
 };
 
 export default BottomMenu;
-
 
 
