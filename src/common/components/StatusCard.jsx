@@ -1090,7 +1090,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     }
   };
 
-  const handleShareWhatsapp = () => {
+  const handleShareWhatsapp = async () => {
     const statusEmoji = isOnline ? "🟢" : "🔴";
     const statusText = isOnline ? "Online" : "Offline";
     const ignitionText = isIgnitionOn ? "Ligada" : "Desligada";
@@ -1132,7 +1132,22 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       mapsLink,
     ].join('\n');
 
-    window.open(https://api.whatsapp.com/send?text=, '_blank');
+    if (navigator.share && deviceImage) {
+      try {
+        const response = await fetch(deviceImage);
+        const blob = await response.blob();
+        const file = new File([blob], 'veiculo.jpg', { type: blob.type || 'image/jpeg' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], text: message });
+          return;
+        }
+      } catch (e) {
+        // segue para o fallback abaixo
+      }
+    }
+
+    window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(message), '_blank');
   };
 
   const handleRemove = useCatch(async (removed) => {
