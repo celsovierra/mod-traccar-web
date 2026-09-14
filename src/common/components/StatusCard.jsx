@@ -1145,9 +1145,17 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       } catch (e) {
         // segue para o fallback abaixo
       }
+    const whatsUrl = 'https://web.whatsapp.com/send?text=' + encodeURIComponent(message);
+    const link = document.createElement('a');
+    link.href = whatsUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     }
 
-    window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(message), '_blank');
+
   };
 
   const handleRemove = useCatch(async (removed) => {
