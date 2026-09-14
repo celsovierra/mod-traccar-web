@@ -1,0 +1,14 @@
+[Unit]
+Description=Device Edit Proxy (permite usuarios comuns editarem modelo/placa)
+After=network.target mysql.service traccar.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/device-edit-proxy
+Environment=DB_PASS=Traccar@2026#Sec
+ExecStart=/usr/bin/node /opt/device-edit-proxy/server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

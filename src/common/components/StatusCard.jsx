@@ -1,4 +1,4 @@
-﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
+import { AnchorButton } from "../../features/anchor/AnchorButton";
 import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -1062,7 +1062,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         model: editModel,
         attributes: { ...currentDevice.attributes, plate: editPlate },
       };
-      const response = await fetch(`/api/devices/${deviceId}`, {
+      const editUrl = admin ? `/api/devices/${deviceId}` : `/api-device-edit/${deviceId}`;
+      const response = await fetch(editUrl, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
@@ -1290,7 +1291,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         </Box>
                       )}
 
-                      <Box className={classes.mercosulPlateContainer} onClick={admin ? handleOpenPlateEdit : undefined} sx={{ cursor: admin ? 'pointer' : 'default' }}>
+                      <Box className={classes.mercosulPlateContainer} onClick={handleOpenPlateEdit} sx={{ cursor: 'pointer' }}>
                         <Box className={classes.mercosulTopBar}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                             <svg width="7" height="7" viewBox="0 0 10 10">
