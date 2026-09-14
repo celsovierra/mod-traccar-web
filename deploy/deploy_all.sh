@@ -19,6 +19,7 @@ systemctl restart traccar
 echo "=== 4. Aplicando servicos auxiliares (idempotente) ==="
 bash "$SCRIPT_DIR/device-edit-proxy/install_device_edit_proxy.sh" || true
 bash "$SCRIPT_DIR/device-edit-proxy/fix_nginx_path.sh" || true
+bash "$SCRIPT_DIR/device-edit-proxy/update_server.sh" || true
 bash "$SCRIPT_DIR/fix_timezone.sh" || true
 bash "$SCRIPT_DIR/install.sh" || true
 

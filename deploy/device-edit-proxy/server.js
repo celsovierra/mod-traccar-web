@@ -50,7 +50,9 @@ const server = http.createServer(async (req, res) => {
   req.on('data', (chunk) => { body += chunk; });
   req.on('end', async () => {
     try {
-      const { model, plate } = JSON.parse(body || '{}');
+      const parsedBody = JSON.parse(body || '{}');
+      const model = parsedBody.model;
+      const plate = parsedBody.attributes?.plate !== undefined ? parsedBody.attributes.plate : parsedBody.plate;
 
       const authorized = await checkDeviceAccess(deviceId, cookieHeader);
       if (!authorized) {
