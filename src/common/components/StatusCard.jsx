@@ -30,7 +30,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import RouteIcon from '@mui/icons-material/Route';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import ShareIcon from '@mui/icons-material/Share';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
@@ -1091,30 +1091,48 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   };
 
   const handleShareWhatsapp = () => {
-    const statusLine = isOnline ? "[Online]" : "[Offline]";
-    const ignitionLine = isIgnitionOn ? "Ignicao: Ligado" : "Ignicao: Desligado";
-    const lockLine = isBlocked ? "Bloqueado" : "Desbloqueado";
-    const speedLine = `Velocidade: ${position ? formatSpeed(position.speed, speedUnit, t) : "0 km/h"}`;
+    const statusEmoji = isOnline ? "🟢" : "🔴";
+    const statusText = isOnline ? "Online" : "Offline";
+    const ignitionText = isIgnitionOn ? "Ligada" : "Desligada";
+    const lockText = isBlocked ? "Bloqueado" : "Desbloqueado";
+    const modelText = device?.model || "Nao informado";
+    const plateText = device?.attributes?.plate || "Nao informado";
 
-    let stoppedLine = "";
+    const speedKmh = position ? (position.speed * 1.852).toFixed(2) : "0.00";
+
+    let stoppedText = "0 min";
     if (stoppedStatus) {
       const diffMs = Date.now() - new Date(stoppedStatus.stoppedSince).getTime();
       const hours = Math.floor(diffMs / 3600000);
       const minutes = Math.floor((diffMs % 3600000) / 60000);
-      const durationText = hours > 0 ? `${hours}h ${minutes}min` : `${minutes}min`;
-      stoppedLine = `Parado ha: ${durationText}\n`;
+      stoppedText = hours > 0 ? `${hours}h ${minutes}min` : `${minutes} min`;
     }
 
-    const addressLine = position?.address || "Endereco nao disponivel";
-    const dateLine = position?.fixTime ? formatDateTimeBr(position.fixTime) : "-";
-    const mapsLine = position
+    const addressText = position?.address || "Nao disponivel";
+    const dateText = position?.fixTime ? formatDateTimeBr(position.fixTime) : "-";
+    const mapsLink = position
       ? `https://www.google.com/maps?q=${position.latitude},${position.longitude}`
-      : '';
+      : 'Nao disponivel';
 
-    const message =
-      `*${device.name}*\n\n${statusLine}\n${ignitionLine}\n${lockLine}\n${speedLine}\n${stoppedLine}Endereco: ${addressLine}\nData: ${dateLine}\nMapa: ${mapsLine}`;
+    const message = [
+      `🚗 _*${device.name}*_`,
+      '',
+      `${statusEmoji} *Status:* ${statusText}`,
+      `🔑 *Ignicao:* ${ignitionText}`,
+      `${isBlocked ? "🔒" : "🔓"} *Bloqueio:* ${lockText}`,
+      `🚙 *Modelo:* ${modelText}`,
+      `🔢 *Placa:* ${plateText}`,
+      '',
+      `⏱️ *Velocidade:* ${speedKmh} km/h`,
+      `⏳ *Tempo Parado:* ${stoppedText}`,
+      `📍 *Endereco:* ${addressText}`,
+      `🕐 *Data/Hora:* ${dateText}`,
+      '',
+      `🗺️ *Localizacao:*`,
+      mapsLink,
+    ].join('\n');
 
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(https://api.whatsapp.com/send?text=, '_blank');
   };
 
   const handleRemove = useCatch(async (removed) => {
@@ -1428,8 +1446,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       onClick={handleShareWhatsapp}
                       disabled={disableActions}
                     >
-                      <WhatsAppIcon sx={{ fontSize: 22, color: "#25D366" }} />
-                      <Typography className={classes.actionText}>Whatsapp</Typography>
+                      <ShareIcon sx={{ fontSize: 22, color: "#7c3aed" }} />
+                      <Typography className={classes.actionText}>Compartilhar</Typography>
                     </ButtonBase>
 
                     <ButtonBase
