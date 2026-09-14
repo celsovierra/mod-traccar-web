@@ -156,16 +156,18 @@ const UserPage = () => {
               <Typography variant="subtitle1">{t('sharedRequired')}</Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.details}>
-              <TextField
-                value={item.name || ''}
-                onChange={(e) => setItem({ ...item, name: e.target.value })}
-                label={t('sharedName')}
-              />
+              {admin && (
+                <TextField
+                  value={item.name || ''}
+                  onChange={(e) => setItem({ ...item, name: e.target.value })}
+                  label={t('sharedName')}
+                />
+              )}
               <TextField
                 value={item.email || ''}
                 onChange={(e) => setItem({ ...item, email: e.target.value })}
                 label={t('userEmail')}
-                disabled={fixedEmail && item.id === currentUser.id}
+                disabled={!admin || (fixedEmail && item.id === currentUser.id)}
               />
               {!openIdForced && (
                 <PasswordField
@@ -199,6 +201,7 @@ const UserPage = () => {
               )}
             </AccordionDetails>
           </Accordion>
+          {admin && (
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="subtitle1">{t('sharedPreferences')}</Typography>
@@ -321,6 +324,8 @@ const UserPage = () => {
               />
             </AccordionDetails>
           </Accordion>
+          )}
+          {admin && (
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="subtitle1">{t('sharedLocation')}</Typography>
@@ -361,6 +366,8 @@ const UserPage = () => {
               </Button>
             </AccordionDetails>
           </Accordion>
+          )}
+          {admin && (
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="subtitle1">{t('sharedPermissions')}</Typography>
@@ -468,6 +475,8 @@ const UserPage = () => {
               </FormGroup>
             </AccordionDetails>
           </Accordion>
+          )}
+          {admin && (
           <EditAttributesAccordion
             attribute={attribute}
             attributes={item.attributes}
@@ -475,6 +484,7 @@ const UserPage = () => {
             definitions={{ ...commonUserAttributes, ...userAttributes }}
             focusAttribute={attribute}
           />
+          )}
           {registrationEnabled && item.id === currentUser.id && !manager && (
             <Accordion>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
