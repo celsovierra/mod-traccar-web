@@ -121,6 +121,13 @@ async function handleAnchorCreate(req, res, deviceId, cookieHeader) {
     await pool.query('INSERT INTO tc_device_geofence (deviceid, geofenceid) VALUES (?, ?)', [deviceId, geofenceId]);
     await pool.query('INSERT INTO tc_user_geofence (userid, geofenceid) VALUES (?, ?)', [sessionUser.id, geofenceId]);
 
+    const [admins] = await pool.query('SELECT id FROM tc_users WHERE administrator = 1');
+    for (const admin of admins) {
+      if (admin.id !== sessionUser.id) {
+        await pool.query('INSERT INTO tc_user_geofence (userid, geofenceid) VALUES (?, ?)', [admin.id, geofenceId]);
+      }
+    }
+
     sendJson(res, 200, { success: true, geofenceId });
   } catch (error) {
     console.error('Erro ao criar ancora:', error);
