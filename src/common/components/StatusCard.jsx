@@ -355,9 +355,10 @@ const useStyles = makeStyles()((theme) => ({
     paddingTop: 12,
     borderTop: '1px solid #f3f4f6',
     marginTop: 6,
-    gap: 6,
-    [theme.breakpoints.down('sm')]: { gap: 2, paddingLeft: 2, paddingRight: 2 },
+    gap: 2,
+    paddingLeft: 2,
   },
+
   lockRectangleBtn: {
     display: 'flex',
     alignItems: 'center',
@@ -384,8 +385,8 @@ const useStyles = makeStyles()((theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 3,
-    padding: '4px 6px',
-    [theme.breakpoints.down('sm')]: { padding: '2px 2px', gap: 1, '& .MuiSvgIcon-root': { fontSize: '18px !important' } },
+    padding: '2px 2px',
+    gap: 1,
     borderRadius: 10,
     cursor: 'pointer',
     transition: 'all 0.2s',
@@ -398,8 +399,8 @@ const useStyles = makeStyles()((theme) => ({
     },
   },
   actionText: {
-    fontSize: '0.68rem',
-    [theme.breakpoints.down('sm')]: { fontSize: '0.56rem' },
+    fontSize: '0.6rem',
+
     fontWeight: 600,
     color: '#4b5563',
   },
@@ -1470,7 +1471,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       disabled={disableActions}
                     >
                       <ShareIcon sx={{ fontSize: 22, color: "#7c3aed" }} />
-                      <Typography className={classes.actionText}>Compartilhar</Typography>
+                      <Typography className={classes.actionText}>Compart.</Typography>
                     </ButtonBase>
 
                     <ButtonBase
