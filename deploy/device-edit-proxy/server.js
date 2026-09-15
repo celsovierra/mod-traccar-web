@@ -86,6 +86,43 @@ async function handleDeviceEdit(req, res, deviceId, cookieHeader) {
   }
 }
 
+async function handleRelayStatus(req, res, deviceId, cookieHeader) {
+  try {
+    const authorized = await checkDeviceAccess(deviceId, cookieHeader);
+    if (!authorized) {
+      sendJson(res, 403, { error: 'Sem permissao' });
+      return;
+    }
+
+    const [rows] = await pool.query(
+      "SELECT eventtime, attributes FROM tc_events WHERE deviceid = ? AND type = 'commandResult' ORDER BY eventtime DESC LIMIT 1",
+      [deviceId],
+    );
+
+    if (rows.length === 0) {
+      sendJson(res, 200, { result: null, eventtime: null });
+      return;
+    }
+
+    let attributes = {};
+    try {
+      attributes = rows[0].attributes ? JSON.parse(rows[0].attributes) : {};
+    } catch (e) {
+      attributes = {};
+    }
+
+    const resultText = String(attributes.result || '').toUpperCase();
+    let blocked = null;
+    if (resultText.includes('RELAY 1')) blocked = true;
+    if (resultText.includes('RELAY 0')) blocked = false;
+
+    sendJson(res, 200, { result: blocked, eventtime: rows[0].eventtime });
+  } catch (error) {
+    console.error('Erro ao consultar status do rele:', error);
+    sendJson(res, 500, { error: 'Erro interno' });
+  }
+}
+
 async function handleAnchorCreate(req, res, deviceId, cookieHeader) {
   const body = await readBody(req);
   try {
@@ -171,6 +208,7 @@ const server = http.createServer(async (req, res) => {
 
   const deviceEditMatch = req.url.match(/^\/api-device-edit\/(\d+)$/);
   const anchorMatch = req.url.match(/^\/api-anchor\/(\d+)$/);
+  const relayStatusMatch = req.url.match(/^\/api-relay-status\/(\d+)$/);
 
   if (req.method === 'PUT' && deviceEditMatch) {
     await handleDeviceEdit(req, res, parseInt(deviceEditMatch[1], 10), cookieHeader);
@@ -184,6 +222,11 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'DELETE' && anchorMatch) {
     await handleAnchorDelete(req, res, parseInt(anchorMatch[1], 10), cookieHeader);
+    return;
+  }
+
+  if (req.method === 'GET' && relayStatusMatch) {
+    await handleRelayStatus(req, res, parseInt(relayStatusMatch[1], 10), cookieHeader);
     return;
   }
 

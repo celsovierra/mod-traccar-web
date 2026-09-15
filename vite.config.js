@@ -1,8 +1,49 @@
-﻿import { defineConfig } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import svgr from 'vite-plugin-svgr';
 import { VitePWA } from 'vite-plugin-pwa';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import fs from 'fs';
+import path from 'path';
+
+function saveIconPlugin() {
+  return {
+    name: 'save-icon-plugin',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.method === 'POST' && req.url === '/api/dev-save-icon') {
+          let body = '';
+          req.on('data', (chunk) => { body += chunk; });
+          req.on('end', () => {
+            try {
+              const { name, dataUrl } = JSON.parse(body);
+              const matches = dataUrl.match(/^data:image\/(\w+);base64,(.+)$/);
+              if (!matches) {
+                res.statusCode = 400;
+                res.end(JSON.stringify({ error: 'invalid image' }));
+                return;
+              }
+              const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
+              const base64Data = matches[2];
+              const safeName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `icon-${Date.now()}`;
+              const dir = path.resolve(process.cwd(), 'src/resources/images/custom');
+              fs.mkdirSync(dir, { recursive: true });
+              const filePath = path.join(dir, `${safeName}.${ext}`);
+              fs.writeFileSync(filePath, base64Data, 'base64');
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ ok: true, fileName: `${safeName}.${ext}`, name }));
+            } catch (err) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: String(err) }));
+            }
+          });
+        } else {
+          next();
+        }
+      });
+    },
+  };
+}
 
 export default defineConfig(() => ({
   server: {
@@ -32,6 +73,7 @@ export default defineConfig(() => ({
   plugins: [
     svgr(),
     react(),
+    saveIconPlugin(),
     VitePWA({
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png'],
       workbox: {

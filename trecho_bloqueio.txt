@@ -1,0 +1,183 @@
+﻿  const [unlinkingId, setUnlinkingId] = useState(null);
+
+  const getIsBlockedReal = (pos = position, dev = device) => {
+    const currentDevId = deviceId || dev?.id;
+    if (currentDevId) {
+      const val = localStorage.getItem('device_blocked_' + currentDevId);
+      if (val === 'true') return true;
+      if (val === 'false') return false;
+    }
+    const posAttr = pos?.attributes || {};
+    const devAttr = dev?.attributes || {};
+    if (devAttr.blocked === true) return true;
+    if (posAttr.blocked === true) return true;
+    if (posAttr.out1 === true) return true;
+    if (posAttr.output1 === true) return true;
+    if (posAttr.relay === true) return true;
+    return false;
+  };
+
+    const [isBlocked, setIsBlocked] = useState(() => {
+    const val = localStorage.getItem('device_blocked_' + deviceId);
+    if (val === 'true') return true;
+    if (val === 'false') return false;
+    return getIsBlockedReal();
+  });
+  const [isUnlockPending, setIsUnlockPending] = useState(() => {
+    return localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true';
+  });
+
+
+
+  const positionAttributes = usePositionAttributes(t);
+  const positionItems = 'fixTime,address';
+
+  const [removing, setRemoving] = useState(false);
+  const [editPlateOpen, setEditPlateOpen] = useState(false);
+  const [editModel, setEditModel] = useState('');
+  const [editPlate, setEditPlate] = useState('');
+  const [savingPlate, setSavingPlate] = useState(false);
+  const [confirmLock, setConfirmLock] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    if (deviceId && prevDeviceIdRef.current !== deviceId) {
+      setExpanded(false);
+      prevDeviceIdRef.current = deviceId;
+      autoLockTriggered.current = false;
+      setIsBlocked(getIsBlockedReal());
+      setIsUnlockPending(localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true');
+    }
+  }, [deviceId, device]);
+
+  useEffect(() => {
+    if (deviceId) {
+      const realStatus = getIsBlockedReal();
+      if (isOnline) {
+        if (isUnlockPending) {
+          sendSendCommand('engineResume');
+        } else if (realStatus) {
+          setIsBlocked(true);
+        }
+      } else if (realStatus) {
+        setIsBlocked(true);
+      }
+    }
+  }, [deviceId, position, device, isOnline, isUnlockPending]);
+
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'device_blocked_' + deviceId) {
+        if (e.newValue === 'true') {
+          setIsBlocked(true);
+        } else {
+          setIsBlocked(false);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [deviceId]);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const sendSendCommand = async (type) => {
+    const isStop = type === 'engineStop';
+
+    if (isStop && !isOnline) {
+      setToast({
+        message: 'Veículo OFFLINE! Não é possível enviar comando de bloqueio.',
+        severity: 'error',
+      });
+      return;
+    }
+
+    setLoadingCommand(true);
+
+    try {
+      const response = await fetch('/api/commands/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          deviceId: Number(deviceId),
+          type,
+        }),
+      });
+
+      if (!response.ok && isStop) {
+        throw new Error('Falha ao enviar comando de bloqueio ao rastreador.');
+      }
+
+      if (isStop) {
+        setIsBlocked(true);
+        setIsUnlockPending(false);
+        localStorage.setItem(`device_blocked_${deviceId}`, 'true');
+        localStorage.removeItem(`device_unlock_pending_${deviceId}`);
+
+        if (device) {
+          const updatedDevice = {
+            ...device,
+            attributes: { ...device.attributes, blocked: true },
+          };
+          dispatch(devicesActions.update([updatedDevice]));
+          fetch(`/api/devices/${deviceId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(updatedDevice),
+          }).catch(() => {});
+        }
+
+        setToast({
+          message: 'Bloqueio efetuado com sucesso!',
+          severity: 'success',
+        });
+      } else {
+        autoLockTriggered.current = false;
+        if (isOnline) {
+          setIsBlocked(false);
+          setIsUnlockPending(false);
+          localStorage.removeItem(`device_blocked_${deviceId}`);
+          localStorage.removeItem(`device_unlock_pending_${deviceId}`);
+
+          if (device) {
+            const updatedDevice = {
+              ...device,
+              attributes: { ...device.attributes, blocked: false },
+            };
+            dispatch(devicesActions.update([updatedDevice]));
+            fetch(`/api/devices/${deviceId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'same-origin',
+              body: JSON.stringify(updatedDevice),
+            }).catch(() => {});
+          }
+
+          setToast({
+            message: 'Desbloqueio efetuado com sucesso!',
+            severity: 'success',
+          });
+        } else {
+          setIsUnlockPending(true);
+          localStorage.setItem(`device_unlock_pending_${deviceId}`, 'true');
+
+          setToast({
+            message: 'Desbloqueio agendado! Será executado assim que o veículo ficar online.',
+            severity: 'warning',
+          });
+        }
+      }
+    } catch (error) {
+      setToast({
+        message: error.message || 'Erro ao enviar comando',
+        severity: 'error',
+      });

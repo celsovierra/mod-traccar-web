@@ -21,7 +21,7 @@ import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import EditItemView from "./components/EditItemView";
 import SelectField from "../common/components/SelectField";
-import deviceCategories from "../common/util/deviceCategories";
+import CategorySelect from "../common/components/CategorySelect";
 import { useTranslation } from "../common/components/LocalizationProvider";
 import { useManager } from "../common/util/permissions";
 import { useCatch } from "../reactHelper";
@@ -302,15 +302,9 @@ const DevicePage = () => {
                   fullWidth
                   variant="outlined"
                 />
-                <SelectField
+                <CategorySelect
                   value={item.category || "default"}
                   onChange={(event) => setItem({ ...item, category: event.target.value })}
-                  data={deviceCategories
-                    .map((category) => ({
-                      id: category,
-                      name: t(`category${category.replace(/^\w/, (c) => c.toUpperCase())}`),
-                    }))
-                    .sort((a, b) => a.name.localeCompare(b.name))}
                   label={t("deviceCategory")}
                   fullWidth
                 />

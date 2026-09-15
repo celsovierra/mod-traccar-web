@@ -1,4 +1,4 @@
-import { AnchorButton } from "../../features/anchor/AnchorButton";
+﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
 import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -1066,16 +1066,16 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   };
 
   const handleShareWhatsapp = async () => {
-    const statusEmoji = isOnline ? "🟢" : "🔴";
-    const statusText = isOnline ? "Online" : "Offline";
-    const ignitionText = isIgnitionOn ? "Ligada" : "Desligada";
-    const lockText = isBlocked ? "Bloqueado" : "Desbloqueado";
-    const modelText = device?.model || "Nao informado";
-    const plateText = device?.attributes?.plate || "Nao informado";
+    const statusEmoji = isOnline ? '🟢' : '🔴';
+    const statusText = isOnline ? 'Online' : 'Offline';
+    const ignitionText = isIgnitionOn ? 'Ligada' : 'Desligada';
+    const lockText = isBlocked ? 'Bloqueado' : 'Desbloqueado';
+    const modelText = device?.model || 'Nao informado';
+    const plateText = device?.attributes?.plate || 'Nao informado';
 
-    const speedKmh = position ? (position.speed * 1.852).toFixed(2) : "0.00";
+    const speedKmh = position ? (position.speed * 1.852).toFixed(2) : '0.00';
 
-    let stoppedText = "0 min";
+    let stoppedText = '0 min';
     if (stoppedStatus) {
       const diffMs = Date.now() - new Date(stoppedStatus.stoppedSince).getTime();
       const hours = Math.floor(diffMs / 3600000);
@@ -1083,8 +1083,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       stoppedText = hours > 0 ? `${hours}h ${minutes}min` : `${minutes} min`;
     }
 
-    const addressText = position?.address || "Nao disponivel";
-    const dateText = position?.fixTime ? formatDateTimeBr(position.fixTime) : "-";
+    const addressText = position?.address || 'Nao disponivel';
+    const dateText = position?.fixTime ? formatDateTimeBr(position.fixTime) : '-';
     const mapsLink = position
       ? `https://www.google.com/maps?q=${position.latitude},${position.longitude}`
       : 'Nao disponivel';
@@ -1107,6 +1107,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       mapsLink,
     ].join('\n');
 
+    const whatsUrl = 'https://web.whatsapp.com/send?text=' + encodeURIComponent(message);
+    const shareWindow = window.open('', '_blank');
+
     if (navigator.share && deviceImage) {
       try {
         const response = await fetch(deviceImage);
@@ -1114,23 +1117,20 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         const file = new File([blob], 'veiculo.jpg', { type: blob.type || 'image/jpeg' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          if (shareWindow) shareWindow.close();
           await navigator.share({ files: [file], text: message });
           return;
         }
       } catch (e) {
         // segue para o fallback abaixo
       }
-    const whatsUrl = 'https://web.whatsapp.com/send?text=' + encodeURIComponent(message);
-    const link = document.createElement('a');
-    link.href = whatsUrl;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
     }
 
-
+    if (shareWindow) {
+      shareWindow.location.href = whatsUrl;
+    } else {
+      window.open(whatsUrl, '_blank');
+    }
   };
 
   const handleRemove = useCatch(async (removed) => {
