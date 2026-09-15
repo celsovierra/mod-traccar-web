@@ -722,8 +722,18 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
     if (isStop && !isOnline) {
       setToast({
-        message: 'Veículo OFFLINE! Não é possível enviar comando de bloqueio.',
+        message: 'Veiculo OFFLINE! Nao e possivel enviar comando de bloqueio.',
         severity: 'error',
+      });
+      return;
+    }
+
+    if (!isStop && !isOnline) {
+      setIsUnlockPending(true);
+      localStorage.setItem(`device_unlock_pending_${deviceId}`, 'true');
+      setToast({
+        message: 'Desbloqueio agendado! Sera executado assim que o veiculo ficar online.',
+        severity: 'warning',
       });
       return;
     }
@@ -749,22 +759,14 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
       if (isStop) {
         setToast({
-          message: 'Comando de bloqueio enviado. Aguardando confirmação do rastreador...',
-          severity: 'info',
-        });
-      } else if (isOnline) {
-        autoLockTriggered.current = false;
-        setToast({
-          message: 'Comando de desbloqueio enviado. Aguardando confirmação do rastreador...',
+          message: 'Comando de bloqueio enviado. Aguardando confirmacao do rastreador...',
           severity: 'info',
         });
       } else {
-        setPendingAction(null);
-        setIsUnlockPending(true);
-        localStorage.setItem(`device_unlock_pending_${deviceId}`, 'true');
+        autoLockTriggered.current = false;
         setToast({
-          message: 'Desbloqueio agendado! Será executado assim que o veículo ficar online.',
-          severity: 'warning',
+          message: 'Comando de desbloqueio enviado. Aguardando confirmacao do rastreador...',
+          severity: 'info',
         });
       }
 
@@ -788,6 +790,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       });
     } finally {
       setLoadingCommand(false);
+    }
     }
   };
 
