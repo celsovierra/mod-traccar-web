@@ -611,6 +611,24 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     return false;
   };
 
+  const getConfirmedStatus = (pos = position, dev = device) => {
+    const relayConfirmed = getRelayConfirmation();
+    if (relayConfirmed !== null) return relayConfirmed;
+    const posAttr = pos?.attributes || {};
+    const devAttr = dev?.attributes || {};
+    if (posAttr.out1 === true) return true;
+    if (posAttr.out1 === false) return false;
+    if (posAttr.output1 === true) return true;
+    if (posAttr.output1 === false) return false;
+    if (posAttr.relay === true) return true;
+    if (posAttr.relay === false) return false;
+    if (posAttr.blocked === true) return true;
+    if (posAttr.blocked === false) return false;
+    if (devAttr.blocked === true) return true;
+    if (devAttr.blocked === false) return false;
+    return undefined;
+  };
+
   const [isBlocked, setIsBlocked] = useState(() => getIsBlockedReal());
   const [isUnlockPending, setIsUnlockPending] = useState(() => {
     return localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true';
@@ -641,8 +659,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
   useEffect(() => {
     if (!deviceId) return;
-    const realStatus = getIsBlockedReal();
-    setIsBlocked(realStatus);
+    const realStatus = getConfirmedStatus();
+    if (realStatus !== undefined) {
+      setIsBlocked(realStatus);
+    }
 
     if (pendingAction === 'lock' && realStatus === true) {
       setPendingAction(null);
