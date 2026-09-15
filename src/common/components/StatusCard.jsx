@@ -1,4 +1,4 @@
-﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
+import { AnchorButton } from "../../features/anchor/AnchorButton";
 import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -668,6 +668,38 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  useEffect(() => {
+    if (!pendingAction || !deviceId) return undefined;
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api-relay-status/${deviceId}`, { credentials: 'same-origin' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.result === null) return;
+
+        if (pendingAction === 'lock' && data.result === true) {
+          setIsBlocked(true);
+          setPendingAction(null);
+          setToast({ message: 'Bloqueio confirmado pelo rastreador!', severity: 'success' });
+        }
+        if (pendingAction === 'unlock' && data.result === false) {
+          setIsBlocked(false);
+          setPendingAction(null);
+          setIsUnlockPending(false);
+          localStorage.removeItem(`device_unlock_pending_${deviceId}`);
+          setToast({ message: 'Desbloqueio confirmado pelo rastreador!', severity: 'success' });
+        }
+      } catch (e) {
+        // ignora falhas de rede no polling
+      }
+    };
+
+    const interval = setInterval(poll, 3000);
+    poll();
+    return () => clearInterval(interval);
+  }, [pendingAction, deviceId]);
 
   const sendSendCommand = async (type) => {
     const isStop = type === 'engineStop';
