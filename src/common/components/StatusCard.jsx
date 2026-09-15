@@ -622,10 +622,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     if (posAttr.output1 === false) return false;
     if (posAttr.relay === true) return true;
     if (posAttr.relay === false) return false;
-    if (posAttr.blocked === true) return true;
-    if (posAttr.blocked === false) return false;
-    if (devAttr.blocked === true) return true;
-    if (devAttr.blocked === false) return false;
     return undefined;
   };
 
@@ -690,7 +686,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   }, [toast]);
 
   useEffect(() => {
-    if (!pendingAction || !deviceId) return undefined;
+    if (!deviceId) return undefined;
 
     const poll = async () => {
       try {
@@ -699,13 +695,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         const data = await res.json();
         if (data.result === null) return;
 
+        setIsBlocked(data.result);
+
         if (pendingAction === 'lock' && data.result === true) {
-          setIsBlocked(true);
           setPendingAction(null);
           setToast({ message: 'Bloqueio confirmado pelo rastreador!', severity: 'success' });
         }
         if (pendingAction === 'unlock' && data.result === false) {
-          setIsBlocked(false);
           setPendingAction(null);
           setIsUnlockPending(false);
           localStorage.removeItem(`device_unlock_pending_${deviceId}`);
@@ -716,10 +712,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       }
     };
 
-    const interval = setInterval(poll, 3000);
+    const interval = setInterval(poll, 8000);
     poll();
     return () => clearInterval(interval);
-  }, [pendingAction, deviceId]);
+  }, [deviceId, pendingAction]);
 
   const sendSendCommand = async (type) => {
     const isStop = type === 'engineStop';
