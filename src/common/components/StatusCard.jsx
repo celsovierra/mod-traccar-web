@@ -791,7 +791,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     } finally {
       setLoadingCommand(false);
     }
-    }
   };
 
 
