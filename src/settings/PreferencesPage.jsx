@@ -337,6 +337,20 @@ const PreferencesPage = () => {
                       control={
                         <Checkbox
                           checked={
+                            attributes.hasOwnProperty('mapShowGeofences') ? attributes.mapShowGeofences : true
+                          }
+                          onChange={(e) =>
+                            setAttributes({ ...attributes, mapShowGeofences: e.target.checked })
+                          }
+                          sx={{ color: '#7c3aed', '&.Mui-checked': { color: '#6d28d9' } }}
+                        />
+                      }
+                      label={<Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569' }}>Mostrar Cercas no Mapa</Typography>}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={
                             attributes.hasOwnProperty('mapFollow') ? attributes.mapFollow : false
                           }
                           onChange={(e) =>

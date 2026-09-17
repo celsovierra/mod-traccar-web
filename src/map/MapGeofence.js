@@ -1,7 +1,8 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { map } from "./core/MapView";
 import { geofencesActions } from "../store";
+import { useAttributePreference } from "../common/util/preferences";
 
 const SOURCE = "geofences-source";
 
@@ -45,6 +46,7 @@ const MapGeofence = () => {
   const geofences = useSelector((state) => state.geofences.items);
   const devices = useSelector((state) => state.devices.items);
   const user = useSelector((state) => state.session.user);
+  const showGeofences = useAttributePreference('mapShowGeofences', true);
 
   useEffect(() => {
     const load = async () => {
@@ -70,7 +72,7 @@ const MapGeofence = () => {
       if (!map.isStyleLoaded()) { map.once("idle", draw); return; }
       const data = {
         type: "FeatureCollection",
-        features: Object.values(geofences || {}).filter(visible).map(toFeature).filter(Boolean),
+        features: showGeofences ? Object.values(geofences || {}).filter(visible).map(toFeature).filter(Boolean) : [],
       };
       if (!map.getSource(SOURCE)) map.addSource(SOURCE, { type: "geojson", data });
       else map.getSource(SOURCE).setData(data);
@@ -86,7 +88,7 @@ const MapGeofence = () => {
     draw();
     map?.on("styledata", draw);
     return () => { map?.off("styledata", draw); };
-  }, [geofences, devices, user]);
+  }, [geofences, devices, user, showGeofences]);
 
   return null;
 };
