@@ -303,8 +303,8 @@ const DevicePage = () => {
                   variant="outlined"
                 />
                 <CategorySelect
-                  value={item.category || "default"}
-                  onChange={(event) => setItem({ ...item, category: event.target.value })}
+                  value={item.attributes?.customIcon || "default"}
+                  onChange={(event) => setItem({ ...item, attributes: { ...item.attributes, customIcon: event.target.value } })}
                   label={t("deviceCategory")}
                   fullWidth
                 />

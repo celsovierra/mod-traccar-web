@@ -1,4 +1,4 @@
-import { useCallback, useReducer, useState } from 'react';
+﻿import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -68,7 +68,8 @@ const UsersPage = () => {
 
   const loadItems = useCallback(
     async (offset, signal) => {
-      const query = new URLSearchParams({ excludeAttributes: true, limit: pageSize, offset });
+      const limit = offset === 0 ? 10 : pageSize;
+      const query = new URLSearchParams({ excludeAttributes: true, limit, offset });
       const response = await fetchOrThrow(`/api/users?${query.toString()}`, { signal });
       const data = await response.json();
 
@@ -80,10 +81,38 @@ const UsersPage = () => {
         return Array.from(uniqueMap.values());
       });
 
-      setHasMore(data.length >= pageSize);
+      setHasMore(data.length >= limit);
     },
     [],
   );
+
+  const searchTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      const keyword = searchKeyword.trim();
+      if (keyword) {
+        try {
+          const query = new URLSearchParams({ excludeAttributes: true, limit: 5000, offset: 0 });
+          const response = await fetchOrThrow('/api/users?' + query.toString());
+          const data = await response.json();
+          setItems(data);
+          setHasMore(false);
+        } catch (e) {
+          // mantem lista atual em caso de erro
+        }
+      } else {
+        reload();
+      }
+    }, 400);
+
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchKeyword]);
 
   const sentinelRef = useScrollToLoad(() => loadItems(items.length));
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import {
   Select,
   MenuItem,
@@ -9,8 +9,11 @@ import {
   Snackbar,
   IconButton,
   Tooltip,
-  Paper,
   Typography,
+  InputAdornment,
+  Box,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import CountryFlag from 'react-country-flag';
 import { makeStyles } from 'tss-react/mui';
@@ -18,6 +21,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import NavigationIcon from '@mui/icons-material/Navigation';
+import MailOutlineIcon from '@mui/icons-material/MailOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import PinOutlinedIcon from '@mui/icons-material/PinOutlined';
 import { useTheme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -38,47 +44,36 @@ import PasswordField from '../common/components/PasswordField';
 const useStyles = makeStyles()((theme) => ({
   options: {
     position: 'fixed',
-    top: theme.spacing(2),
+    top: 'max(env(safe-area-inset-top), 16px)',
     right: theme.spacing(2),
     display: 'flex',
     flexDirection: 'row',
     gap: theme.spacing(1),
     zIndex: 10,
   },
-  card: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    maxWidth: '420px',
-    padding: theme.spacing(4),
-    borderRadius: theme.spacing(2),
-    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3)',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(10px)',
-    gap: theme.spacing(3),
-  },
-  headerContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    marginBottom: theme.spacing(1),
+  optionIcon: {
+    color: '#ffffff !important',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    '&:hover': {
+      backgroundColor: 'rgba(255,255,255,0.22)',
+    },
   },
   iconBox: {
-    width: '56px',
-    height: '56px',
-    borderRadius: '16px',
-    backgroundColor: '#1e3a8a',
+    width: '64px',
+    height: '64px',
+    borderRadius: '20px',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    border: '1px solid rgba(255,255,255,0.25)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     color: '#ffffff',
-    boxShadow: '0 4px 12px rgba(30, 58, 138, 0.3)',
+    marginBottom: theme.spacing(1.5),
   },
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(2.5),
+    gap: theme.spacing(2),
     width: '100%',
   },
   extraContainer: {
@@ -86,31 +81,37 @@ const useStyles = makeStyles()((theme) => ({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: theme.spacing(2),
-    marginTop: theme.spacing(1),
+    marginTop: theme.spacing(0.5),
   },
   submitButton: {
-    padding: theme.spacing(1.2),
-    borderRadius: theme.spacing(1),
-    fontWeight: 600,
+    padding: theme.spacing(1.5),
+    borderRadius: '14px',
+    fontWeight: 700,
     textTransform: 'none',
     fontSize: '1rem',
-    backgroundColor: '#16a34a',
-    boxShadow: 'none',
+    background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+    boxShadow: '0 6px 16px rgba(22, 163, 74, 0.35)',
     '&:hover': {
-      backgroundColor: '#15803d',
-      boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)',
+      background: 'linear-gradient(135deg, #15803d 0%, #14532d 100%)',
+      boxShadow: '0 8px 20px rgba(22, 163, 74, 0.45)',
     },
   },
   link: {
     cursor: 'pointer',
-    fontWeight: 500,
+    fontWeight: 600,
+    fontSize: '0.85rem',
   },
   flag: {
     marginRight: theme.spacing(1),
   },
   inputField: {
     '& .MuiOutlinedInput-root': {
-      borderRadius: theme.spacing(1),
+      borderRadius: '14px',
+      backgroundColor: '#f8fafc',
+      fontSize: '1rem',
+    },
+    '& input': {
+      fontSize: '16px',
     },
   },
 }));
@@ -132,7 +133,9 @@ const LoginPage = () => {
   const [failed, setFailed] = useState(false);
 
   const [email, setEmail] = usePersistedState('loginEmail', '');
-  const [password, setPassword] = useState('');
+  const [rememberPassword, setRememberPassword] = usePersistedState('loginRememberPassword', false);
+  const [savedPassword, setSavedPassword] = usePersistedState('loginSavedPassword', '');
+  const [password, setPassword] = useState(() => (rememberPassword ? savedPassword : ''));
   const [code, setCode] = useState('');
   const [showServerTooltip, setShowServerTooltip] = useState(false);
   const [showQr, setShowQr] = useState(false);
@@ -166,6 +169,7 @@ const LoginPage = () => {
         const user = await response.json();
         generateLoginToken();
         dispatch(sessionActions.updateUser(user));
+        setSavedPassword(rememberPassword ? password : '');
         const target = window.sessionStorage.getItem('postLogin') || '/';
         window.sessionStorage.removeItem('postLogin');
         navigate(target, { replace: true });
@@ -213,28 +217,52 @@ const LoginPage = () => {
     }
   }, []);
 
+  const header = (
+    <>
+      <div className={classes.iconBox}>
+        <NavigationIcon fontSize="large" />
+      </div>
+      <Typography variant="h5" sx={{ fontWeight: 800, color: '#ffffff', letterSpacing: '-0.5px' }}>
+        GPScell
+      </Typography>
+      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500, mt: 0.5 }}>
+        Sistema de Rastreamento Veicular
+      </Typography>
+    </>
+  );
+
   return (
-    <LoginLayout>
+    <LoginLayout header={header}>
       <div className={classes.options}>
         {nativeEnvironment && changeEnabled && (
-          <IconButton color="primary" onClick={() => navigate('/change-server')}>
+          <IconButton className={classes.optionIcon} onClick={() => navigate('/change-server')}>
             <Tooltip
               title={`${t('settingsServer')}: ${window.location.hostname}`}
               open={showServerTooltip}
               arrow
             >
-              <VpnLockIcon />
+              <VpnLockIcon fontSize="small" />
             </Tooltip>
           </IconButton>
         )}
         {!nativeEnvironment && (
-          <IconButton color="primary" onClick={() => setShowQr(true)}>
-            <QrCode2Icon />
+          <IconButton className={classes.optionIcon} onClick={() => setShowQr(true)}>
+            <QrCode2Icon fontSize="small" />
           </IconButton>
         )}
         {languageEnabled && (
           <FormControl size="small">
-            <Select value={language} onChange={(e) => setLocalLanguage(e.target.value)}>
+            <Select
+              value={language}
+              onChange={(e) => setLocalLanguage(e.target.value)}
+              sx={{
+                color: '#ffffff',
+                backgroundColor: 'rgba(255,255,255,0.12)',
+                borderRadius: '10px',
+                '& .MuiSelect-icon': { color: '#ffffff' },
+                '& fieldset': { border: 'none' },
+              }}
+            >
               {languageList.map((it) => (
                 <MenuItem key={it.code} value={it.code}>
                   <span className={classes.flag}>
@@ -248,18 +276,13 @@ const LoginPage = () => {
         )}
       </div>
 
-      <Paper className={classes.card} elevation={0}>
-        <div className={classes.headerContainer}>
-          <div className={classes.iconBox}>
-            <NavigationIcon fontSize="large" />
-          </div>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px', mt: 1 }}>
-            GPScell
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
-            Sistema de Rastreamento Veicular
-          </Typography>
-        </div>
+      <Box sx={{ width: '100%' }}>
+        <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.5 }}>
+          Bem-vindo de volta
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#64748b', mb: 3 }}>
+          Entre com sua conta para continuar
+        </Typography>
 
         <div className={classes.container}>
           {!openIdForced && (
@@ -273,9 +296,17 @@ const LoginPage = () => {
                 autoComplete="email"
                 autoFocus={!email}
                 onChange={(e) => setEmail(e.target.value)}
-                helperText={failed && 'Usuário ou senha inválidos'}
+                helperText={failed && 'Usuario ou senha invalidos'}
                 className={classes.inputField}
-                size="small"
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <MailOutlineIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
               />
               <PasswordField
                 required
@@ -287,7 +318,30 @@ const LoginPage = () => {
                 autoFocus={!!email}
                 onChange={(e) => setPassword(e.target.value)}
                 className={classes.inputField}
-                size="small"
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LockOutlinedIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={rememberPassword}
+                    onChange={(e) => setRememberPassword(e.target.checked)}
+                    sx={{ color: '#94a3b8', '&.Mui-checked': { color: '#16a34a' } }}
+                  />
+                }
+                label={
+                  <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                    Lembrar minha senha
+                  </Typography>
+                }
+                sx={{ mt: -1, ml: 0 }}
               />
               {codeEnabled && (
                 <TextField
@@ -299,7 +353,15 @@ const LoginPage = () => {
                   type="number"
                   onChange={(e) => setCode(e.target.value)}
                   className={classes.inputField}
-                  size="small"
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PinOutlinedIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
                 />
               )}
               <Button
@@ -314,9 +376,9 @@ const LoginPage = () => {
             </>
           )}
           {openIdEnabled && (
-            <Button 
-              onClick={() => handleOpenIdLogin()} 
-              variant="contained" 
+            <Button
+              onClick={() => handleOpenIdLogin()}
+              variant="contained"
               className={classes.submitButton}
             >
               {t('loginOpenId')}
@@ -347,7 +409,7 @@ const LoginPage = () => {
             </div>
           )}
         </div>
-      </Paper>
+      </Box>
 
       <QrCodeDialog open={showQr} onClose={() => setShowQr(false)} />
       <Snackbar
@@ -364,3 +426,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+

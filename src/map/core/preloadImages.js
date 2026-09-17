@@ -4,65 +4,46 @@ import { loadImage, prepareIcon } from './mapUtil';
 
 import directionSvg from '../../resources/images/direction.svg';
 import backgroundSvg from '../../resources/images/background.svg';
-import animalSvg from '../../resources/images/icon/animal.svg';
-import bicycleSvg from '../../resources/images/icon/bicycle.svg';
-import boatSvg from '../../resources/images/icon/boat.svg';
-import busSvg from '../../resources/images/icon/bus.svg';
-import camperSvg from '../../resources/images/icon/camper.svg';
-import craneSvg from '../../resources/images/icon/crane.svg';
 import defaultSvg from '../../resources/images/icon/default.svg';
-import finishSvg from '../../resources/images/icon/finish.svg';
-import helicopterSvg from '../../resources/images/icon/helicopter.svg';
-import motorcycleSvg from '../../resources/images/motorcycle.png';
-import personSvg from '../../resources/images/icon/person.svg';
-import planeSvg from '../../resources/images/icon/plane.svg';
-import scooterSvg from '../../resources/images/icon/scooter.svg';
-import shipSvg from '../../resources/images/icon/ship.svg';
-import startSvg from '../../resources/images/icon/start.svg';
-import tractorSvg from '../../resources/images/icon/tractor.svg';
-import trailerSvg from '../../resources/images/icon/trailer.svg';
-import trainSvg from '../../resources/images/icon/train.svg';
-import tramSvg from '../../resources/images/icon/tram.svg';
-import truckSvg from '../../resources/images/icon/truck.svg';
-import vanSvg from '../../resources/images/icon/van.svg';
+import iconSizes from '../../resources/images/icon/iconSizes.json';
 
-import carWebp from '../../resources/images/car-azul.webp';
+const staticIconFiles = import.meta.glob('../../resources/images/icon/estaticos/*.{svg,png,jpg,jpeg,webp,gif}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
 
-export const mapIcons = {
-  animal: animalSvg,
-  bicycle: bicycleSvg,
-  boat: boatSvg,
-  bus: busSvg,
-  car: carWebp,
-  camper: camperSvg,
-  crane: craneSvg,
-  default: defaultSvg,
-  finish: finishSvg,
-  helicopter: helicopterSvg,
-  motorcycle: motorcycleSvg,
-  person: personSvg,
-  plane: planeSvg,
-  scooter: scooterSvg,
-  ship: shipSvg,
-  start: startSvg,
-  tractor: tractorSvg,
-  trailer: trailerSvg,
-  train: trainSvg,
-  tram: tramSvg,
-  truck: truckSvg,
-  van: vanSvg,
-};
+const rotativeIconFiles = import.meta.glob(
+  '../../resources/images/icon/rotativos/*.{png,jpg,jpeg,webp,svg,gif}',
+  { eager: true, query: '?url', import: 'default' },
+);
+
+const keyFromPath = (path) => path.split('/').pop().replace(/\.[^/.]+$/, '');
+
+export const mapIcons = { default: defaultSvg };
+
+// Guarda quais categorias vieram da pasta "rotativos" - so essas devem girar conforme a direcao.
+export const rotativeIconKeys = new Set();
+
+Object.entries(staticIconFiles).forEach(([path, url]) => {
+  mapIcons[keyFromPath(path)] = url;
+});
+Object.entries(rotativeIconFiles).forEach(([path, url]) => {
+  const key = keyFromPath(path);
+  mapIcons[key] = url;
+  rotativeIconKeys.add(key);
+});
 
 export const mapIconKey = (category) => {
   switch (category) {
     case 'offroad':
     case 'pickup':
-      return 'car';
+      return mapIcons.hasOwnProperty('car') ? 'car' : 'default';
     case 'trolleybus':
-      return 'bus';
+      return mapIcons.hasOwnProperty('bus') ? 'bus' : 'default';
     case 'moto':
     case 'motorcycle2':
-      return 'motorcycle';
+      return mapIcons.hasOwnProperty('motorcycle') ? 'motorcycle' : 'default';
     default:
       return mapIcons.hasOwnProperty(category) ? category : 'default';
   }
@@ -82,6 +63,7 @@ export default async () => {
   mapImages.direction = await prepareIcon(await loadImage(directionSvg));
   await Promise.all(
     Object.keys(mapIcons).map(async (category) => {
+      const shape = iconSizes[category] || iconSizes.default;
       const results = [];
       ['info', 'success', 'error', 'neutral'].forEach((color) => {
         results.push(
@@ -90,6 +72,7 @@ export default async () => {
               background,
               icon,
               theme.palette[color].main,
+              shape,
             );
           }).catch((e) => console.error('Erro ao carregar icone:', category, e)),
         );

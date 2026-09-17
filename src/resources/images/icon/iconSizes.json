@@ -1,0 +1,82 @@
+{
+  "default": {
+    "tamanho": 1,
+    "largura": 1,
+    "altura": 1
+  },
+  "car-azul": {
+    "tamanho": 1,
+    "largura": 1,
+    "altura": 1
+  },
+  "moto-vermelha": {
+    "tamanho": 1,
+    "largura": 1.2,
+    "altura": 0.8
+  },
+  "moto-foto": {
+    "tamanho": 1,
+    "largura": 1,
+    "altura": 1
+  },
+  "MOTO_VERMELHA ": {
+    "tamanho": 1,
+    "largura": 1,
+    "altura": 0.7
+  },
+  "carro_preto": {
+    "tamanho": 1.5,
+    "largura": 1,
+    "altura": 1
+  },
+  "carro_azul": {
+    "tamanho": 1.3,
+    "largura": 1,
+    "altura": 1
+  },
+  "moto_amarela": {
+    "tamanho": 1,
+    "largura": 1.3,
+    "altura": 0.9
+  },
+  "moto_azul": {
+    "tamanho": 1,
+    "largura": 1.3,
+    "altura": 0.9
+  },
+  "moto_prata": {
+    "tamanho": 1,
+    "largura": 1.3,
+    "altura": 0.9
+  },
+  "moto_vermlha": {
+    "tamanho": 1,
+    "largura": 1.3,
+    "altura": 0.9
+  },
+  "pikup_vermelha": {
+    "tamanho": 2.5,
+    "largura": 1,
+    "altura": 1
+  },
+  "pikup_branca": {
+    "tamanho": 2.5,
+    "largura": 1,
+    "altura": 1
+  },
+  "carro_branco": {
+    "tamanho": 1,
+    "largura": 1.6,
+    "altura": 1.5
+  },
+  "carro_vermelho": {
+    "tamanho": 1.5,
+    "largura": 1,
+    "altura": 1
+  },
+  "pop100-branca": {
+    "tamanho": 1.5,
+    "largura": 1,
+    "altura": 1
+  }
+}

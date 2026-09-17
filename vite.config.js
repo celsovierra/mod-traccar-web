@@ -6,6 +6,20 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import fs from 'fs';
 import path from 'path';
 
+const SIZES_PATH = () => path.resolve(process.cwd(), 'src/resources/images/icon/iconSizes.json');
+
+function readSizes() {
+  try {
+    return JSON.parse(fs.readFileSync(SIZES_PATH(), 'utf-8'));
+  } catch (e) {
+    return { default: { tamanho: 1, largura: 1, altura: 1 } };
+  }
+}
+
+function writeSizes(sizes) {
+  fs.writeFileSync(SIZES_PATH(), JSON.stringify(sizes, null, 2));
+}
+
 function saveIconPlugin() {
   return {
     name: 'save-icon-plugin',
@@ -26,10 +40,17 @@ function saveIconPlugin() {
               const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
               const base64Data = matches[2];
               const safeName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `icon-${Date.now()}`;
-              const dir = path.resolve(process.cwd(), 'src/resources/images/custom');
+              const dir = path.resolve(process.cwd(), 'src/resources/images/icon/rotativos');
               fs.mkdirSync(dir, { recursive: true });
               const filePath = path.join(dir, `${safeName}.${ext}`);
               fs.writeFileSync(filePath, base64Data, 'base64');
+
+              const sizes = readSizes();
+              if (!Object.prototype.hasOwnProperty.call(sizes, safeName)) {
+                sizes[safeName] = { tamanho: 1, largura: 1, altura: 1 };
+                writeSizes(sizes);
+              }
+
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ ok: true, fileName: `${safeName}.${ext}`, name }));
             } catch (err) {
@@ -37,6 +58,34 @@ function saveIconPlugin() {
               res.end(JSON.stringify({ error: String(err) }));
             }
           });
+        } else if (req.method === 'POST' && req.url === '/api/save-icon-size') {
+          let body = '';
+          req.on('data', (chunk) => { body += chunk; });
+          req.on('end', () => {
+            try {
+              const { key, tamanho, largura, altura } = JSON.parse(body);
+              if (!key) {
+                res.statusCode = 400;
+                res.end(JSON.stringify({ error: 'missing key' }));
+                return;
+              }
+              const sizes = readSizes();
+              sizes[key] = {
+                tamanho: Number(tamanho) || 1,
+                largura: Number(largura) || 1,
+                altura: Number(altura) || 1,
+              };
+              writeSizes(sizes);
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ ok: true, sizes: sizes[key] }));
+            } catch (err) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: String(err) }));
+            }
+          });
+        } else if (req.method === 'GET' && req.url === '/api/get-icon-sizes') {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(readSizes()));
         } else {
           next();
         }

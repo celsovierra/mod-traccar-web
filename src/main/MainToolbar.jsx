@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+﻿import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -21,8 +21,9 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import NavigationIcon from '@mui/icons-material/Navigation';
 import HistoryIcon from '@mui/icons-material/History';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { useTranslation } from '../common/components/LocalizationProvider';
-import { useDeviceReadonly } from '../common/util/permissions';
+import { useDeviceReadonly, useManager } from '../common/util/permissions';
 
 const useStyles = makeStyles()((theme) => ({
   container: {
@@ -93,6 +94,7 @@ const MainToolbar = ({
   const t = useTranslation();
 
   const deviceReadonly = useDeviceReadonly();
+  const manager = useManager();
 
   const devices = useSelector((state) => state.devices?.items || {});
   const positions = useSelector((state) => state.session?.positions || state.positions?.items || {});
@@ -175,7 +177,12 @@ const MainToolbar = ({
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               size="small"
-              fullWidth
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                maxWidth: { xs: '48%', sm: '100%' },
+                transition: "all 0.2s ease",
+              }}
               endAdornment={
                 keyword ? (
                   <InputAdornment position="end">
@@ -191,15 +198,42 @@ const MainToolbar = ({
               }
             />
 
-            <IconButton edge="end" onClick={() => navigate('/device')} disabled={deviceReadonly}>
+            <IconButton
+              edge="end"
+              onClick={() => navigate('/device')}
+              disabled={deviceReadonly}
+              sx={{
+                color: '#16a34a',
+                backgroundColor: '#f0fdf4',
+                ml: 0.5,
+                transition: 'all 0.15s ease',
+                '&:hover': { backgroundColor: '#dcfce7', transform: 'scale(1.05)' },
+              }}
+            >
               <Tooltip
                 open={!deviceReadonly && devicesLoaded && totalCount === 0}
                 title={t('deviceRegisterFirst')}
                 arrow
               >
-                <AddIcon />
+                <AddIcon fontSize="small" />
               </Tooltip>
             </IconButton>
+
+            {manager && (
+              <IconButton
+                edge="end"
+                onClick={() => navigate('/settings/users')}
+                sx={{
+                  color: '#7c3aed',
+                  backgroundColor: '#f5f3ff',
+                  ml: 0.5,
+                  transition: 'all 0.15s ease',
+                  '&:hover': { backgroundColor: '#ede9fe', transform: 'scale(1.05)' },
+                }}
+              >
+                <PeopleAltIcon fontSize="small" />
+              </IconButton>
+            )}
           </>
         )}
       </Toolbar>

@@ -1244,7 +1244,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       ) : (
                         <img
                           className={classes.vehicleIcon}
-                          src={mapIcons[mapIconKey(device.category)]}
+                          src={(device.attributes?.customIcon && mapIcons[device.attributes.customIcon]) || mapIcons[mapIconKey(device.category)]}
                           alt=""
                         />
                       )}

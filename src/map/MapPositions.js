@@ -1,10 +1,11 @@
-﻿import { useId, useCallback, useEffect, useRef, useState } from 'react';
+import { useId, useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { map } from './core/MapView';
 import { formatTime, getStatusColor } from '../common/util/formatter';
-import { mapIconKey } from './core/preloadImages';
+import { mapIconKey, mapIcons, rotativeIconKeys } from './core/preloadImages';
+import iconSizes from '../resources/images/icon/iconSizes.json';
 import { useAttributePreference } from '../common/util/preferences';
 import { useCatchCallback } from '../reactHelper';
 import { findFonts, fromMapCoordinates, toMapCoordinates } from './core/mapUtil';
@@ -146,9 +147,11 @@ const MapPositions = ({
         deviceId: position.deviceId,
         name: device ? device.name : '',
         fixTime: formatTime(position.fixTime, 'seconds'),
-        category: mapIconKey(device ? device.category : ''),
+        category: (() => { const k = (device?.attributes?.customIcon && mapIcons.hasOwnProperty(device.attributes.customIcon)) ? device.attributes.customIcon : mapIconKey(device ? device.category : ''); return k; })(),
+        scale: (() => { const k = (device?.attributes?.customIcon && mapIcons.hasOwnProperty(device.attributes.customIcon)) ? device.attributes.customIcon : mapIconKey(device ? device.category : ''); return (iconSizes[k]?.tamanho ?? iconSizes.default?.tamanho ?? 1); })(),
         color: showStatus ? (position.attributes?.color || getStatusColor(device?.status)) : 'neutral',
         rotation: animatedRotation !== undefined ? animatedRotation : (position.course || 0),
+        iconRotation: rotativeIconKeys.has((() => { const k = (device?.attributes?.customIcon && mapIcons.hasOwnProperty(device.attributes.customIcon)) ? device.attributes.customIcon : mapIconKey(device ? device.category : ''); return k; })()) ? (animatedRotation !== undefined ? animatedRotation : (position.course || 0)) : 0,
         direction: showDirection,
       };
     },
@@ -272,9 +275,9 @@ const MapPositions = ({
         filter: ['!has', 'point_count'],
         layout: {
           'icon-image': '{category}-{color}',
-          'icon-size': iconScale,
+          'icon-size': ['*', iconScale, ['coalesce', ['get', 'scale'], 1]],
           'icon-allow-overlap': true,
-          'icon-rotate': ['get', 'rotation'],
+          'icon-rotate': ['get', 'iconRotation'],
           'icon-rotation-alignment': 'map',
           'text-field': `{${titleField || 'name'}}`,
           'text-allow-overlap': true,
@@ -297,7 +300,7 @@ const MapPositions = ({
         filter: ['all', ['!has', 'point_count'], ['==', 'direction', true]],
         layout: {
           'icon-image': 'direction',
-          'icon-size': iconScale,
+          'icon-size': ['*', iconScale, ['coalesce', ['get', 'scale'], 1]],
           'icon-allow-overlap': true,
           'icon-rotate': ['get', 'rotation'],
           'icon-rotation-alignment': 'map',
@@ -423,7 +426,7 @@ const MapPositions = ({
     anchorLineLayer,
   ]);
 
-  // Limpeza rigorosa e validaÃ§Ã£o de Ã¢ncoras ativas (remove resÃ­duos antigos do localStorage)
+  // Limpeza rigorosa e validação de âncoras ativas (remove resíduos antigos do localStorage)
   useEffect(() => {
     const anchorFeatures = [];
     Object.keys(devices).forEach((devId) => {
@@ -432,7 +435,7 @@ const MapPositions = ({
       if (anchorRaw) {
         try {
           const anchor = JSON.parse(anchorRaw);
-          // Verifica se a Ã¢ncora realmente existe e estÃ¡ ativa
+          // Verifica se a âncora realmente existe e está ativa
           if (anchor && anchor.active === true && anchor.latitude && anchor.longitude) {
             const coords = toMapCoordinates(anchor.longitude, anchor.latitude);
             const circleFeature = createGeoJSONCircle(coords, anchor.radius || 50);

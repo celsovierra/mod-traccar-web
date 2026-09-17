@@ -1,4 +1,4 @@
-﻿import { parse, stringify } from 'wellknown';
+import { parse, stringify } from 'wellknown';
 import turfCircle from '@turf/circle';
 import gcoord from 'gcoord';
 import { map } from './MapView';
@@ -54,9 +54,9 @@ const canvasTintImage = (image, color) => {
   return canvas;
 };
 
-export const prepareIcon = (background, icon, color) => {
+export const prepareIcon = (background, icon, color, shape) => {
   const isTopView = icon && icon.src && (icon.src.includes('.webp') || icon.src.includes('.png') || icon.src.startsWith('data:image/webp') || icon.src.startsWith('data:image/png'));
-  
+
   const baseSize = isTopView ? 80 : (background ? background.width : 48);
   const width = Math.round(baseSize * devicePixelRatio);
   const height = Math.round(baseSize * devicePixelRatio);
@@ -68,19 +68,25 @@ export const prepareIcon = (background, icon, color) => {
   const context = canvas.getContext('2d');
 
   if (isTopView) {
-    const isMoto = icon.src.includes('motorcycle') || icon.src.includes('moto');
-    
-    if (isMoto) {
-      // Ajuste exclusivo para a moto: mais larga (1.15) e mais curta (0.75)
-      const customWidth = Math.round(width * 1.15);
-      const customHeight = Math.round(height * 0.75);
-      const offsetX = (width - customWidth) / 2;
-      const offsetY = (height - customHeight) / 2;
-      context.drawImage(icon, offsetX, offsetY, customWidth, customHeight);
-    } else {
-      // Carros e outros Ã­cones mantÃªm o tamanho original 1:1 perfeito
-      context.drawImage(icon, 0, 0, width, height);
+    const naturalWidth = icon.naturalWidth || icon.width || 1;
+    const naturalHeight = icon.naturalHeight || icon.height || 1;
+    const ratio = naturalWidth / naturalHeight;
+
+    let fitWidth = width;
+    let fitHeight = width / ratio;
+    if (fitHeight > height) {
+      fitHeight = height;
+      fitWidth = height * ratio;
     }
+
+    const larguraAjuste = shape?.largura ?? 1;
+    const alturaAjuste = shape?.altura ?? 1;
+
+    const drawWidth = fitWidth * larguraAjuste;
+    const drawHeight = fitHeight * alturaAjuste;
+    const offsetX = (width - drawWidth) / 2;
+    const offsetY = (height - drawHeight) / 2;
+    context.drawImage(icon, offsetX, offsetY, drawWidth, drawHeight);
 
     return context.getImageData(0, 0, width, height);
   }
