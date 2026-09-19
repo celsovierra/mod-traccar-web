@@ -46,6 +46,7 @@ import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
 import SyncIcon from '@mui/icons-material/Sync';
 import QueryBuilderIcon from '@mui/icons-material/QueryBuilder';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import MapIcon from '@mui/icons-material/Map';
 
 import { useTranslation } from './LocalizationProvider';
 import RemoveDialog from './RemoveDialog';
@@ -350,13 +351,21 @@ const useStyles = makeStyles()((theme) => ({
   },
   actionsContainer: {
     display: 'flex',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     paddingTop: 12,
     borderTop: '1px solid #f3f4f6',
     marginTop: 6,
-    gap: 2,
+    gap: 1,
     paddingLeft: 2,
+    paddingBottom: 2,
+    overflowX: 'auto',
+    overflowY: 'hidden',
+    WebkitOverflowScrolling: 'touch',
+    scrollbarWidth: 'none',
+    '&::-webkit-scrollbar': {
+      display: 'none',
+    },
   },
 
   lockRectangleBtn: {
@@ -384,9 +393,11 @@ const useStyles = makeStyles()((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 3,
-    padding: '2px 2px',
-    gap: 1,
+    padding: '4px 2px',
+    minWidth: 40,
+    flexShrink: 0,
     borderRadius: 10,
     cursor: 'pointer',
     transition: 'all 0.2s',
@@ -1476,6 +1487,22 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                 >
                   <RouteIcon sx={{ fontSize: 22, color: '#6366f1' }} />
                   <Typography className={classes.actionText}>Rota</Typography>
+                </ButtonBase>
+
+                <ButtonBase
+                  className={classes.actionItemBtn}
+                  onClick={() => {
+                    if (position) {
+                      window.open(
+                        `https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}`,
+                        '_blank',
+                      );
+                    }
+                  }}
+                  disabled={disableActions || !position}
+                >
+                  <MapIcon sx={{ fontSize: 22, color: '#059669' }} />
+                  <Typography className={classes.actionText}>Maps</Typography>
                 </ButtonBase>
 
                 <ButtonBase
