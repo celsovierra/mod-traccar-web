@@ -9,6 +9,7 @@ import iconSizes from '../resources/images/icon/iconSizes.json';
 import { useAttributePreference } from '../common/util/preferences';
 import { useCatchCallback } from '../reactHelper';
 import { findFonts, fromMapCoordinates, toMapCoordinates } from './core/mapUtil';
+import usePersistedState from '../common/util/usePersistedState';
 
 const createGeoJSONCircle = (center, radiusInMeters, points = 64) => {
   const coords = {
@@ -62,7 +63,7 @@ const MapPositions = ({
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
   const reduxPositions = useSelector((state) => state.session.positions);
 
-  const mapCluster = useAttributePreference('mapCluster', true);
+  const [mapCluster] = usePersistedState('mapCluster', useAttributePreference('mapCluster', true));
   const directionType = useAttributePreference('mapDirection', 'selected');
 
   const disabledRef = useRef(disabled);
@@ -94,6 +95,8 @@ const MapPositions = ({
   }, [selectedDeviceId, positions, reduxPositions]);
 
   const [anchorVersion, setAnchorVersion] = useState(0);
+  const [selectedLabelId, setSelectedLabelId] = useState(null);
+  const labelTimeoutRef = useRef(null);
 
   useEffect(() => {
     const handleAnchorEvent = () => setAnchorVersion((v) => v + 1);
@@ -153,9 +156,10 @@ const MapPositions = ({
         rotation: animatedRotation !== undefined ? animatedRotation : (position.course || 0),
         iconRotation: rotativeIconKeys.has((() => { const k = (device?.attributes?.customIcon && mapIcons.hasOwnProperty(device.attributes.customIcon)) ? device.attributes.customIcon : mapIconKey(device ? device.category : ''); return k; })()) ? (animatedRotation !== undefined ? animatedRotation : (position.course || 0)) : 0,
         direction: showDirection,
+        showLabel: Number(position.deviceId) === selectedLabelId,
       };
     },
-    [directionType, showStatus],
+    [directionType, showStatus, selectedLabelId],
   );
 
   const onMouseEnter = () => (map.getCanvas().style.cursor = 'pointer');
@@ -182,6 +186,10 @@ const MapPositions = ({
         const coords = feature.geometry.coordinates;
 
         prevSelectedId.current = devId;
+
+        setSelectedLabelId(devId);
+        if (labelTimeoutRef.current) clearTimeout(labelTimeoutRef.current);
+        labelTimeoutRef.current = setTimeout(() => setSelectedLabelId(null), 10000);
 
         setTimeout(() => {
           map.jumpTo({
@@ -279,7 +287,7 @@ const MapPositions = ({
           'icon-allow-overlap': true,
           'icon-rotate': ['get', 'iconRotation'],
           'icon-rotation-alignment': 'map',
-          'text-field': `{${titleField || 'name'}}`,
+          'text-field': ['case', ['==', ['get', 'showLabel'], true], ['get', titleField || 'name'], ''],
           'text-allow-overlap': true,
           'text-anchor': 'bottom',
           'text-offset': [0, -2 * iconScale],

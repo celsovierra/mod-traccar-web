@@ -1,4 +1,4 @@
-﻿import { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch } from 'react-redux';
@@ -19,6 +19,8 @@ import MapGeocoder from '../map/control/MapGeocoder';
 import MapScale from '../map/MapScale';
 import MapRuler from '../map/control/MapRuler';
 import MapNotification from '../map/control/MapNotification';
+import MapClusterToggle from '../map/control/MapClusterToggle';
+import usePersistedState from '../common/util/usePersistedState';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   const theme = useTheme();
@@ -27,6 +29,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
 
   const [rulerActive, setRulerActive] = useState(false);
+  const [mapCluster, setMapCluster] = usePersistedState('mapCluster', true);
 
   const onMarkerClick = useCallback(
     (_, deviceId) => {
@@ -55,6 +58,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
         <PoiMap />
         <MapRuler positions={filteredPositions} onActiveChange={setRulerActive} />
         <MapNotification enabled onClick={onEventsClick} />
+        <MapClusterToggle enabled={mapCluster} onClick={() => setMapCluster(!mapCluster)} />
       </MapView>
       <MapScale />
       <MapCurrentLocation />
