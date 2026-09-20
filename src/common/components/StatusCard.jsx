@@ -410,7 +410,8 @@ const useStyles = makeStyles()((theme) => ({
     },
   },
   actionText: {
-    fontSize: '0.6rem',
+    fontSize: '0.56rem',
+    whiteSpace: 'nowrap',
 
     fontWeight: 600,
     color: '#4b5563',
