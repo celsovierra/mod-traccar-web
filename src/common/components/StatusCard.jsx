@@ -1,4 +1,4 @@
-import { AnchorButton } from "../../features/anchor/AnchorButton";
+﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
 import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -1168,7 +1168,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       mapsLink,
     ].join('\n');
 
-    const whatsUrl = 'https://web.whatsapp.com/send?text=' + encodeURIComponent(message);
+    const whatsUrl = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(message);
     const shareWindow = window.open('', '_blank');
 
     if (navigator.share && deviceImage) {
@@ -1187,11 +1187,14 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       }
     }
 
-    if (shareWindow) {
-      shareWindow.location.href = whatsUrl;
-    } else {
-      window.open(whatsUrl, '_blank');
-    }
+    if (shareWindow) shareWindow.close();
+    const link = document.createElement('a');
+    link.href = whatsUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleRemove = useCatch(async (removed) => {
@@ -1493,10 +1496,14 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   className={classes.actionItemBtn}
                   onClick={() => {
                     if (position) {
-                      window.open(
-                        `https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}`,
-                        '_blank',
-                      );
+                      const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + position.latitude + ',' + position.longitude;
+                      const link = document.createElement('a');
+                      link.href = mapsUrl;
+                      link.target = '_blank';
+                      link.rel = 'noopener noreferrer';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
                     }
                   }}
                   disabled={disableActions || !position}
