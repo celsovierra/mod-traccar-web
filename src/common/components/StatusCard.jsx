@@ -557,7 +557,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const device = useSelector((state) => state.devices.items[deviceId]);
   const deviceImage = getImageUrl(device);
 
-  const vehiclePlate = device?.attributes?.plate || '';
+  const vehiclePlate = device?.attributes?.plate || device?.attributes?.placa || '';
   const vehicleModel = device?.model || '';
 
   const positions = useSelector((state) => state.session.positions);
