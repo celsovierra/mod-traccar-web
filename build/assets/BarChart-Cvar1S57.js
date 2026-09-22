@@ -1,0 +1,1 @@
+import{p as e,st as t}from"./mui-BQxnoIY0.js";var n=t(),r=e((0,n.jsx)(`path`,{d:`M4 9h4v11H4zm12 4h4v7h-4zm-6-9h4v16h-4z`}),`BarChart`);export{r as t};
