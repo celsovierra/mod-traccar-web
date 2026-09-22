@@ -99,6 +99,14 @@ const MapPositions = ({
   const labelTimeoutRef = useRef(null);
 
   useEffect(() => {
+    if (selectedDeviceId) {
+      setSelectedLabelId(Number(selectedDeviceId));
+      if (labelTimeoutRef.current) clearTimeout(labelTimeoutRef.current);
+      labelTimeoutRef.current = setTimeout(() => setSelectedLabelId(null), 15000);
+    }
+  }, [selectedDeviceId]);
+
+  useEffect(() => {
     const handleAnchorEvent = () => setAnchorVersion((v) => v + 1);
     window.addEventListener('anchorUpdate', handleAnchorEvent);
     return () => window.removeEventListener('anchorUpdate', handleAnchorEvent);
@@ -290,15 +298,16 @@ const MapPositions = ({
           'text-field': ['case', ['==', ['get', 'showLabel'], true], ['get', titleField || 'name'], ''],
           'text-allow-overlap': true,
           'text-anchor': 'bottom',
-          'text-offset': [0, -2 * iconScale],
+          'text-offset': [0, -2.5 * iconScale],
           'text-font': findFonts(map),
-          'text-size': 12,
+          'text-size': 13,
           'text-rotation-alignment': 'viewport',
           'symbol-sort-key': ['get', 'id'],
         },
         paint: {
-          'text-halo-color': 'white',
-          'text-halo-width': 1,
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 2,
+          'text-color': '#111827',
         },
       });
       map.addLayer({
