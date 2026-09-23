@@ -119,34 +119,29 @@ else
   echo "   Servico de gatilho ja existia (reiniciado)."
 fi
 
-NGINX_CONF="/etc/nginx/sites-available/traccar"
-if [ -f "$NGINX_CONF" ] && ! grep -q "deploy-trigger" "$NGINX_CONF"; then
-  echo ">> Adicionando rota no nginx para o botao Atualizar Versao..."
-  python3 - << PYEOF2
-import re
+echo ">> Verificando rota do botao Atualizar Versao no nginx..."
+for NGINX_CONF in $(grep -rln "proxy_pass http://127.0.0.1:8082" /etc/nginx/sites-available/ /etc/nginx/sites-enabled/ 2>/dev/null | sort -u); do
+  if ! grep -q "deploy-trigger" "$NGINX_CONF"; then
+    echo "   Adicionando rota em $NGINX_CONF..."
+    python3 - << PYEOF2
 path = "$NGINX_CONF"
 with open(path) as f:
     content = f.read()
 block = '''
-    location = /auth-check-deploy {
-        internal;
-        proxy_pass http://127.0.0.1:8082/api/session;
-        proxy_pass_request_body off;
-        proxy_set_header Content-Length "";
-    }
     location /api-deploy-trigger/ {
-        auth_request /auth-check-deploy;
         proxy_pass http://127.0.0.1:8091/;
-        proxy_set_header Host \$host;
+        proxy_set_header Host $host;
     }
 '''
-content = content.replace("    location / {", block + "\n    location / {", 1)
-with open(path, "w") as f:
-    f.write(content)
+if "location /api-deploy-trigger/" not in content:
+    content = content.replace("    location / {", block + "\n    location / {", 1)
+    with open(path, "w") as f:
+        f.write(content)
 PYEOF2
-  nginx -t && systemctl reload nginx
-  echo "   Rota /api-deploy-trigger/ adicionada e nginx recarregado."
-fi
+  fi
+done
+nginx -t && systemctl reload nginx
+echo "   Rota /api-deploy-trigger/ verificada."
 
 echo ""
 echo ">> Token do botao Atualizar Versao (guarde se precisar conferir): $DEPLOY_TOKEN"
