@@ -106,27 +106,30 @@ const SettingsMenu = () => {
       sx={{
         width: '100%',
         height: '100%',
-        backgroundColor: '#ffffff',
+        background: 'linear-gradient(180deg, #ede9fe 0%, #f5f3ff 60%, #eef2ff 100%)',
         py: 1,
         '& .MuiListItemButton-root': {
           my: 0.4,
           mx: 1.2,
           borderRadius: '14px',
+          boxShadow: '0 1px 3px rgba(124, 58, 237, 0.06)',
+          border: '1px solid rgba(124, 58, 237, 0.08)',
           py: 0.9,
           px: 1.5,
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            backgroundColor: '#f8fafc',
+            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.12)',
+            background: 'linear-gradient(90deg, #ede9fe 0%, #e0e7ff 100%)',
             transform: 'translateX(3px)',
           },
           '&.Mui-selected': {
-            backgroundColor: '#ede9fe',
+            background: 'linear-gradient(90deg, #ddd6fe 0%, #c7d2fe 100%)',
             color: '#6d28d9',
             '& .MuiListItemIcon-root': {
               color: '#7c3aed',
             },
             '&:hover': {
-              backgroundColor: '#e0e7ff',
+              background: 'linear-gradient(90deg, #c7d2fe 0%, #a5b4fc 100%)',
             },
           },
         },

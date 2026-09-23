@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -68,7 +68,7 @@ const UsersPage = () => {
 
   const loadItems = useCallback(
     async (offset, signal) => {
-      const limit = offset === 0 ? 10 : pageSize;
+      const limit = offset === 0 ? 30 : pageSize;
       const query = new URLSearchParams({ excludeAttributes: true, limit, offset });
       const response = await fetchOrThrow(`/api/users?${query.toString()}`, { signal });
       const data = await response.json();
@@ -166,7 +166,7 @@ const UsersPage = () => {
           boxSizing: 'border-box',
         }}
       >
-        {/* CABE�ALHO 100% FIXO */}
+        {/* CABE?ALHO 100% FIXO */}
         <Box
           sx={{
             flexShrink: 0,
@@ -205,7 +205,7 @@ const UsersPage = () => {
           </Box>
         </Box>
 
-        {/* �REA COM ROLAGEM INDEPENDENTE */}
+        {/* ?REA COM ROLAGEM INDEPENDENTE */}
         <Box
           sx={{
             flexGrow: 1,
@@ -224,7 +224,7 @@ const UsersPage = () => {
               backgroundColor: '#ffffff',
             }}
           >
-            {/* VISUALIZA��O EM CARDS PARA SMARTPHONE */}
+            {/* VISUALIZA??O EM CARDS PARA SMARTPHONE */}
             <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', p: 1.5, gap: 1.5 }}>
               {filteredItems.map((item) => {
                 const avatarStyle = getAvatarColor(item);
@@ -234,13 +234,13 @@ const UsersPage = () => {
                     key={item.id}
                     elevation={0}
                     sx={{
-                      p: 2,
-                      borderRadius: '18px',
+                      p: 1.2,
+                      borderRadius: '14px',
                       border: '1px solid #f1f5f9',
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: '#ffffff',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: 1.5,
+                      gap: 0.5,
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -277,7 +277,7 @@ const UsersPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, px: 0.5 }}>
                       <AccessTimeIcon sx={{ fontSize: 15, color: '#7c3aed' }} />
                       <Typography sx={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600 }}>
-                        �ltimo Acesso: {lastAccess ? formatTime(lastAccess, format) : 'Nunca acessou'}
+                        ?ltimo Acesso: {lastAccess ? formatTime(lastAccess, format) : 'Nunca acessou'}
                       </Typography>
                     </Box>
 
@@ -344,7 +344,7 @@ const UsersPage = () => {
                       {t('userEmail')}
                     </TableCell>
                     <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8, whiteSpace: 'nowrap' }}>
-                      �ltimo Acesso
+                      ?ltimo Acesso
                     </TableCell>
                     <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8 }}>
                       {t('sharedDisabled')}

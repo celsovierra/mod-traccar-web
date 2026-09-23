@@ -1,4 +1,4 @@
-ï»¿import { useRef } from 'react';
+import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -31,10 +31,12 @@ const useStyles = makeStyles()((theme) => ({
     flexDirection: 'column',
     width: '100%',
     paddingBottom: theme.spacing(0.5),
+    boxSizing: 'border-box',
+    overflow: 'hidden',
   },
   toolbar: {
     display: 'flex',
-    gap: theme.spacing(1),
+    gap: 4,
     minHeight: 48,
     paddingLeft: theme.spacing(1),
     paddingRight: theme.spacing(1),
@@ -42,24 +44,24 @@ const useStyles = makeStyles()((theme) => ({
   filterBar: {
     display: 'flex',
     justifyContent: 'space-between',
-    gap: theme.spacing(0.5),
-    padding: theme.spacing(0.5, 1),
+    gap: 4,
+    padding: '5px 6px',
     width: '100%',
     boxSizing: 'border-box',
   },
   chip: {
     fontWeight: 700,
-    fontSize: '0.72rem',
-    height: 26,
+    fontSize: '0.68rem',
+    height: 24,
     flex: 1,
     padding: 0,
     '& .MuiChip-icon': {
-      marginLeft: '4px',
+      marginLeft: '3px',
       marginRight: '-4px',
     },
     '& .MuiChip-label': {
-      paddingLeft: '6px',
-      paddingRight: '6px',
+      paddingLeft: '4px',
+      paddingRight: '4px',
     },
   },
   iconAll: {
@@ -178,10 +180,12 @@ const MainToolbar = ({
               onChange={(e) => setKeyword(e.target.value)}
               size="small"
               sx={{
-                flex: 1,
+                flex: '1 1 auto',
                 minWidth: 0,
-                maxWidth: { xs: '48%', sm: '100%' },
+                maxWidth: '62%',
                 transition: "all 0.2s ease",
+                height: 36,
+                '& input': { padding: '6px 8px', fontSize: '0.82rem' },
               }}
               endAdornment={
                 keyword ? (
@@ -203,11 +207,15 @@ const MainToolbar = ({
               onClick={() => navigate('/device')}
               disabled={deviceReadonly}
               sx={{
-                color: '#16a34a',
-                backgroundColor: '#f0fdf4',
-                ml: 0.5,
+                color: '#ffffff',
+                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                ml: 0.8,
                 transition: 'all 0.15s ease',
-                '&:hover': { backgroundColor: '#dcfce7', transform: 'scale(1.05)' },
+                width: 32,
+                height: 32,
+                borderRadius: '12px',
+                boxShadow: '0 2px 6px rgba(34, 197, 94, 0.35)',
+                '&:hover': { background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', transform: 'scale(1.05)' },
               }}
             >
               <Tooltip
@@ -224,11 +232,15 @@ const MainToolbar = ({
                 edge="end"
                 onClick={() => navigate('/settings/users')}
                 sx={{
-                  color: '#7c3aed',
-                  backgroundColor: '#f5f3ff',
-                  ml: 0.5,
+                  color: '#ffffff',
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+                  ml: 1.5,
                   transition: 'all 0.15s ease',
-                  '&:hover': { backgroundColor: '#ede9fe', transform: 'scale(1.05)' },
+                  width: 32,
+                  height: 32,
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 6px rgba(124, 58, 237, 0.35)',
+                  '&:hover': { background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', transform: 'scale(1.05)' },
                 }}
               >
                 <PeopleAltIcon fontSize="small" />
@@ -240,7 +252,7 @@ const MainToolbar = ({
 
       {devicesOpen && (
         <Box className={classes.filterBar}>
-          <Tooltip title="Todos os veÃ­culos">
+          <Tooltip title="Todos os veículos">
             <Chip
               icon={<AllInclusiveIcon fontSize="small" className={classes.iconAll} />}
               label={totalCount}
@@ -279,7 +291,7 @@ const MainToolbar = ({
             />
           </Tooltip>
 
-          <Tooltip title="Em movimento (IgniÃ§Ã£o ON e Vel > 0)">
+          <Tooltip title="Em movimento (Ignição ON e Vel > 0)">
             <Chip
               icon={<NavigationIcon fontSize="small" className={classes.iconMoving} />}
               label={movingCount}
@@ -292,7 +304,7 @@ const MainToolbar = ({
             />
           </Tooltip>
 
-          <Tooltip title="Offline hÃ¡ mais de 2 dias (do mais antigo para o mais recente)">
+          <Tooltip title="Offline há mais de 2 dias (do mais antigo para o mais recente)">
             <Chip
               icon={<HistoryIcon fontSize="small" className={classes.iconHistory} />}
               label={oldOfflineCount}
