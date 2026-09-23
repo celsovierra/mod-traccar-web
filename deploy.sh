@@ -1,4 +1,8 @@
-﻿#!/bin/bash
+#!/bin/bash
+
+# Entra na pasta do projeto sempre
+cd "$(dirname "$(readlink -f "$0")")"
+
 set -e
 
 echo ">> Verificando Node.js..."
