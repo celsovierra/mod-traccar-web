@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+﻿import { useNavigate, useParams } from 'react-router-dom';
 import {
   Container,
   Button,
@@ -22,6 +22,7 @@ const EditItemView = ({
   setItem,
   defaultItem,
   validate,
+  onSave,
   onItemSaved,
   menu,
   breadcrumbs,
@@ -47,6 +48,10 @@ const EditItemView = ({
   );
 
   const handleSave = useCatch(async () => {
+    if (onSave) {
+      await onSave();
+      return;
+    }
     let url = `/api/${endpoint}`;
     if (id) {
       url += `/${id}`;

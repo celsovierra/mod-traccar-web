@@ -1,4 +1,4 @@
-import { useDeviceEdit } from "../features/deviceEdit/useDeviceEdit";
+﻿
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -86,15 +86,7 @@ const DevicePage = () => {
   };
 
   const validate = () => item && item.name && item.uniqueId;
-
-  const { saveDeviceEdits } = useDeviceEdit(item, setItem);
   const handleCustomSave = useCatch(async () => {
-    
-    // Usa o módulo isolado de edição para garantir salvamento seguro para admin e usuário comum
-    const success = await saveDeviceEdits({ name: item.name, uniqueId: item.uniqueId });
-    if (!success) {
-      throw new Error("Erro ao salvar alterações do veículo.");
-    }
     const payload = {
       ...item,
       model: localModel,
@@ -105,18 +97,17 @@ const DevicePage = () => {
     };
 
     const response = await fetch(`/api/devices/${item.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
       body: JSON.stringify(payload),
     });
     if (!response.ok) throw new Error(await response.text());
     const updated = await response.json();
-    // Força nova referência no objeto para o Redux disparar o re-render imediato
     const forcedUpdated = { ...updated, attributes: { ...updated.attributes }, _t: Date.now() };
     dispatch(devicesActions.update([forcedUpdated]));
     dispatch(devicesActions.refresh({ [updated.id]: updated }));
-    const listRes = await fetch("/api/devices");
+    const listRes = await fetch('/api/devices');
     if (listRes.ok) {
       const allDevices = await listRes.json();
       const refreshedMap = {};
