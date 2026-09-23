@@ -3,6 +3,10 @@
 # Entra na pasta do projeto sempre
 cd "$(dirname "$(readlink -f "$0")")"
 
+
+echo ">> Puxando atualizacoes do GitHub..."
+git pull origin main || echo "   (git pull falhou, seguindo com o codigo local)"
+
 set -e
 
 echo ">> Verificando Node.js..."
