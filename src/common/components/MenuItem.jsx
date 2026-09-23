@@ -1,4 +1,4 @@
-import { makeStyles } from 'tss-react/mui';
+﻿import { makeStyles } from 'tss-react/mui';
 import { ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -8,10 +8,11 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
-const MenuItem = ({ title, link, icon, selected }) => {
+const MenuItem = ({ title, link, icon, selected, onClick }) => {
   const { classes } = useStyles();
+  const extraProps = link ? { component: Link, to: link } : { onClick };
   return (
-    <ListItemButton key={link} component={Link} to={link} selected={selected}>
+    <ListItemButton key={link || title} selected={selected} {...extraProps}>
       <ListItemIcon>{icon}</ListItemIcon>
       <ListItemText primary={title} className={classes.menuItemText} />
     </ListItemButton>

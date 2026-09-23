@@ -1,4 +1,5 @@
-import { Divider, List, Box } from '@mui/material';
+﻿import { Divider, List, Box, Snackbar, Alert } from '@mui/material';
+import { useState } from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PersonIcon from '@mui/icons-material/Person';
 import SendIcon from '@mui/icons-material/Send';
@@ -9,6 +10,7 @@ import PaymentIcon from '@mui/icons-material/Payment';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleIcon from '@mui/icons-material/People';
 import ConstructionIcon from '@mui/icons-material/Construction';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from '../../common/components/LocalizationProvider';
@@ -27,6 +29,19 @@ const SettingsMenu = () => {
   const billingLink = useSelector((state) => state.session.user.attributes.billingLink);
 
   const features = useFeatures();
+
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  const handleUpdateVersion = async () => {
+    if (!window.confirm('Isso vai atualizar o sistema com a ultima versao do GitHub e reiniciar o servidor. Continuar?')) return;
+    try {
+      const response = await fetch('/api-deploy-trigger/', { method: 'POST', credentials: 'same-origin' });
+      if (!response.ok) throw new Error();
+      setToast({ open: true, message: 'Atualizacao iniciada! O sistema pode reiniciar em instantes.', severity: 'success' });
+    } catch (e) {
+      setToast({ open: true, message: 'Nao foi possivel iniciar a atualizacao.', severity: 'error' });
+    }
+  };
 
   return (
     <Box
@@ -72,14 +87,14 @@ const SettingsMenu = () => {
         {!readonly && (
           <>
             <MenuItem
-              title="Veículos"
+              title="Veiculos"
               link="/settings/devices"
               icon={<DnsIcon fontSize="small" />}
               selected={location.pathname.startsWith('/settings/device')}
             />
             {manager && (
               <MenuItem
-                title="Usuários"
+                title="Usuarios"
                 link="/settings/users"
                 icon={<PeopleIcon fontSize="small" />}
                 selected={
@@ -140,9 +155,30 @@ const SettingsMenu = () => {
               icon={<ConstructionIcon fontSize="small" />}
               selected={location.pathname === '/settings/tools'}
             />
+            <MenuItem
+              title="Atualizar Versao"
+              icon={<CloudUploadIcon fontSize="small" sx={{ color: '#16a34a' }} />}
+              onClick={handleUpdateVersion}
+            />
           </List>
         </>
       )}
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+          severity={toast.severity}
+          variant="filled"
+          sx={{ borderRadius: '12px', fontWeight: 600 }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
