@@ -55,6 +55,9 @@ const SettingsMenu = () => {
     setVersion(v);
     localStorage.setItem('mod_version', v);
     setEditingVersion(false);
+    const cmd = '"' + v + '" | Out-File .\VERSION -Encoding utf8 -NoNewline';
+    navigator.clipboard.writeText(cmd).catch(() => {});
+    setToast({ open: true, message: 'Comando copiado! Cole no PowerShell: ' + cmd, severity: 'info' });
   };
 
   useEffect(() => {
