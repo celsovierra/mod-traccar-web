@@ -1,4 +1,4 @@
-﻿import SmsMarketModal from '../smsMarket/SmsMarketModal';
+import SmsMarketModal from '../smsMarket/SmsMarketModal';
 import SmsIcon from '@mui/icons-material/Sms';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -47,32 +47,36 @@ dayjs.extend(duration);
 
 const useStyles = makeStyles()((theme) => ({
   row: {
-    margin: '1px 6px',
-    borderRadius: '8px',
-    backgroundColor: theme.palette.background.paper,
-    border: `1px solid ${theme.palette.divider}`,
-    boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+    margin: '4px 8px',
+    borderRadius: '14px',
+    backgroundColor: '#0f172a',
+    border: '1px solid rgba(56, 189, 248, 0.18)',
+    boxShadow: '0 0 12px rgba(56, 189, 248, 0.08)',
     transition: 'all 0.2s ease-in-out',
-    padding: '2px 8px',
-    height: '58px',
-    minHeight: '58px',
-    maxHeight: '58px',
+    padding: '6px 10px',
+    height: '68px',
+    minHeight: '68px',
+    maxHeight: '68px',
     boxSizing: 'border-box',
     '&:hover': {
-      backgroundColor: theme.palette.action.hover,
+      backgroundColor: 'rgba(56, 189, 248, 0.08) !important',
       transform: 'translateY(-1px)',
-      boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+      boxShadow: '0 0 18px rgba(56, 189, 248, 0.25)',
     },
-    '&.Mui-selected': {
-      backgroundColor: theme.palette.action.selected,
-      borderColor: theme.palette.primary.main,
+    '&.device-row-selected': {
+      borderColor: 'rgba(56, 189, 248, 0.9) !important',
+      boxShadow: '0 0 20px rgba(56, 189, 248, 0.45) !important',
+      '& .MuiTypography-root': { color: '#f1f5f9 !important' },
+      '& .MuiListItemText-primary': { color: '#f1f5f9 !important' },
     },
   },
   avatar: {
-    backgroundColor: theme.palette.action.hover,
-    borderRadius: '6px',
-    width: 32,
-    height: 32,
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    borderRadius: '12px',
+    border: '1px solid rgba(56, 189, 248, 0.35)',
+    boxShadow: '0 0 10px rgba(56, 189, 248, 0.25)',
+    width: 42,
+    height: 42,
     overflow: 'hidden',
   },
   avatarImg: {
@@ -86,9 +90,15 @@ const useStyles = makeStyles()((theme) => ({
     filter: 'brightness(0) invert(0.6)',
   },
   iconsBox: {
+    position: 'absolute',
+    right: 10,
+    top: '62%',
+    transform: 'translateY(-50%)',
+    zIndex: 1,
+    flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
-    gap: '2px',
+    gap: '1px',
   },
   success: {
     color: theme.palette.success.main,
@@ -180,7 +190,7 @@ const DeviceRow = ({ devices, index, style }) => {
           {secondaryValue && (
             <>
               <span>{secondaryValue}</span>
-              <span>â€¢</span>
+              <span>•</span>
             </>
           )}
           <span className={classes[getStatusColor(item.status)]} style={{ fontWeight: item.status === 'online' ? 600 : 400 }}>
@@ -198,10 +208,10 @@ const DeviceRow = ({ devices, index, style }) => {
         key={item.id}
         onClick={() => dispatch(devicesActions.selectId(item.id))}
         disabled={!admin && item.disabled}
-        selected={selectedDeviceId === item.id}
-        className={classes.row}
+        selected={false}
+        className={`${classes.row} ${selectedDeviceId === item.id ? 'device-row-selected' : ''}`}
       >
-        <ListItemAvatar sx={{ minWidth: 38 }}>
+        <ListItemAvatar sx={{ minWidth: 50 }}>
           <Avatar className={classes.avatar}>
             {imageUrl ? (
               <img
@@ -219,8 +229,10 @@ const DeviceRow = ({ devices, index, style }) => {
           </Avatar>
         </ListItemAvatar>
         <ListItemText
+          sx={{ flex: 1, minWidth: 0, pr: 8, '& .MuiListItemText-primary, & .MuiTypography-root': { color: '#f1f5f9 !important' } }}
+          sx={{ '& .MuiListItemText-primary, & .MuiTypography-root': { color: '#f1f5f9 !important' } }}
           primary={
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.8rem', lineHeight: '1.2' }} noWrap>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f1f5f9', fontSize: '0.86rem', lineHeight: '1.25', textShadow: '0 0 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.8)' }} noWrap>
               {primaryValue}
             </Typography>
           }
@@ -238,13 +250,13 @@ const DeviceRow = ({ devices, index, style }) => {
           <Box className={classes.iconsBox}>
             {position?.attributes?.hasOwnProperty?.('alarm') && (
               <Tooltip title={`${t('eventAlarm')}: ${formatAlarm(position.attributes.alarm, t)}`}>
-                <IconButton size="small">
+                <IconButton size="small" sx={{ p: 0.2 }}>
                   <ErrorIcon fontSize="small" className={classes.error} />
                 </IconButton>
               </Tooltip>
             )}          {position?.attributes?.hasOwnProperty?.("power") && (
-            <Tooltip title={`TensÃ£o da Bateria: ${position.attributes.power}V`}>
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", px: "5px", py: "1px", borderRadius: "4px", bgcolor: "action.hover", border: "1px solid", borderColor: "divider", fontSize: "0.65rem", fontWeight: 700, color: "text.secondary", ml: 0.5, letterSpacing: "0.2px" }}>
+            <Tooltip title={`Tensão da Bateria: ${position.attributes.power}V`}>
+              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", px: "5px", py: "1px", borderRadius: "4px", bgcolor: "rgba(56, 189, 248, 0.12)", border: "1px solid", borderColor: "rgba(56, 189, 248, 0.35)", fontSize: "0.65rem", fontWeight: 700, color: "#67e8f9", ml: 0.5, mr: 0, letterSpacing: "0px" }}>
                 {Number(position.attributes.power).toFixed(1)}V
               </Box>
             </Tooltip>
@@ -253,7 +265,7 @@ const DeviceRow = ({ devices, index, style }) => {
               <Tooltip
                 title={`${t('positionBatteryLevel')}: ${formatPercentage(position.attributes.batteryLevel)}`}
               >
-                <IconButton size="small">
+                <IconButton size="small" sx={{ p: 0.2 }}>
                   {(position.attributes.batteryLevel > 70 &&
                     (position.attributes.charge ? (
                       <BatteryChargingFullIcon fontSize="small" className={classes.success} />
@@ -274,7 +286,7 @@ const DeviceRow = ({ devices, index, style }) => {
                 </IconButton>
               </Tooltip>
             )}
-          {admin && <IconButton size='small' onClick={(e) => { e.stopPropagation(); setShowSmsModal(true); }} sx={{ color: '#ff5722', ml: 0.5, p: 0.5 }}><SmsIcon fontSize='small' /></IconButton>}</Box>)}</ListItemButton>{admin && showSmsModal && <SmsMarketModal device={item} onClose={() => setShowSmsModal(false)} />}
+          {admin && <IconButton size='small' onClick={(e) => { e.stopPropagation(); setShowSmsModal(true); }} sx={{ color: '#ff5722', ml: 0.3, p: 0.3 }}><SmsIcon fontSize='small' /></IconButton>}</Box>)}</ListItemButton>{admin && showSmsModal && <SmsMarketModal device={item} onClose={() => setShowSmsModal(false)} />}
     </div>
   );
 };

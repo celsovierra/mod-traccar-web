@@ -27,9 +27,9 @@ export default () => (next) => {
 
       flushed.forEach((action) => {
         if (action.type === devicesActions.update.type) {
-          action.payload.forEach((item) => (deviceUpdates[item.id] = item));
+          Object.values(action.payload || {}).forEach((item) => (deviceUpdates[item.id] = item));
         } else if (action.type === sessionActions.updatePositions.type) {
-          action.payload.forEach((item) => (positionUpdates[item.deviceId] = item));
+          Object.values(action.payload || {}).forEach((item) => (positionUpdates[item.deviceId] = item));
         }
       });
 

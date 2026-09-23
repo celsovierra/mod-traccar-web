@@ -1,4 +1,4 @@
-﻿import { Divider, List, Box, Snackbar, Alert } from '@mui/material';
+import { Divider, List, Box, Snackbar, Alert } from '@mui/material';
 import { useState, useEffect } from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PersonIcon from '@mui/icons-material/Person';
@@ -32,6 +32,30 @@ const SettingsMenu = () => {
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [version, setVersion] = useState(() => localStorage.getItem('mod_version') || 'v1.0.0');
+  const [editingVersion, setEditingVersion] = useState(false);
+  const [tempVersion, setTempVersion] = useState('');
+  const clickCountRef = { current: 0 };
+  const clickTimerRef = { current: null };
+
+  const handleVersionClick = () => {
+    clickCountRef.current += 1;
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+    if (clickCountRef.current >= 3) {
+      clickCountRef.current = 0;
+      setTempVersion(version);
+      setEditingVersion(true);
+    } else {
+      clickTimerRef.current = setTimeout(() => { clickCountRef.current = 0; }, 600);
+    }
+  };
+
+  const handleVersionSave = () => {
+    const v = tempVersion.trim() || version;
+    setVersion(v);
+    localStorage.setItem('mod_version', v);
+    setEditingVersion(false);
+  };
 
   useEffect(() => {
     if (!manager) return;
@@ -195,6 +219,52 @@ const SettingsMenu = () => {
               }
               onClick={handleUpdateVersion}
             />
+            <Box
+              onClick={handleVersionClick}
+              sx={{
+                mx: 1.5,
+                mt: 0.5,
+                mb: 0.8,
+                px: 1.2,
+                py: 0.7,
+                borderRadius: '12px',
+                backgroundColor: '#f1f5f9',
+                border: '1px dashed #cbd5e1',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#64748b',
+                textAlign: 'center',
+                cursor: 'pointer',
+                userSelect: 'none',
+                transition: 'all 0.2s',
+                '&:hover': { backgroundColor: '#e2e8f0', color: '#475569' },
+              }}
+            >
+              {editingVersion ? (
+                <input
+                  autoFocus
+                  value={tempVersion}
+                  onChange={(e) => setTempVersion(e.target.value)}
+                  onBlur={handleVersionSave}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleVersionSave();
+                    if (e.key === 'Escape') setEditingVersion(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    border: 'none',
+                    background: 'transparent',
+                    textAlign: 'center',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    color: '#475569',
+                    outline: 'none',
+                  }}
+                />
+              ) : (
+                <>Versao: {version}</>
+              )}
+            </Box>
           </List>
         </>
       )}

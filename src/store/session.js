@@ -37,7 +37,7 @@ const { reducer, actions } = createSlice({
         state.user.attributes['web.liveRouteLength'] ||
         state.server.attributes['web.liveRouteLength'] ||
         10;
-      action.payload.forEach((position) => {
+      Object.values(action.payload || {}).forEach((position) => {
         state.positions[position.deviceId] = position;
         if (liveRoutes !== 'none') {
           const route = state.history[position.deviceId] || [];

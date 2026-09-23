@@ -215,7 +215,7 @@ const useStyles = makeStyles()((theme) => ({
     padding: '4px 0',
   },
   contentLeft: {
-    flex: 1.2,
+    flex: '1 1 0',
     minWidth: 0,
     padding: 0,
     '&:last-child': {
@@ -262,7 +262,6 @@ const useStyles = makeStyles()((theme) => ({
     border: '1px solid #e5e7eb',
     borderRadius: 8,
     padding: '3px 8px',
-    maxWidth: '100%',
     maxWidth: '100%',
   },
   vehicleModelText: {
