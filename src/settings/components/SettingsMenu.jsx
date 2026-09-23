@@ -32,7 +32,15 @@ const SettingsMenu = () => {
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [version, setVersion] = useState(() => localStorage.getItem('mod_version') || 'v1.0.0');
+  const [version, setVersion] = useState('v1.0.0');
+
+  useEffect(() => {
+
+    fetch('/VERSION', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.text() : null))
+      .then((txt) => { if (txt) setVersion(txt.trim()); })
+      .catch(() => {});
+  }, []);
   const [editingVersion, setEditingVersion] = useState(false);
   const [tempVersion, setTempVersion] = useState('');
   const clickCountRef = { current: 0 };
@@ -55,12 +63,13 @@ const SettingsMenu = () => {
     setVersion(v);
     localStorage.setItem('mod_version', v);
     setEditingVersion(false);
-    const cmd = '"' + v + '" | Out-File .\VERSION -Encoding utf8 -NoNewline';
+    const cmd = '"' + v + '" | Out-File .\\VERSION -Encoding utf8 -NoNewline ; Copy-Item .\\VERSION .\\public\\VERSION -Force ; git add . ; git commit -m "chore: bump version ' + v + '" ; git push origin main';
     navigator.clipboard.writeText(cmd).catch(() => {});
     setToast({ open: true, message: 'Comando copiado! Cole no PowerShell: ' + cmd, severity: 'info' });
   };
 
   useEffect(() => {
+
     if (!manager) return;
     (async () => {
       try {
