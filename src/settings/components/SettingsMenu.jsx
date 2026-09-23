@@ -1,5 +1,5 @@
 ﻿import { Divider, List, Box, Snackbar, Alert } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PersonIcon from '@mui/icons-material/Person';
 import SendIcon from '@mui/icons-material/Send';
@@ -31,6 +31,28 @@ const SettingsMenu = () => {
   const features = useFeatures();
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+
+  useEffect(() => {
+    if (!manager) return;
+    (async () => {
+      try {
+        const localRes = await fetch('/version.json', { cache: 'no-store' });
+        if (!localRes.ok) return;
+        const localData = await localRes.json();
+
+        const remoteRes = await fetch('https://api.github.com/repos/celsovierra/mod-traccar-web/commits/main');
+        if (!remoteRes.ok) return;
+        const remoteData = await remoteRes.json();
+
+        if (localData.commit && remoteData.sha && localData.commit !== remoteData.sha) {
+          setUpdateAvailable(true);
+        }
+      } catch (e) {
+        // ignora falhas de verificacao (offline, rate limit, etc)
+      }
+    })();
+  }, [manager]);
 
   const handleUpdateVersion = async () => {
     if (!window.confirm('Isso vai atualizar o sistema com a ultima versao do GitHub e reiniciar o servidor. Continuar?')) return;
@@ -156,8 +178,21 @@ const SettingsMenu = () => {
               selected={location.pathname === '/settings/tools'}
             />
             <MenuItem
-              title="Atualizar Versao"
-              icon={<CloudUploadIcon fontSize="small" sx={{ color: '#16a34a' }} />}
+              title={updateAvailable ? "Atualizar Versao (nova!)" : "Atualizar Versao"}
+              icon={
+                <CloudUploadIcon
+                  fontSize="small"
+                  sx={{
+                    color: '#16a34a',
+                    animation: updateAvailable ? 'pulseUpdate 1s infinite' : 'none',
+                    '@keyframes pulseUpdate': {
+                      '0%': { opacity: 1, transform: 'scale(1)' },
+                      '50%': { opacity: 0.4, transform: 'scale(1.25)' },
+                      '100%': { opacity: 1, transform: 'scale(1)' },
+                    },
+                  }}
+                />
+              }
               onClick={handleUpdateVersion}
             />
           </List>

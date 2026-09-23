@@ -32,6 +32,10 @@ npm install
 echo ">> Gerando build de producao..."
 npm run build
 
+echo ">> Gravando versao atual..."
+COMMIT_HASH=$(git rev-parse HEAD)
+echo "{\"commit\":\"$COMMIT_HASH\"}" > build/version.json
+
 echo ">> Fazendo backup da pasta web atual..."
 if [ -d /opt/traccar/web ]; then
   cp -r /opt/traccar/web /opt/traccar/web_backup_$(date +%Y%m%d_%H%M%S)
@@ -139,6 +143,7 @@ fi
 echo ""
 echo ">> Token do botao Atualizar Versao (guarde se precisar conferir): $DEPLOY_TOKEN"
 echo ">> Deploy concluido com sucesso!"
+
 
 
 
