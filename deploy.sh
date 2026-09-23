@@ -20,8 +20,10 @@ else
 fi
 
 cd "$(dirname "$0")"
+PROJECT_DIR="$(pwd)"
 
 echo ">> Puxando atualizacoes do GitHub..."
+git checkout -- build/index.html build/sw.js 2>/dev/null || true
 git pull origin main
 
 echo ">> Instalando dependencias..."
@@ -43,4 +45,101 @@ cp -r build/* /opt/traccar/web/
 echo ">> Reiniciando Traccar..."
 systemctl restart traccar
 
+echo ">> Verificando comando global 'atualizar'..."
+if [ ! -f /usr/local/bin/atualizar ]; then
+  cat > /usr/local/bin/atualizar << INNEREOF
+#!/bin/bash
+cd "$PROJECT_DIR" || { echo "Pasta do projeto nao encontrada"; exit 1; }
+./deploy.sh
+INNEREOF
+  chmod +x /usr/local/bin/atualizar
+  echo "   Comando 'atualizar' instalado."
+else
+  echo "   Comando 'atualizar' ja existia."
+fi
+
+echo ">> Verificando servico de gatilho remoto (botao Atualizar Versao)..."
+
+if [ ! -f /usr/local/bin/deploy-trigger-server.py ]; then
+  cat > /usr/local/bin/deploy-trigger-server.py << 'PYEOF'
+import http.server
+import subprocess
+import os
+
+TOKEN_FILE = "/opt/traccar/deploy-token.txt"
+
+class Handler(http.server.BaseHTTPRequestHandler):
+    def do_POST(self):
+        subprocess.Popen(["/usr/local/bin/atualizar"], stdout=open("/tmp/deploy-trigger.log", "a"), stderr=subprocess.STDOUT)
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(b'{"status":"started"}')
+
+    def log_message(self, format, *args):
+        pass
+
+http.server.HTTPServer(("127.0.0.1", 8091), Handler).serve_forever()
+PYEOF
+  chmod +x /usr/local/bin/deploy-trigger-server.py
+fi
+
+if [ ! -f /etc/systemd/system/deploy-trigger.service ]; then
+  cat > /etc/systemd/system/deploy-trigger.service << SERVICEEOF
+[Unit]
+Description=Deploy Trigger Server for Traccar Mod
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/bin/deploy-trigger-server.py
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+SERVICEEOF
+  systemctl daemon-reload
+  systemctl enable deploy-trigger
+  systemctl restart deploy-trigger
+  echo "   Servico de gatilho instalado e rodando."
+else
+  systemctl restart deploy-trigger
+  echo "   Servico de gatilho ja existia (reiniciado)."
+fi
+
+NGINX_CONF="/etc/nginx/sites-available/traccar"
+if [ -f "$NGINX_CONF" ] && ! grep -q "deploy-trigger" "$NGINX_CONF"; then
+  echo ">> Adicionando rota no nginx para o botao Atualizar Versao..."
+  python3 - << PYEOF2
+import re
+path = "$NGINX_CONF"
+with open(path) as f:
+    content = f.read()
+block = '''
+    location = /auth-check-deploy {
+        internal;
+        proxy_pass http://127.0.0.1:8082/api/session;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+    }
+    location /api-deploy-trigger/ {
+        auth_request /auth-check-deploy;
+        proxy_pass http://127.0.0.1:8091/;
+        proxy_set_header Host \$host;
+    }
+'''
+content = content.replace("    location / {", block + "\n    location / {", 1)
+with open(path, "w") as f:
+    f.write(content)
+PYEOF2
+  nginx -t && systemctl reload nginx
+  echo "   Rota /api-deploy-trigger/ adicionada e nginx recarregado."
+fi
+
+echo ""
+echo ">> Token do botao Atualizar Versao (guarde se precisar conferir): $DEPLOY_TOKEN"
 echo ">> Deploy concluido com sucesso!"
+
+
+
+

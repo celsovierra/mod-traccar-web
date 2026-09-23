@@ -1,9 +1,11 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Paper,
   Typography,
   Grid,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import TuneIcon from '@mui/icons-material/Tune';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -13,6 +15,8 @@ import CalculateIcon from '@mui/icons-material/Calculate';
 import BuildIcon from '@mui/icons-material/Build';
 import StorageIcon from '@mui/icons-material/Storage';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { useState } from 'react';
 import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
 import { useTranslation } from '../common/components/LocalizationProvider';
@@ -25,6 +29,22 @@ const ToolsPage = () => {
   const admin = useAdministrator();
   const readonly = useRestriction('readonly');
   const features = useFeatures();
+  const [updating, setUpdating] = useState(false);
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  const handleUpdateVersion = async () => {
+    if (!window.confirm('Isso vai atualizar o sistema com a ultima versao do GitHub e reiniciar o servidor. Continuar?')) return;
+    setUpdating(true);
+    try {
+      const response = await fetch('/api-deploy-trigger/', { method: 'POST', credentials: 'same-origin' });
+      if (!response.ok) throw new Error();
+      setToast({ open: true, message: 'Atualizacao iniciada! O sistema pode reiniciar em instantes.', severity: 'success' });
+    } catch (e) {
+      setToast({ open: true, message: 'Nao foi possivel iniciar a atualizacao.', severity: 'error' });
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const toolItems = [
     {
@@ -83,6 +103,14 @@ const ToolsPage = () => {
       bg: '#fee2e2',
       show: admin,
     },
+    {
+      title: 'Atualizar Versao',
+      description: 'Busca a ultima atualizacao do sistema e reinicia o servidor',
+      action: handleUpdateVersion,
+      icon: updating ? null : <CloudUploadIcon sx={{ fontSize: 24, color: "#16a34a" }} />,
+      bg: '#dcfce7',
+      show: admin,
+    },
   ];
 
   return (
@@ -102,7 +130,7 @@ const ToolsPage = () => {
             <Grid item xs={12} sm={6} key={item.link}>
               <Paper
                 elevation={0}
-                onClick={() => navigate(item.link)}
+                onClick={() => (item.action ? item.action() : navigate(item.link))}
                 sx={{
                   p: 2,
                   borderRadius: '20px',
@@ -149,6 +177,22 @@ const ToolsPage = () => {
             </Grid>
           ))}
         </Grid>
+
+        <Snackbar
+          open={toast.open}
+          autoHideDuration={4000}
+          onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+            severity={toast.severity}
+            variant="filled"
+            sx={{ borderRadius: '12px', fontWeight: 600 }}
+          >
+            {toast.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </PageLayout>
   );
