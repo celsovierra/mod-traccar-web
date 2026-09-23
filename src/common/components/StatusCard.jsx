@@ -1,4 +1,4 @@
-﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
+import { AnchorButton } from "../../features/anchor/AnchorButton";
 import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -216,6 +216,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   contentLeft: {
     flex: 1.2,
+    minWidth: 0,
     padding: 0,
     '&:last-child': {
       paddingBottom: 0,
@@ -234,7 +235,8 @@ const useStyles = makeStyles()((theme) => ({
     color: '#6b7280',
   },
   imageRightBox: {
-    flex: 0.9,
+    flex: '0 0 100px',
+    flexShrink: 0,
     height: 125,
     borderRadius: 16,
     overflow: 'hidden',
@@ -260,7 +262,7 @@ const useStyles = makeStyles()((theme) => ({
     border: '1px solid #e5e7eb',
     borderRadius: 8,
     padding: '3px 8px',
-    width: 'fit-content',
+    maxWidth: '100%',
     maxWidth: '100%',
   },
   vehicleModelText: {
@@ -269,6 +271,8 @@ const useStyles = makeStyles()((theme) => ({
     color: '#374151',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    flex: 1,
+    minWidth: 0,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
