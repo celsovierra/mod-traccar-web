@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Entra na pasta do projeto sempre
-cd "$(dirname "$(readlink -f "$0")")"
-
+cd "$(dirname "$(readlink -f "$0")")" || exit 1
+git config --global --add safe.directory "$(pwd)" 2>/dev/null
+git reset --hard HEAD 2>/dev/null
 
 echo ">> Puxando atualizacoes do GitHub..."
-git pull origin main || echo "   (git pull falhou, seguindo com o codigo local)"
-
+git pull origin main
 set -e
 
 echo ">> Verificando Node.js..."
