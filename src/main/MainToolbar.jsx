@@ -252,7 +252,7 @@ const MainToolbar = ({
 
       {devicesOpen && (
         <Box className={classes.filterBar}>
-          <Tooltip title="Todos os veículos">
+          <Tooltip title="Todos os veï¿½culos">
             <Chip
               icon={<AllInclusiveIcon fontSize="small" className={classes.iconAll} />}
               label={totalCount}
@@ -291,7 +291,7 @@ const MainToolbar = ({
             />
           </Tooltip>
 
-          <Tooltip title="Em movimento (Ignição ON e Vel > 0)">
+          <Tooltip title="Em movimento (Igniï¿½ï¿½o ON e Vel > 0)">
             <Chip
               icon={<NavigationIcon fontSize="small" className={classes.iconMoving} />}
               label={movingCount}
@@ -304,7 +304,7 @@ const MainToolbar = ({
             />
           </Tooltip>
 
-          <Tooltip title="Offline há mais de 2 dias (do mais antigo para o mais recente)">
+          <Tooltip title="Offline hï¿½ mais de 2 dias (do mais antigo para o mais recente)">
             <Chip
               icon={<HistoryIcon fontSize="small" className={classes.iconHistory} />}
               label={oldOfflineCount}
