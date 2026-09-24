@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Entra na pasta do projeto sempre
 cd "$(dirname "$(readlink -f "$0")")" || exit 1
@@ -74,8 +74,7 @@ if [ ! -f /usr/local/bin/atualizar ]; then
   cat > /usr/local/bin/atualizar << INNEREOF
 #!/bin/bash
 cd "$PROJECT_DIR" || { echo "Pasta do projeto nao encontrada"; exit 1; }
-git pull origin main
-./deploy.sh
+git fetch origin && git reset --hard origin/main && ./deploy.sh
 INNEREOF
   chmod +x /usr/local/bin/atualizar
   echo "   Comando 'atualizar' instalado."
