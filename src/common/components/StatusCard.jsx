@@ -1155,22 +1155,26 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       : 'Nao disponivel';
 
     const message = [
-      `🚗 _*${device.name}*_`,
+      `🏍️ *RELATORIO DE MONITORAMENTO*`,
       '',
-      `${statusEmoji} *Status:* ${statusText}`,
-      `🔑 *Ignicao:* ${ignitionText}`,
-      `${isBlocked ? "🔒" : "🔓"} *Bloqueio:* ${lockText}`,
-      `🚙 *Modelo:* ${modelText}`,
-      `🔢 *Placa:* ${plateText}`,
+      `👤 ${device.name}`,
+      `${statusEmoji} ${isOnline ? 'Conectado / Online' : 'Desconectado / Offline'}`,
+      `🔑 ${ignitionText}`,
+      `${isBlocked ? '🔒 Bloqueado' : '🔓 Desbloqueado'}`,
       '',
-      `â±ï¸ *Velocidade:* ${speedKmh} km/h`,
-      `â³ *Tempo Parado:* ${stoppedText}`,
-      `ðŸ“ *Endereco:* ${addressText}`,
-      `ðŸ• *Data/Hora:* ${dateText}`,
+      `───────────────`,
+      `🛵 ${modelText}`,
+      `🔢 ${plateText}`,
+      `⏱️ ${speedKmh} km/h`,
+      `⏳ ${stoppedText}`,
+      `───────────────`,
       '',
-      `ðŸ—ºï¸ *Localizacao:*`,
+      `📍 ${addressText}`,
+      `🕒 ${dateText}`,
+      '',
+      `🗺️ *Localização no Mapa:*`,
       mapsLink,
-    ].join('\n');
+    ].join('\\n');
 
     const whatsUrl = 'whatsapp://send?text=' + encodeURIComponent(message);
     const shareWindow = window.open('', '_blank');
