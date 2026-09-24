@@ -215,12 +215,9 @@ else
 fi
 echo ""
 
-
-
-
-echo ">> Verificando script de backup..."
+if true; then
 mkdir -p /opt/traccar/scripts
-if [ ! -f /opt/traccar/scripts/backup.sh ]; then
+# sempre recria backup.sh
   cat > /opt/traccar/scripts/backup.sh << 'BKPEOF'
 #!/bin/bash
 TOKEN="7785313299:AAGqPsRB8Ji4NqGnBKNJunDVqoHphf9NOhc"
