@@ -65,8 +65,10 @@ systemctl restart traccar
 echo ">> Verificando comando global 'atualizar'..."
 if [ ! -f /usr/local/bin/atualizar ]; then
   cat > /usr/local/bin/atualizar << INNEREOF
+cat > /usr/local/bin/atualizar << INNEREOF
 #!/bin/bash
 cd "$PROJECT_DIR" || { echo "Pasta do projeto nao encontrada"; exit 1; }
+git pull origin main
 ./deploy.sh
 INNEREOF
   chmod +x /usr/local/bin/atualizar
