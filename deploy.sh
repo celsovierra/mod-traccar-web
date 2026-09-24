@@ -6,7 +6,13 @@ git config --global --add safe.directory "$(pwd)" 2>/dev/null
 git reset --hard HEAD 2>/dev/null
 
 echo ">> Puxando atualizacoes do GitHub..."
+if [ -z "$DEPLOY_REEXEC" ]; then
 git pull origin main
+
+if [ -z "$DEPLOY_REEXEC" ]; then
+  export DEPLOY_REEXEC=1
+  exec "$0" "$@"
+fi
 set -e
 
 echo ">> Verificando Node.js..."
