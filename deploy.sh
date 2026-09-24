@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Entra na pasta do projeto sempre
 cd "$(dirname "$(readlink -f "$0")")" || exit 1
@@ -130,7 +130,7 @@ with open(path) as f:
 block = '''
     location /api-deploy-trigger/ {
         proxy_pass http://127.0.0.1:8091/;
-        proxy_set_header Host $host;
+        proxy_set_header Host \$host;
     }
 '''
 if "location /api-deploy-trigger/" not in content:
