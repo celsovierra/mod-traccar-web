@@ -13,6 +13,10 @@ if [ -z "$DEPLOY_REEXEC" ]; then
   exec "$0" "$@"
 fi
 set -e
+
+echo ">> Verificando Node.js..."
+echo ">> Verificando Node.js..."
+set -e
 if ! command -v node >/dev/null 2>&1; then
   echo "   Node.js nao encontrado. Instalando Node.js 20..."
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
