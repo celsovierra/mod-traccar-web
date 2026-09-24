@@ -1,4 +1,4 @@
-import { AnchorButton } from "../../features/anchor/AnchorButton";
+﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
 import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -61,7 +61,7 @@ import { mapIconKey, mapIcons } from '../../map/core/preloadImages';
 import { formatStatus, formatSpeed } from '../util/formatter';
 import { getStoppedTimeStatus, StoppedTimeDisplay } from '../../features/stoppedTime';
 
-// Ícone SVG Cerca
+// Ãcone SVG Cerca
 const FenceIcon = ({ sx = {}, className = '' }) => (
   <svg
     viewBox="0 0 24 24"
@@ -90,7 +90,7 @@ const FenceIcon = ({ sx = {}, className = '' }) => (
 const formatDateTimeBr = (date) => {
   const d = new Date(date);
   const pad = (n) => String(n).padStart(2, '0');
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} às ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} Ã s ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
 const useStyles = makeStyles()((theme) => ({
@@ -817,7 +817,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const handleToggleBlock = () => {
     if (isUnlockPending) {
       setToast({
-        message: 'Aguardando veículo ficar online para concluir o desbloqueio.',
+        message: 'Aguardando veÃ­culo ficar online para concluir o desbloqueio.',
         severity: 'warning',
       });
       return;
@@ -828,7 +828,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     } else {
       if (!isOnline) {
         setToast({
-          message: 'Veículo OFFLINE! Não é possível enviar comando de bloqueio.',
+          message: 'VeÃ­culo OFFLINE! NÃ£o Ã© possÃ­vel enviar comando de bloqueio.',
           severity: 'error',
         });
         return;
@@ -1131,7 +1131,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   };
 
   const handleShareWhatsapp = async () => {
-    const statusEmoji = isOnline ? '🟢' : '🔴';
+    const statusEmoji = isOnline ? 'ðŸŸ¢' : 'ðŸ”´';
     const statusText = isOnline ? 'Online' : 'Offline';
     const ignitionText = isIgnitionOn ? 'Ligada' : 'Desligada';
     const lockText = isBlocked ? 'Bloqueado' : 'Desbloqueado';
@@ -1155,39 +1155,43 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       : 'Nao disponivel';
 
     const message = [
-      `🚗 _*${device.name}*_`,
+      `ðŸš— _*${device.name}*_`,
       '',
       `${statusEmoji} *Status:* ${statusText}`,
-      `🔑 *Ignicao:* ${ignitionText}`,
-      `${isBlocked ? "🔒" : "🔓"} *Bloqueio:* ${lockText}`,
-      `🚙 *Modelo:* ${modelText}`,
-      `🔢 *Placa:* ${plateText}`,
+      `ðŸ”‘ *Ignicao:* ${ignitionText}`,
+      `${isBlocked ? "ðŸ”’" : "ðŸ”“"} *Bloqueio:* ${lockText}`,
+      `ðŸš™ *Modelo:* ${modelText}`,
+      `ðŸ”¢ *Placa:* ${plateText}`,
       '',
-      `⏱️ *Velocidade:* ${speedKmh} km/h`,
-      `⏳ *Tempo Parado:* ${stoppedText}`,
-      `📍 *Endereco:* ${addressText}`,
-      `🕐 *Data/Hora:* ${dateText}`,
+      `â±ï¸ *Velocidade:* ${speedKmh} km/h`,
+      `â³ *Tempo Parado:* ${stoppedText}`,
+      `ðŸ“ *Endereco:* ${addressText}`,
+      `ðŸ• *Data/Hora:* ${dateText}`,
       '',
-      `🗺️ *Localizacao:*`,
+      `ðŸ—ºï¸ *Localizacao:*`,
       mapsLink,
     ].join('\n');
 
-    const whatsUrl = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(message);
+    const whatsUrl = 'whatsapp://send?text=' + encodeURIComponent(message);
     const shareWindow = window.open('', '_blank');
 
-    if (navigator.share && deviceImage) {
+    if (navigator.share) {
       try {
-        const response = await fetch(deviceImage);
-        const blob = await response.blob();
-        const file = new File([blob], 'veiculo.jpg', { type: blob.type || 'image/jpeg' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          if (shareWindow) shareWindow.close();
-          await navigator.share({ files: [file], text: message });
-          return;
+        if (deviceImage) {
+          const response = await fetch(deviceImage);
+          const blob = await response.blob();
+          const file = new File([blob], 'veiculo.jpg', { type: blob.type || 'image/jpeg' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            if (shareWindow) shareWindow.close();
+            await navigator.share({ files: [file], text: message });
+            return;
+          }
         }
+        if (shareWindow) shareWindow.close();
+        await navigator.share({ text: message });
+        return;
       } catch (e) {
-        // segue para o fallback abaixo
+        // fallback abaixo
       }
     }
 
@@ -1299,7 +1303,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                               color: ignitionColor,
                             }}
                           >
-                            {isIgnitionOn ? 'Ignição ligada' : 'Ignição desligada'}</Typography>
+                            {isIgnitionOn ? 'IgniÃ§Ã£o ligada' : 'IgniÃ§Ã£o desligada'}</Typography>
                         </Box>
                         {stoppedStatus && (
                           <Box sx={{ mt: '2px' }}>
@@ -1479,7 +1483,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   )}
                 </ButtonBase>
 
-                {/* Botão de Âncora do Módulo Isolado */}
+                {/* BotÃ£o de Ã‚ncora do MÃ³dulo Isolado */}
                 <AnchorButton
                   isAnchorActive={isAnchorActive}
                   onClick={toggleAnchor}
@@ -1500,7 +1504,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   className={classes.actionItemBtn}
                   onClick={() => {
                     if (position) {
-                      const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + position.latitude + ',' + position.longitude;
+                      const mapsUrl = 'https://maps.google.com/?daddr=' + position.latitude + ',' + position.longitude;
                       const link = document.createElement('a');
                       link.href = mapsUrl;
                       link.target = '_blank';
@@ -1646,7 +1650,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
               }}
             >
               <Typography sx={{ fontSize: '0.84rem', color: '#94a3b8', fontWeight: 600 }}>
-                Nenhuma cerca virtual vinculada a este veículo.
+                Nenhuma cerca virtual vinculada a este veÃ­culo.
               </Typography>
             </Box>
           ) : (
@@ -1710,7 +1714,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                             {geofence.name}
                           </Typography>
                           <Typography sx={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, mt: 0.3 }}>
-                            {geofence.description || 'Polígono'}
+                            {geofence.description || 'PolÃ­gono'}
                           </Typography>
                         </Box>
                       </Box>
@@ -1768,7 +1772,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       >
                         <QueryBuilderIcon sx={{ color: '#facc15', fontSize: 20, flexShrink: 0 }} />
                         <Typography sx={{ fontSize: { xs: '0.74rem', sm: '0.78rem' }, color: '#fef08a', fontWeight: 600, lineHeight: 1.3 }}>
-                          Cerca desvinculada! Ficará ativa novamente em{' '}
+                          Cerca desvinculada! FicarÃ¡ ativa novamente em{' '}
                           <strong style={{ color: '#ffffff', fontWeight: 800 }}>{formatDateTimeBr(geofence.snoozeUntil)}</strong>
                         </Typography>
                       </Box>
@@ -1793,13 +1797,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
             <LockPersonIcon sx={{ fontSize: 28, color: '#ffffff' }} />
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Bloquear Veículo
+            Bloquear VeÃ­culo
           </Typography>
         </Box>
 
         <DialogContent className={classes.dialogContent}>
           <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.5 }}>
-            Tem certeza que deseja enviar o comando de <strong>BLOQUEIO</strong> para o veículo?
+            Tem certeza que deseja enviar o comando de <strong>BLOQUEIO</strong> para o veÃ­culo?
           </Typography>
           <Box
             sx={{
