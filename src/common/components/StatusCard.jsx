@@ -1,4 +1,4 @@
-﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
+import { AnchorButton } from "../../features/anchor/AnchorButton";
 import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -90,7 +90,7 @@ const FenceIcon = ({ sx = {}, className = '' }) => (
 const formatDateTimeBr = (date) => {
   const d = new Date(date);
   const pad = (n) => String(n).padStart(2, '0');
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} Ã s ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} às ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
 const useStyles = makeStyles()((theme) => ({
@@ -828,7 +828,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     } else {
       if (!isOnline) {
         setToast({
-          message: 'VeÃ­culo OFFLINE! NÃ£o Ã© possÃ­vel enviar comando de bloqueio.',
+          message: 'Veículo OFFLINE! Não Ã© possívelel enviar comando de bloqueio.',
           severity: 'error',
         });
         return;
@@ -1131,7 +1131,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   };
 
   const handleShareWhatsapp = async () => {
-    const statusEmoji = isOnline ? 'ðŸŸ¢' : 'ðŸ”´';
+    const statusEmoji = isOnline ? '🟢' : '🔴';
     const statusText = isOnline ? 'Online' : 'Offline';
     const ignitionText = isIgnitionOn ? 'Ligada' : 'Desligada';
     const lockText = isBlocked ? 'Bloqueado' : 'Desbloqueado';
@@ -1155,13 +1155,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       : 'Nao disponivel';
 
     const message = [
-      `ðŸš— _*${device.name}*_`,
+      `🚗 _*${device.name}*_`,
       '',
       `${statusEmoji} *Status:* ${statusText}`,
-      `ðŸ”‘ *Ignicao:* ${ignitionText}`,
-      `${isBlocked ? "ðŸ”’" : "ðŸ”“"} *Bloqueio:* ${lockText}`,
-      `ðŸš™ *Modelo:* ${modelText}`,
-      `ðŸ”¢ *Placa:* ${plateText}`,
+      `🔑 *Ignicao:* ${ignitionText}`,
+      `${isBlocked ? "🔒" : "🔓"} *Bloqueio:* ${lockText}`,
+      `🚙 *Modelo:* ${modelText}`,
+      `🔢 *Placa:* ${plateText}`,
       '',
       `â±ï¸ *Velocidade:* ${speedKmh} km/h`,
       `â³ *Tempo Parado:* ${stoppedText}`,
@@ -1303,7 +1303,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                               color: ignitionColor,
                             }}
                           >
-                            {isIgnitionOn ? 'IgniÃ§Ã£o ligada' : 'IgniÃ§Ã£o desligada'}</Typography>
+                            {isIgnitionOn ? 'Ignição ligada' : 'Ignição desligada'}</Typography>
                         </Box>
                         {stoppedStatus && (
                           <Box sx={{ mt: '2px' }}>
@@ -1714,7 +1714,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                             {geofence.name}
                           </Typography>
                           <Typography sx={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, mt: 0.3 }}>
-                            {geofence.description || 'PolÃ­gono'}
+                            {geofence.description || 'Polígono'}
                           </Typography>
                         </Box>
                       </Box>
@@ -1772,7 +1772,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       >
                         <QueryBuilderIcon sx={{ color: '#facc15', fontSize: 20, flexShrink: 0 }} />
                         <Typography sx={{ fontSize: { xs: '0.74rem', sm: '0.78rem' }, color: '#fef08a', fontWeight: 600, lineHeight: 1.3 }}>
-                          Cerca desvinculada! FicarÃ¡ ativa novamente em{' '}
+                          Cerca desvinculada! Ficará ativa novamente em{' '}
                           <strong style={{ color: '#ffffff', fontWeight: 800 }}>{formatDateTimeBr(geofence.snoozeUntil)}</strong>
                         </Typography>
                       </Box>
@@ -1797,7 +1797,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
             <LockPersonIcon sx={{ fontSize: 28, color: '#ffffff' }} />
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Bloquear VeÃ­culo
+            Bloquear Veículo
           </Typography>
         </Box>
 

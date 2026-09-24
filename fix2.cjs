@@ -1,0 +1,13 @@
+﻿const fs = require('fs');
+const p = 'src/common/components/StatusCard.jsx';
+let c = fs.readFileSync(p, 'utf8');
+c = c.replace(/Igni\u00c3\u00a7\u00c3\u00a3o/g, 'Ignição');
+c = c.replace(/Ve\u00c3\u00adculo/g, 'Veículo');
+c = c.replace(/Pol\u00c3\u00adgono/g, 'Polígono');
+c = c.replace(/Ficar\u00c3\u00a1/g, 'Ficará');
+c = c.replace(/N\u00c3\u00a3o/g, 'Não');
+c = c.replace(/N\u00c3\u00a9/g, 'Né');
+c = c.replace(/poss\u00c3\u00adv/g, 'possível');
+c = c.replace(/\u00c3\u00a0s/g, 'às');
+fs.writeFileSync(p, c, 'utf8');
+console.log('OK');
