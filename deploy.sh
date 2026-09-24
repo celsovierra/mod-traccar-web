@@ -166,7 +166,7 @@ s = p.read_text()
 updates = {
     "geocoder.enable": "true",
     "geocoder.type": "nominatim",
-    "geocoder.url": "https://nominatim.openstreetmap.org/reverse",
+    "geocoder.url": "https://geocode.gpscell.site/reverse",
     "geocoder.ignorePositions": "false",
     "geocoder.onRequest": "true",
     "geocoder.processInvalidPositions": "false",
