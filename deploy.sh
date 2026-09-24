@@ -6,7 +6,6 @@ git config --global --add safe.directory "$(pwd)" 2>/dev/null
 git reset --hard HEAD 2>/dev/null
 
 echo ">> Puxando atualizacoes do GitHub..."
-if [ -z "$DEPLOY_REEXEC" ]; then
 git pull origin main
 
 if [ -z "$DEPLOY_REEXEC" ]; then
@@ -14,8 +13,6 @@ if [ -z "$DEPLOY_REEXEC" ]; then
   exec "$0" "$@"
 fi
 set -e
-
-echo ">> Verificando Node.js..."
 if ! command -v node >/dev/null 2>&1; then
   echo "   Node.js nao encontrado. Instalando Node.js 20..."
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
@@ -71,7 +68,6 @@ systemctl restart traccar
 echo ">> Verificando comando global 'atualizar'..."
 if [ ! -f /usr/local/bin/atualizar ]; then
   cat > /usr/local/bin/atualizar << INNEREOF
-cat > /usr/local/bin/atualizar << INNEREOF
 #!/bin/bash
 cd "$PROJECT_DIR" || { echo "Pasta do projeto nao encontrada"; exit 1; }
 git pull origin main
@@ -215,9 +211,68 @@ else
   echo "   /opt/traccar/conf/traccar.xml nao encontrado, ignorando."
 fi
 echo ""
+
+
+
+
+echo ">> Verificando script de backup..."
+mkdir -p /opt/traccar/scripts
+if [ ! -f /opt/traccar/scripts/backup.sh ]; then
+  cat > /opt/traccar/scripts/backup.sh << 'BKPEOF'
+#!/bin/bash
+TOKEN="7785313299:AAGqPsRB8Ji4NqGnBKNJunDVqoHphf9NOhc"
+CHAT_ID="867241548"
+DNS=$(hostname -f 2>/dev/null || hostname)
+DESCRICAO="NEWMOD-${DNS}"
+DATA_HORA=$(date '+%d/%m/%Y %H:%M')
+BACKUP_FILE="/tmp/backup_traccar.tar.gz"
+
+DB_USER=$(grep -oP "(?<=database.user..).*?(?=</entry>)" /opt/traccar/conf/traccar.xml | head -1)
+DB_PASS=$(grep -oP "(?<=database.password..).*?(?=</entry>)" /opt/traccar/conf/traccar.xml | head -1)
+DB_NAME=$(grep -oP "(?<=database.url..jdbc:mysql://[^/]+/).*?(?=\?|</entry>)" /opt/traccar/conf/traccar.xml | head -1)
+
+mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "
+DROP TABLE IF EXISTS tc_positions_filtrada;
+CREATE TABLE tc_positions_filtrada LIKE tc_positions;
+INSERT INTO tc_positions_filtrada
+SELECT p.* FROM tc_positions p
+INNER JOIN (
+  SELECT id, deviceid, fixtime,
+         ROW_NUMBER() OVER (PARTITION BY deviceid ORDER BY fixtime DESC) AS rn
+  FROM tc_positions
+  WHERE fixtime > DATE_SUB(NOW(), INTERVAL 7 DAY)
+) t ON t.id = p.id AND t.rn <= 6;
+"
+
+mysqldump -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" --ignore-table=$DB_NAME.tc_positions --no-tablespaces --complete-insert --skip-lock-tables > /tmp/backup_base.sql
+mysqldump -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" tc_positions_filtrada --no-tablespaces --complete-insert --skip-lock-tables | sed 's/tc_positions_filtrada/tc_positions/g' >> /tmp/backup_base.sql
+
+mkdir -p /opt/traccar/media /opt/traccar/conf
+tar -czf "$BACKUP_FILE" \
+  -C /tmp backup_base.sql \
+  -C /opt/traccar conf \
+  -C /opt/traccar media \
+  -C /opt/traccar scripts
+
+curl -s -F chat_id="$CHAT_ID" -F caption="Backup $DESCRICAO - $DATA_HORA" -F document=@"$BACKUP_FILE" https://api.telegram.org/bot$TOKEN/sendDocument
+
+mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "DROP TABLE IF EXISTS tc_positions_filtrada;"
+rm -f /tmp/backup_base.sql "$BACKUP_FILE"
+BKPEOF
+  chmod +x /opt/traccar/scripts/backup.sh
+  echo "   Script de backup instalado."
+else
+  echo "   Script de backup ja existia."
+fi
+
+echo ">> Verificando cron do backup..."
+if ! crontab -l 2>/dev/null | grep -q "traccar/scripts/backup.sh"; then
+  (crontab -l 2>/dev/null; echo "0 */6 * * * /bin/bash /opt/traccar/scripts/backup.sh >/dev/null 2>&1") | crontab -
+  echo "   Cron instalado (a cada 6 horas)."
+else
+  echo "   Cron ja existia."
+fi
+
+
+
 echo ">> Deploy concluido com sucesso!"
-
-
-
-
-
