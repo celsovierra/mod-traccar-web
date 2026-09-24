@@ -78,5 +78,25 @@
     "tamanho": 1.5,
     "largura": 1,
     "altura": 1
+  },
+  "caminhao azul": {
+    "tamanho": 1.7,
+    "largura": 1.2,
+    "altura": 1.1
+  },
+  "caminhao branco ": {
+    "tamanho": 1.7,
+    "largura": 1.2,
+    "altura": 1.1
+  },
+  "caminhao verde": {
+    "tamanho": 1.7,
+    "largura": 1.2,
+    "altura": 1.1
+  },
+  "caminhao vermelho ": {
+    "tamanho": 1.7,
+    "largura": 1.2,
+    "altura": 1.1
   }
 }
