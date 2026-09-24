@@ -1,4 +1,4 @@
-import { Divider, List, Box, Snackbar, Alert } from '@mui/material';
+﻿import { Divider, List, Box, Snackbar, Alert } from '@mui/material';
 import { useState, useEffect } from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PersonIcon from '@mui/icons-material/Person';
@@ -31,11 +31,10 @@ const SettingsMenu = () => {
   const features = useFeatures();
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
-  const [updateAvailable, setUpdateAvailable] = useState(false);
   const [version, setVersion] = useState('v1.0.0');
+  const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
-
     fetch('/VERSION', { cache: 'no-store' })
       .then((r) => (r.ok ? r.text() : null))
       .then((txt) => { if (txt) setVersion(txt.trim()); })
