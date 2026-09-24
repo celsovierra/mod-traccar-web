@@ -269,7 +269,8 @@ else
 fi
 
 echo ">> Verificando cron do backup..."
-if ! crontab -l 2>/dev/null | grep -q "traccar/scripts/backup.sh"; then
+if ! crontab -l 2>/dev/null | grep -q "0 \*/6 \* \* \* /bin/bash /opt/traccar/scripts/backup.sh"; then
+  crontab -l 2>/dev/null | grep -v "traccar/scripts/backup.sh" | crontab -
   (crontab -l 2>/dev/null; echo "0 */6 * * * /bin/bash /opt/traccar/scripts/backup.sh >/dev/null 2>&1") | crontab -
   echo "   Cron instalado (a cada 6 horas)."
 else
