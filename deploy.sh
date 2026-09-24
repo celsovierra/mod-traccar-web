@@ -38,6 +38,11 @@ echo ">> Instalando dependencias..."
 npm install
 
 echo ">> Gerando build de producao..."
+echo ">> Copiando VERSION para public..."
+if [ -f ./VERSION ]; then
+  cp ./VERSION ./public/VERSION
+fi
+
 npm run build
 
 echo ">> Gravando versao atual..."
