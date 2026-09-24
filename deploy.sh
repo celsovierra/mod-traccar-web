@@ -145,6 +145,63 @@ echo "   Rota /api-deploy-trigger/ verificada."
 
 echo ""
 echo ">> Token do botao Atualizar Versao (guarde se precisar conferir): $DEPLOY_TOKEN"
+
+echo ">> Verificando configuracoes do traccar.xml..."
+if [ -f /opt/traccar/conf/traccar.xml ]; then
+  cp /opt/traccar/conf/traccar.xml /opt/traccar/conf/traccar.xml.bak.$(date +%F-%H%M%S)
+  python3 - << 'PYTRACCAR'
+from pathlib import Path
+import re
+
+p = Path("/opt/traccar/conf/traccar.xml")
+s = p.read_text()
+
+updates = {
+    "geocoder.enable": "true",
+    "geocoder.type": "nominatim",
+    "geocoder.url": "https://nominatim.openstreetmap.org/reverse",
+    "geocoder.ignorePositions": "false",
+    "geocoder.onRequest": "true",
+    "geocoder.processInvalidPositions": "false",
+    "geocoder.reuseDistance": "100",
+    "web.default.map": "googleHybrid",
+    "web.origin": "*",
+    "filter.enable": "true",
+    "filter.ignoreAttributesErrors": "true",
+    "processing.ignoreInvalidAttributes": "true",
+    "filter.invalid": "true",
+    "filter.zero": "true",
+    "web.showUnknownDevices": "false",
+    "processing.computedAttributes.deviceAttributes": "true",
+    "processing.copyAttributes.enable": "true",
+    "processing.copyAttributes": "network,rpm,temperature,fuel,spentFuel,ignition,power,battery,batteryLevel,sat,rssi,stoppedTime,lastMotionChange,lastIdleTime",
+    "database.historyDays": "30",
+    "web.timeout": "60000",
+    "event.overspeed.notRepeat": "true",
+    "event.enable": "geofenceEnter,geofenceExit,ignition,alarm",
+    "event.geofenceHandler": "true",
+    "event.ignitionHandler": "true",
+    "event.copyAttributes": "ignition",
+}
+
+for key, val in updates.items():
+    pattern = rf"<entry key='{re.escape(key)}'>.*?</entry>"
+    new_line = f"<entry key='{key}'>{val}</entry>"
+    if re.search(pattern, s):
+        s = re.sub(pattern, new_line, s)
+    else:
+        s = s.replace("</properties>", f"    {new_line}\n</properties>")
+
+p.write_text(s)
+print("OK traccar.xml")
+PYTRACCAR
+  systemctl restart traccar
+  sleep 15
+  echo "   traccar.xml atualizado e traccar reiniciado."
+else
+  echo "   /opt/traccar/conf/traccar.xml nao encontrado, ignorando."
+fi
+echo ""
 echo ">> Deploy concluido com sucesso!"
 
 
