@@ -284,7 +284,7 @@ if [ -f "$XML" ]; then
   DB_PASS_ATUAL=$(grep -oP "database.password>\K[^<]+" "$XML" | head -1)
   DB_PASS_NOVA="Traccar@2026#Sec"
   if [ "$DB_PASS_ATUAL" != "$DB_PASS_NOVA" ]; then
-    mysql -uroot -p"$DB_PASS_ATUAL" -e "ALTER USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS_NOVA'; FLUSH PRIVILEGES;" 2>/dev/null
+    sudo mysql -e "ALTER USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS_NOVA'; FLUSH PRIVILEGES;"
     sed -i "s|<entry key='database.password'>.*</entry>|<entry key='database.password'>$DB_PASS_NOVA</entry>|" "$XML"
     echo "   Senha MySQL padronizada."
   else
