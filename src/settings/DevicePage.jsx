@@ -11,6 +11,9 @@ import {
   Checkbox,
   TextField,
   Button,
+  IconButton,
+  Dialog,
+  DialogContent,
   Box,
   Paper,
 } from "@mui/material";
@@ -27,6 +30,7 @@ import { useManager } from "../common/util/permissions";
 import { useCatch } from "../reactHelper";
 import useSettingsStyles from "./common/useSettingsStyles";
 import QrCodeDialog from "../common/components/QrCodeDialog";
+import { Scanner } from "@yudiel/react-qr-scanner";
 import fetchOrThrow from "../common/util/fetchOrThrow";
 import { devicesActions } from "../store";
 
@@ -44,6 +48,9 @@ const DevicePage = () => {
   const [item, setItem] = useState(uniqueId ? { uniqueId } : null);
   const [showQr, setShowQr] = useState(false);
   const [imageFile, setImageFile] = useState(null);
+
+  const isApp = /wv|WebView/i.test(navigator.userAgent) || window.ReactNativeWebView || window.Capacitor?.isNativePlatform?.() === true;
+  const isWeb = !isApp;
 
   const [localPlate, setLocalPlate] = useState("");
   const [localModel, setLocalModel] = useState("");
@@ -83,6 +90,24 @@ const DevicePage = () => {
 
   const handleModelChange = (event) => {
     setLocalModel(event.target.value);
+  };
+
+  const [showScanner, setShowScanner] = useState(false);
+
+  const handleScanQr = () => {
+    if (isApp) {
+      setShowScanner(true);
+    } else {
+      alert(t("scannerOnlyInApp") || "Leitor de QR disponível apenas no aplicativo.");
+    }
+  };
+
+  const handleScanResult = (result) => {
+    if (result && result.length > 0) {
+      const value = result[0].rawValue || result[0];
+      setItem((prev) => ({ ...(prev || {}), uniqueId: value }));
+    }
+    setShowScanner(false);
   };
 
   const validate = () => item && item.name && item.uniqueId;
@@ -195,23 +220,50 @@ const DevicePage = () => {
                 </Box>
               </AccordionSummary>
               <AccordionDetails sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 2 }}>
-                <TextField
+                  <TextField
                   value={item.name || ""}
                   onChange={(event) => setItem({ ...item, name: event.target.value })}
                   label={t("sharedName")}
                   fullWidth
                   variant="outlined"
                 />
-                <TextField
-                  value={item.uniqueId || ""}
-                  onChange={(event) => setItem({ ...item, uniqueId: event.target.value })}
-                  label={t("deviceIdentifier")}
-                  disabled={Boolean(uniqueId)}
-                  fullWidth
-                  variant="outlined"
-                />
+                <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
+                    <TextField
+                    value={item.uniqueId || ""}
+                    onChange={(event) => setItem({ ...item, uniqueId: event.target.value })}
+                    label={t("deviceIdentifier")}
+                    disabled={Boolean(uniqueId)}
+                    fullWidth
+                    variant="outlined"
+                  />
+                    <IconButton
+                      onClick={handleScanQr}
+                      disabled={Boolean(uniqueId)}
+                      sx={{
+                        mt: 0.5,
+                        backgroundColor: "#7c3aed",
+                        color: "#ffffff",
+                        borderRadius: "10px",
+                        width: 48,
+                        height: 48,
+                        "&:hover": { backgroundColor: "#6d28d9" },
+                        "&:disabled": { backgroundColor: "#e5e7eb", color: "#9ca3af" },
+                      }}
+                    >
+                      <QrCodeScannerIcon />
+                    </IconButton>
+                </Box>
               </AccordionDetails>
             </Accordion>
+
+          <Dialog open={showScanner} onClose={() => setShowScanner(false)} fullWidth maxWidth="sm">
+            <DialogContent>
+              <Scanner
+                onScan={handleScanResult}
+                onError={(err) => console.error("Erro scanner:", err)}
+              />
+            </DialogContent>
+          </Dialog>
           </Paper>
 
           <Paper
@@ -269,21 +321,21 @@ const DevicePage = () => {
                   label={t("groupParent")}
                   fullWidth
                 />
-                <TextField
+                  <TextField
                   value={item.phone || ""}
                   onChange={(event) => setItem({ ...item, phone: event.target.value })}
                   label={t("sharedPhone")}
                   fullWidth
                   variant="outlined"
                 />
-                <TextField
+                  <TextField
                   value={localModel}
                   onChange={handleModelChange}
                   label={t("deviceModel")}
                   fullWidth
                   variant="outlined"
                 />
-                <TextField
+                  <TextField
                   value={localPlate}
                   onChange={handlePlateChange}
                   label="Placa do Veículo"
