@@ -14,8 +14,7 @@ if [ -z "$DEPLOY_REEXEC" ]; then
 fi
 set -e
 
-echo ">> Verificando Node.js..."
-echo ">> Verificando Node.js..."
+
 set -e
 if ! command -v node >/dev/null 2>&1; then
   echo "   Node.js nao encontrado. Instalando Node.js 20..."
@@ -145,7 +144,7 @@ block = '''
         proxy_set_header Host \$host;
     }
 '''
-if "location /api-deploy-trigger/" not in content:
+if "location /api-deploy-trigger/" not in content:  # python
     content = content.replace("    location / {", block + "\n    location / {", 1)
     with open(path, "w") as f:
         f.write(content)
@@ -292,4 +291,3 @@ if [ -f "$XML" ]; then
   fi
 fi
 
-if true; then
