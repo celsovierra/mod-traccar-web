@@ -49,8 +49,6 @@ const DevicePage = () => {
   const [showQr, setShowQr] = useState(false);
   const [imageFile, setImageFile] = useState(null);
 
-  const isApp = /wv|WebView/i.test(navigator.userAgent) || window.ReactNativeWebView || window.Capacitor?.isNativePlatform?.() === true;
-  const isWeb = !isApp;
 
   const [localPlate, setLocalPlate] = useState("");
   const [localModel, setLocalModel] = useState("");
@@ -94,14 +92,7 @@ const DevicePage = () => {
 
   const [showScanner, setShowScanner] = useState(false);
 
-  const handleScanQr = () => {
-    if (isApp) {
-      setShowScanner(true);
-    } else {
-      alert(t("scannerOnlyInApp") || "Leitor de QR disponível apenas no aplicativo.");
-    }
-  };
-
+  const handleScanQr = () => setShowScanner(true);
   const handleScanResult = (result) => {
     if (result && result.length > 0) {
       const value = result[0].rawValue || result[0];
