@@ -221,8 +221,8 @@ mkdir -p /opt/traccar/scripts
 #!/bin/bash
 TOKEN="7785313299:AAGqPsRB8Ji4NqGnBKNJunDVqoHphf9NOhc"
 CHAT_ID="867241548"
-DNS=$(grep -rh "server_name" /etc/nginx/ 2>/dev/null | grep -v "_" | grep -v "fastcgi\|uwsgi\|#\|redirect\|bucket" | awk '{print $2}' | head -1 | tr -d ";")
-DESCRICAO="NEWMOD-${DNS}"
+DNS=$(grep -h "server_name" /etc/nginx/sites-enabled/* 2>/dev/null | awk '{print $2}' | tr -d ";|" | grep -v "_" | head -1)
+DESCRICAO="${DNS}"
 DATA_HORA=$(date '+%d/%m/%Y %H:%M')
 BACKUP_FILE="/tmp/backup_traccar.tar.gz"
 
