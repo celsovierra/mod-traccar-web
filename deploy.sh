@@ -292,4 +292,4 @@ if [ -f "$XML" ]; then
   fi
 fi
 
-echo ">> Deploy concluido com sucesso!"
+if true; then
