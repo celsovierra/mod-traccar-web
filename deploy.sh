@@ -69,8 +69,8 @@ cp -r build/* /opt/traccar/web/
 echo ">> Reiniciando Traccar..."
 systemctl restart traccar
 
-echo ">> Verificando comando global 'atualizar'..."
-if [ ! -f /usr/local/bin/atualizar ]; then
+if true; then
+# sempre regrava atualizar
   cat > /usr/local/bin/atualizar << INNEREOF
 #!/bin/bash
 cd "$PROJECT_DIR" || { echo "Pasta do projeto nao encontrada"; exit 1; }
