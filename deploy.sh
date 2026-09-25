@@ -227,8 +227,8 @@ DESCRICAO="NEWMOD-${DNS}"
 DATA_HORA=$(date '+%d/%m/%Y %H:%M')
 BACKUP_FILE="/tmp/backup_traccar.tar.gz"
 
-DB_USER=$(grep -oP "database.user>\K[^<]+" /opt/traccar/conf/traccar.xml | head -1)
-DB_PASS=$(grep -oP "database.password>\K[^<]+" /opt/traccar/conf/traccar.xml | head -1)
+  DB_USER=$(grep -oP "database.user.>\K[^<]+" "$XML" | head -1 | tr -d '"')
+  DB_PASS_ATUAL=$(grep -oP "database.password.>\K[^<]+" "$XML" | head -1 | tr -d '"')
 DB_NAME=$(grep -oP "jdbc:mysql://[^/]+/\K[^?]+" /opt/traccar/conf/traccar.xml | head -1)
 
 mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "
@@ -280,8 +280,8 @@ fi
 echo ">> Garantindo senha padrao do MySQL..."
 XML="/opt/traccar/conf/traccar.xml"
 if [ -f "$XML" ]; then
-  DB_USER=$(grep -oP "database.user>\K[^<]+" "$XML" | head -1)
-  DB_PASS_ATUAL=$(grep -oP "database.password>\K[^<]+" "$XML" | head -1)
+  DB_USER=$(grep -oP "database.user.>\K[^<]+" "$XML" | head -1 | tr -d '"')
+  DB_PASS_ATUAL=$(grep -oP "database.password.>\K[^<]+" "$XML" | head -1 | tr -d '"')
   DB_PASS_NOVA="Traccar@2026#Sec"
   if [ "$DB_PASS_ATUAL" != "$DB_PASS_NOVA" ]; then
     sudo mysql -e "ALTER USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS_NOVA'; FLUSH PRIVILEGES;"
