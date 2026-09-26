@@ -1,0 +1,76 @@
+﻿<Collapse in={!!abertos[c.id]}>
+              {c.id === 1 ? (
+                <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#64748b', mb: 2 }}>
+                    Valores aplicados automaticamente em cobranças atrasadas. As variáveis {'{multa}'}, {'{juros}'} e {'{valor_atualizado}'} são substituídas nas mensagens e recibos.
+                  </Typography>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                    <Box>
+                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Multa por atraso</Typography>
+                      <TextField select fullWidth size='small' defaultValue='fixo' sx={{ mb: 1.5 }}>
+                        <MenuItem value='fixo'>Valor fixo (R$)</MenuItem>
+                      </TextField>
+                      <TextField fullWidth size='small' defaultValue='1' />
+                      <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', mt: 0.5 }}>Valor fixo em reais cobrado por atraso. Ex: R$ 5,00</Typography>
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Juros por atraso</Typography>
+                      <TextField select fullWidth size='small' defaultValue='fixo' sx={{ mb: 1.5 }}>
+                        <MenuItem value='fixo'>Valor fixo por dia (R$)</MenuItem>
+                      </TextField>
+                      <TextField fullWidth size='small' defaultValue='0,10' />
+                      <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', mt: 0.5 }}>Valor fixo em reais cobrado por dia de atraso. Ex: R$ 1,00/dia</Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ mt: 3, p: 2, backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                    <Typography sx={{ fontWeight: 700, color: '#1e293b', fontSize: '0.85rem', mb: 1 }}>📊 Simulação (R$ 100,00 com 10 dias de atraso)</Typography>
+                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Valor: R$ 100,00</Typography>
+                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Multa (R$ 1,00): <span style={{ color: '#dc2626' }}>+ R$ 1,00</span></Typography>
+                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Juros (R$ 0,10/dia × 10d): <span style={{ color: '#dc2626' }}>+ R$ 1,00</span></Typography>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', pt: 1, borderTop: '1px solid #cbd5e1' }}>Total: R$ 102,00</Typography>
+                  </Box>
+                  <Box sx={{ mt: 3 }}>
+                    <Typography sx={{ fontWeight: 700, color: '#1e293b', fontSize: '0.85rem', mb: 0.5 }}>🏷️ Desconto por antecipação (Portal do Cliente)</Typography>
+                    <Typography sx={{ fontSize: '0.78rem', color: '#94a3b8', mb: 1.5 }}>Configure faixas de desconto progressivo por quantidade de meses.</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', mb: 1 }}>
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>De</Typography>
+                      <TextField size='small' defaultValue='2' sx={{ width: 70 }} />
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>a</Typography>
+                      <TextField size='small' defaultValue='3' sx={{ width: 70 }} />
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>meses →</Typography>
+                      <TextField size='small' defaultValue='5' sx={{ width: 70 }} />
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>%</Typography>
+                      <Typography sx={{ color: '#dc2626', cursor: 'pointer', fontWeight: 700 }}>✕</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', mb: 1 }}>
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>De</Typography>
+                      <TextField size='small' defaultValue='4' sx={{ width: 70 }} />
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>a</Typography>
+                      <TextField size='small' defaultValue='5' sx={{ width: 70 }} />
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>meses →</Typography>
+                      <TextField size='small' defaultValue='10' sx={{ width: 70 }} />
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>%</Typography>
+                      <Typography sx={{ color: '#dc2626', cursor: 'pointer', fontWeight: 700 }}>✕</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', mb: 1.5 }}>
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>De</Typography>
+                      <TextField size='small' defaultValue='6' sx={{ width: 70 }} />
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>a</Typography>
+                      <TextField size='small' defaultValue='12' sx={{ width: 70 }} />
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>meses →</Typography>
+                      <TextField size='small' defaultValue='20' sx={{ width: 70 }} />
+                      <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>%</Typography>
+                      <Typography sx={{ color: '#dc2626', cursor: 'pointer', fontWeight: 700 }}>✕</Typography>
+                    </Box>
+                    <Typography sx={{ color: '#2563eb', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', mb: 1.5 }}>+ Adicionar faixa</Typography>
+                    <Typography sx={{ fontSize: '0.75rem', color: '#16a34a', lineHeight: 1.7 }}>Ex: 2 a 3 meses × R$50 = R$100,00 a R$150,00 com 5% de desconto</Typography>
+                    <Typography sx={{ fontSize: '0.75rem', color: '#16a34a', lineHeight: 1.7 }}>Ex: 4 a 5 meses × R$50 = R$200,00 a R$250,00 com 10% de desconto</Typography>
+                    <Typography sx={{ fontSize: '0.75rem', color: '#16a34a', lineHeight: 1.7 }}>Ex: 6 a 12 meses × R$50 = R$300,00 a R$600,00 com 20% de desconto</Typography>
+                  </Box>
+                </Box>
+              ) : (
+                <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
+                  <Typography sx={{ fontSize: '0.85rem', color: '#94a3b8' }}>Configurações em breve...</Typography>
+                </Box>
+              )}
+            </Collapse>

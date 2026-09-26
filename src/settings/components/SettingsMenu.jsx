@@ -163,6 +163,13 @@ const SettingsMenu = () => {
                 }
               />
             )}
+
+              <MenuItem
+                title="Financeiro"
+                link="/settings/financeiro"
+                icon={<PaymentIcon fontSize="small" />}
+                selected={location.pathname.startsWith('/settings/financeiro')}
+              />
             <MenuItem
               title={t('sharedGeofences')}
               link="/geofences"
@@ -303,3 +310,4 @@ const SettingsMenu = () => {
 };
 
 export default SettingsMenu;
+
