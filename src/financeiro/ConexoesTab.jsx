@@ -68,7 +68,7 @@ const ConexoesTab = () => {
       await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: userId, attributes: attrs }),
+        body: JSON.stringify({ id: userId, name: userAttributes.name || '-', email: userAttributes.email || (userAttributes.name || 'sem') + '@local', attributes: attrs }),
       });
       await testarConexao(evoUrl, evoKey, evoInst);
     } catch (e) {
