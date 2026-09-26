@@ -1,5 +1,6 @@
 ﻿import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { Table, TableRow, TableCell, TableHead, TableBody, Box, Paper, Typography, Avatar, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, MenuItem } from '@mui/material';
+import { useSelector } from 'react-redux';
 import PersonIcon from '@mui/icons-material/Person';
 import EditIcon from '@mui/icons-material/Edit';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -23,6 +24,9 @@ const ClientesTab = () => {
   const [hasMore, setHasMore] = useState(true);
   const [editando, setEditando] = useState({});
   const [rascunho, setRascunho] = useState({});
+  const user = useSelector((state) => state.session.user);
+  const userId = user.id;
+  const userAttributes = useSelector((state) => state.session.user.attributes) || {};
   const [modalBaixa, setModalBaixa] = useState(null);
   const [mesesBaixa, setMesesBaixa] = useState(1);
   const [salvandoBaixa, setSalvandoBaixa] = useState(false);
@@ -42,7 +46,13 @@ const ClientesTab = () => {
     const parts = iso.split('-');
     return parts[2] + '/' + parts[1] + '/' + parts[0];
   };
-  const confirmarBaixa = async () => {
+  const valorTotal = (item, meses) => {
+    const v = (item.attributes?.fin_valor || '0').replace(',', '.');
+    const n = parseFloat(v) || 0;
+    return (n * meses).toFixed(2).replace('.', ',');
+  };
+
+﻿﻿﻿  const confirmarBaixa = async () => {
     if (!modalBaixa) return;
     setSalvandoBaixa(true);
     try {
@@ -52,17 +62,46 @@ const ClientesTab = () => {
       await fetchOrThrow('/api/users/' + modalBaixa.id, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: modalBaixa.id, name: modalBaixa.name || '-', email: modalBaixa.email || modalBaixa.name || 'sem@local', attributes: attrs }),
+        body: JSON.stringify({ id: modalBaixa.id, name: modalBaixa.name || '-', email: modalBaixa.email || 'sem@local', attributes: attrs }),
       });
       setItems((prev) => prev.map((u) => u.id === modalBaixa.id ? { ...u, attributes: attrs } : u));
+      const adm = userAttributes || {};
+      const evoUrl = adm.fin_evo_url;
+      const evoKey = adm.fin_evo_key;
+      const evoInst = adm.fin_evo_instance;
+      const recibo = adm.fin_msg_recibo;
+      console.log('ADM', adm);
+      if (evoUrl && evoKey && evoInst && recibo) {
+        const hoje = new Date();
+        const dataHoje = String(hoje.getDate()).padStart(2, '0') + '/' + String(hoje.getMonth() + 1).padStart(2, '0') + '/' + hoje.getFullYear();
+        const valorT = valorTotal(modalBaixa, mesesBaixa);
+        const novoVencBR = formatarDataBR(novoVenc);
+        let texto = recibo;
+        texto = texto.split('{nome}').join(modalBaixa.name || '');
+        texto = texto.split('{vencimento}').join(formatarDataBR(vencAtual));
+        texto = texto.split('{valor}').join(valorT);
+        texto = texto.split('{valor_atualizado}').join(valorT);
+        texto = texto.split('{data_hoje}').join(dataHoje);
+        texto = texto.split('{multa}').join('');
+        texto = texto.split('{juros}').join('');
+        texto = texto.split('{desconto}').join('');
+        texto = texto.split('{prox_vencimento}').join(novoVencBR);
+        texto = texto.split('{link_pagamento}').join('');
+        const nums = [modalBaixa.attributes?.fin_telefone1, modalBaixa.attributes?.fin_telefone2].filter(Boolean);
+        for (let i = 0; i < nums.length; i++) {
+          const num = nums[i];
+          try {
+            await fetch(evoUrl.replace(/\/$/, '') + '/message/sendText/' + evoInst, {
+              method: 'POST',
+              headers: { apikey: evoKey, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ number: num, text: texto }),
+            });
+          } catch (err) { console.error('Erro WhatsApp', num, err); }
+        }
+      }
       setModalBaixa(null);
-    } catch (e) { console.error(e); alert('Erro ao salvar'); }
+    } catch (e) { console.error(e); }
     finally { setSalvandoBaixa(false); }
-  };
-  const valorTotal = (item, meses) => {
-    const v = (item.attributes?.fin_valor || '0').replace(',', '.');
-    const n = parseFloat(v) || 0;
-    return (n * meses).toFixed(2).replace('.', ',');
   };
 
   const salvarTudo = async () => {
@@ -71,7 +110,7 @@ const ClientesTab = () => {
       await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: userId, name: userAttributes.name || '-', email: userAttributes.email || (userAttributes.name || 'sem') + '@local', attributes: attrs }),
+        body: JSON.stringify({ id: userId, name: user.name || '-', email: user.email || 'sem@local', attributes: attrs }),
       });
       alert('Salvo!')
     } catch (e) { console.error(e); alert('Erro ao salvar'); }

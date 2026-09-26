@@ -26,7 +26,8 @@ const ConexoesTab = () => {
   const [gwAtivo, setGwAtivo] = useState('mercadopago');
   const [gwToken, setGwToken] = useState('');
   const [gwUrlWebhook, setGwUrlWebhook] = useState('');
-  const userId = useSelector((state) => state.session.user.id);
+  const user = useSelector((state) => state.session.user);
+  const userId = user.id;
   const userAttributes = useSelector((state) => state.session.user.attributes) || {};
 
   useEffect(() => {
@@ -68,7 +69,7 @@ const ConexoesTab = () => {
       await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: userId, name: userAttributes.name || '-', email: userAttributes.email || (userAttributes.name || 'sem') + '@local', attributes: attrs }),
+        body: JSON.stringify({ id: userId, name: user.name || '-', email: user.email || 'sem@local', attributes: attrs }),
       });
       await testarConexao(evoUrl, evoKey, evoInst);
     } catch (e) {

@@ -1,0 +1,52 @@
+﻿  const confirmarBaixa = async () => {
+    if (!modalBaixa) return;
+    setSalvandoBaixa(true);
+    try {
+      const vencAtual = modalBaixa.attributes?.fin_vencimento || '';
+      const novoVenc = calcNovoVencimento(vencAtual, mesesBaixa);
+      const attrs = { ...(modalBaixa.attributes || {}), fin_vencimento: novoVenc };
+      await fetchOrThrow('/api/users/' + modalBaixa.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: modalBaixa.id, name: modalBaixa.name || '-', email: modalBaixa.email || modalBaixa.name || 'sem@local', attributes: attrs }),
+      });
+      setItems((prev) => prev.map((u) => u.id === modalBaixa.id ? { ...u, attributes: attrs } : u));
+      const adm = userAttributes || {};
+      const evoUrl = adm.fin_evo_url;
+      const evoKey = adm.fin_evo_key;
+      const evoInst = adm.fin_evo_instance;
+      const recibo = adm.fin_msg_recibo;
+      console.log('ADM', adm);
+      if (evoUrl && evoKey && evoInst && recibo) {
+        const hoje = new Date();
+        const dataHoje = String(hoje.getDate()).padStart(2, '0') + '/' + String(hoje.getMonth() + 1).padStart(2, '0') + '/' + hoje.getFullYear();
+        const valorT = valorTotal(modalBaixa, mesesBaixa);
+        const novoVencBR = formatarDataBR(novoVenc);
+        let texto = recibo;
+        texto = texto.split('{nome}').join(modalBaixa.name || '');
+        texto = texto.split('{vencimento}').join(novoVencBR);
+        texto = texto.split('{valor}').join(valorT);
+        texto = texto.split('{valor_atualizado}').join(valorT);
+        texto = texto.split('{data_hoje}').join(dataHoje);
+        texto = texto.split('{multa}').join('');
+        texto = texto.split('{juros}').join('');
+        texto = texto.split('{desconto}').join('');
+        texto = texto.split('{prox_vencimento}').join('-');
+        texto = texto.split('{link_pagamento}').join('');
+        const nums = [modalBaixa.attributes?.fin_telefone1, modalBaixa.attributes?.fin_telefone2].filter(Boolean);
+        for (let i = 0; i < nums.length; i++) {
+          const num = nums[i];
+          try {
+            await fetch(evoUrl.replace(/\/$/, '') + '/message/sendText/' + evoInst, {
+              method: 'POST',
+              headers: { apikey: evoKey, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ number: num, text: texto }),
+            });
+          } catch (err) { console.error('Erro WhatsApp', num, err); }
+        }
+      }
+      setModalBaixa(null);
+    } catch (e) { console.error(e); }
+    finally { setSalvandoBaixa(false); }
+  };
+

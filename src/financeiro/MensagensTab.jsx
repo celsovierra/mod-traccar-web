@@ -33,7 +33,8 @@ const cards = [
 const MensagensTab = () => {
   const [abertos, setAbertos] = useState({});
   const [ativos, setAtivos] = useState({ 1: true, 2: true, 3: true, 4: true, 5: true });
-  const userId = useSelector((state) => state.session.user.id);
+  const user = useSelector((state) => state.session.user);
+  const userId = user.id;
   const userAttributes = useSelector((state) => state.session.user.attributes) || {};
   const [reciboTexto, setReciboTexto] = useState(['✅ *Pagamento Confirmado!* ✅', '', '```RECIBO DE PAGAMENTO', '=======================', 'Cliente : {nome}', 'Serviço : Rastreamento', 'Período : {vencimento}', 'Valor   : R$ {valor}', 'Multa   : {multa}', 'Juros   : {juros}', 'Desconto: {desconto}', '', 'Valor Total : {valor_atualizado}', '=======================', 'Pago em : {data_hoje}', 'Status  : ✅PAGO✅', 'Próx Venc: {prox_vencimento}', '=======================```'].join('\n'));
   const toggleAberto = (id) => setAbertos((a) => ({ ...a, [id]: !a[id] }));
@@ -51,7 +52,7 @@ const MensagensTab = () => {
       await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: userId, name: userAttributes.name || '-', email: userAttributes.email || (userAttributes.name || 'sem') + '@local', attributes: attrs }),
+        body: JSON.stringify({ id: userId, name: user.name || '-', email: user.email || 'sem@local', attributes: attrs }),
       });
       alert('Salvo!')
     } catch (e) { console.error(e); alert('Erro ao salvar'); }
