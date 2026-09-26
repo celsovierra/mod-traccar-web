@@ -1,6 +1,8 @@
 ﻿import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { Table, TableRow, TableCell, TableHead, TableBody, Box, Paper, Typography, Avatar } from '@mui/material';
+import { Table, TableRow, TableCell, TableHead, TableBody, Box, Paper, Typography, Avatar, TextField, IconButton } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import { useAsyncTask, useScrollToLoad, pageSize } from '../reactHelper';
 import { useTranslation } from '../common/components/LocalizationProvider';
@@ -15,6 +17,45 @@ const ClientesTab = () => {
   const [items, setItems] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [hasMore, setHasMore] = useState(true);
+  const [editando, setEditando] = useState({});
+  const [rascunho, setRascunho] = useState({});
+
+  const iniciarEdicao = (item) => {
+    setEditando((e) => ({ ...e, [item.id]: true }));
+    setRascunho((r) => ({
+      ...r,
+      [item.id]: {
+        telefone1: item.attributes?.fin_telefone1 || '',
+        telefone2: item.attributes?.fin_telefone2 || '',
+        valor: item.attributes?.fin_valor || '',
+        vencimento: item.attributes?.fin_vencimento || '',
+        contrato: item.attributes?.fin_contrato || '',
+      },
+    }));
+  };
+
+  const salvar = async (item) => {
+    const d = rascunho[item.id];
+    const attrs = {
+      ...(item.attributes || {}),
+      fin_telefone1: d.telefone1,
+      fin_telefone2: d.telefone2,
+      fin_valor: d.valor,
+      fin_vencimento: d.vencimento,
+      fin_contrato: d.contrato,
+    };
+    try {
+      await fetchOrThrow('/api/users/' + item.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: item.id, name: item.name || '-', email: item.email || item.name || 'sem@email.com', attributes: attrs }),
+      });
+      setItems((prev) => prev.map((u) => u.id === item.id ? { ...u, attributes: attrs } : u));
+      setEditando((e) => ({ ...e, [item.id]: false }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const loadItems = useCallback(async (offset, signal) => {
     const limit = offset === 0 ? 30 : pageSize;
@@ -78,6 +119,21 @@ const ClientesTab = () => {
 
   const headCell = { fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8, whiteSpace: 'nowrap' };
   const bodyCell = { py: 1.6, color: '#64748b', fontSize: '0.86rem' };
+  const formatarTelefone = (v) => {
+    const nums = (v || '').replace(/\D/g, '');
+    if (!nums) return '55';
+    return nums.startsWith('55') ? nums : '55' + nums;
+  };
+
+  const formatarValor = (v) => {
+    const nums = (v || '').replace(/[^\d]/g, '');
+    if (!nums) return '';
+    const n = parseInt(nums, 10);
+    const inteiros = Math.floor(n / 100);
+    const centavos = String(n % 100).padStart(2, '0');
+    return inteiros + ',' + centavos;
+  };
+
 
   return (
     <>
@@ -115,12 +171,48 @@ const ClientesTab = () => {
                             </Typography>
                           </Box>
                         </TableCell>
-                        <TableCell sx={bodyCell}>-</TableCell>
-                        <TableCell sx={bodyCell}>-</TableCell>
-                        <TableCell sx={bodyCell}>-</TableCell>
-                        <TableCell sx={bodyCell}>-</TableCell>
-                        <TableCell sx={bodyCell}>-</TableCell>
-                        <TableCell sx={{ py: 1.6, textAlign: 'right' }}>-</TableCell>
+                        <TableCell sx={bodyCell}>
+                          {editando[item.id] ? (
+                            <TextField size='small' value={rascunho[item.id]?.telefone1 || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], telefone1: formatarTelefone(e.target.value) } }))} />
+                          ) : (
+                            <span>{item.attributes?.fin_telefone1 || '-'}</span>
+                          )}
+                        </TableCell>
+                        <TableCell sx={bodyCell}>
+                          {editando[item.id] ? (
+                            <TextField size='small' value={rascunho[item.id]?.telefone2 || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], telefone2: formatarTelefone(e.target.value) } }))} />
+                          ) : (
+                            <span>{item.attributes?.fin_telefone2 || '-'}</span>
+                          )}
+                        </TableCell>
+                        <TableCell sx={bodyCell}>
+                          {editando[item.id] ? (
+                            <TextField size='small' placeholder='12,00' value={rascunho[item.id]?.valor || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], valor: formatarValor(e.target.value) } }))} />
+                          ) : (
+                            <span>{item.attributes?.fin_valor || '-'}</span>
+                          )}
+                        </TableCell>
+                        <TableCell sx={bodyCell}>
+                          {editando[item.id] ? (
+                            <TextField size='small' type='date' value={rascunho[item.id]?.vencimento || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], vencimento: e.target.value } }))} />
+                          ) : (
+                            <span>{item.attributes?.fin_vencimento || '-'}</span>
+                          )}
+                        </TableCell>
+                        <TableCell sx={bodyCell}>
+                          {editando[item.id] ? (
+                            <TextField size='small' value={rascunho[item.id]?.contrato || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], contrato: e.target.value } }))} />
+                          ) : (
+                            <span>{item.attributes?.fin_contrato || '-'}</span>
+                          )}
+                        </TableCell>
+                        <TableCell sx={{ py: 1.6, textAlign: 'right' }}>
+                          {editando[item.id] ? (
+                            <IconButton size='small' color='primary' onClick={() => salvar(item)}><SaveIcon fontSize='small' /></IconButton>
+                          ) : (
+                            <IconButton size='small' onClick={() => iniciarEdicao(item)}><EditIcon fontSize='small' /></IconButton>
+                          )}
+                        </TableCell>
                       </TableRow>
                     );
                   })}

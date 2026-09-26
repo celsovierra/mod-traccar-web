@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+﻿import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -22,6 +22,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import NavigationIcon from '@mui/icons-material/Navigation';
 import HistoryIcon from '@mui/icons-material/History';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useDeviceReadonly, useManager } from '../common/util/permissions';
 
@@ -230,6 +231,26 @@ const MainToolbar = ({
             {manager && (
               <IconButton
                 edge="end"
+                onClick={() => navigate('/settings/financeiro')}
+                sx={{
+                  color: '#ffffff',
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  ml: 1.5,
+                  transition: 'all 0.15s ease',
+                  width: 32,
+                  height: 32,
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 6px rgba(34, 197, 94, 0.35)',
+                  '&:hover': { background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', transform: 'scale(1.05)' },
+                }}
+              >
+                <AttachMoneyIcon fontSize="small" />
+              </IconButton>
+            )}
+
+            {manager && (
+              <IconButton
+                edge="end"
                 onClick={() => navigate('/settings/users')}
                 sx={{
                   color: '#ffffff',
@@ -252,7 +273,7 @@ const MainToolbar = ({
 
       {devicesOpen && (
         <Box className={classes.filterBar}>
-          <Tooltip title="Todos os ve�culos">
+          <Tooltip title="Todos os veï¿½culos">
             <Chip
               icon={<AllInclusiveIcon fontSize="small" className={classes.iconAll} />}
               label={totalCount}
@@ -291,7 +312,7 @@ const MainToolbar = ({
             />
           </Tooltip>
 
-          <Tooltip title="Em movimento (Igni��o ON e Vel > 0)">
+          <Tooltip title="Em movimento (Igniï¿½ï¿½o ON e Vel > 0)">
             <Chip
               icon={<NavigationIcon fontSize="small" className={classes.iconMoving} />}
               label={movingCount}
@@ -304,7 +325,7 @@ const MainToolbar = ({
             />
           </Tooltip>
 
-          <Tooltip title="Offline h� mais de 2 dias (do mais antigo para o mais recente)">
+          <Tooltip title="Offline hï¿½ mais de 2 dias (do mais antigo para o mais recente)">
             <Chip
               icon={<HistoryIcon fontSize="small" className={classes.iconHistory} />}
               label={oldOfflineCount}
