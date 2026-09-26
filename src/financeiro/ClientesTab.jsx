@@ -1,7 +1,11 @@
 ﻿import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { Table, TableRow, TableCell, TableHead, TableBody, Box, Paper, Typography, Avatar, TextField, IconButton } from '@mui/material';
+import { Table, TableRow, TableCell, TableHead, TableBody, Box, Paper, Typography, Avatar, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, MenuItem } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import EditIcon from '@mui/icons-material/Edit';
+import DescriptionIcon from '@mui/icons-material/Description';
+import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import { useAsyncTask, useScrollToLoad, pageSize } from '../reactHelper';
@@ -19,6 +23,59 @@ const ClientesTab = () => {
   const [hasMore, setHasMore] = useState(true);
   const [editando, setEditando] = useState({});
   const [rascunho, setRascunho] = useState({});
+  const [modalBaixa, setModalBaixa] = useState(null);
+  const [mesesBaixa, setMesesBaixa] = useState(1);
+  const [salvandoBaixa, setSalvandoBaixa] = useState(false);
+  const abrirBaixa = (item) => { setModalBaixa(item); setMesesBaixa(1); };
+  const calcNovoVencimento = (vencStr, meses) => {
+    if (!vencStr) return null;
+    const parts = vencStr.split('-');
+    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    d.setMonth(d.getMonth() + meses);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + dd;
+  };
+  const formatarDataBR = (iso) => {
+    if (!iso) return '-';
+    const parts = iso.split('-');
+    return parts[2] + '/' + parts[1] + '/' + parts[0];
+  };
+  const confirmarBaixa = async () => {
+    if (!modalBaixa) return;
+    setSalvandoBaixa(true);
+    try {
+      const vencAtual = modalBaixa.attributes?.fin_vencimento || '';
+      const novoVenc = calcNovoVencimento(vencAtual, mesesBaixa);
+      const attrs = { ...(modalBaixa.attributes || {}), fin_vencimento: novoVenc };
+      await fetchOrThrow('/api/users/' + modalBaixa.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: modalBaixa.id, name: modalBaixa.name || '-', email: modalBaixa.email || modalBaixa.name || 'sem@local', attributes: attrs }),
+      });
+      setItems((prev) => prev.map((u) => u.id === modalBaixa.id ? { ...u, attributes: attrs } : u));
+      setModalBaixa(null);
+    } catch (e) { console.error(e); alert('Erro ao salvar'); }
+    finally { setSalvandoBaixa(false); }
+  };
+  const valorTotal = (item, meses) => {
+    const v = (item.attributes?.fin_valor || '0').replace(',', '.');
+    const n = parseFloat(v) || 0;
+    return (n * meses).toFixed(2).replace('.', ',');
+  };
+
+  const salvarTudo = async () => {
+    try {
+      const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto };
+      await fetchOrThrow('/api/users/' + userId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: userId, name: userAttributes.name || '-', email: userAttributes.email || (userAttributes.name || 'sem') + '@local', attributes: attrs }),
+      });
+      alert('Salvo!')
+    } catch (e) { console.error(e); alert('Erro ao salvar'); }
+  };
 
   const iniciarEdicao = (item) => {
     setEditando((e) => ({ ...e, [item.id]: true }));
@@ -206,11 +263,17 @@ const ClientesTab = () => {
                             <span>{item.attributes?.fin_contrato || '-'}</span>
                           )}
                         </TableCell>
-                        <TableCell sx={{ py: 1.6, textAlign: 'right' }}>
+                        <TableCell sx={{ py: 1.6, textAlign: 'right', whiteSpace: 'nowrap' }}>
                           {editando[item.id] ? (
                             <IconButton size='small' color='primary' onClick={() => salvar(item)}><SaveIcon fontSize='small' /></IconButton>
                           ) : (
-                            <IconButton size='small' onClick={() => iniciarEdicao(item)}><EditIcon fontSize='small' /></IconButton>
+                            <>
+                              <IconButton size='small' onClick={() => {}} title='Cobrança'><DescriptionIcon fontSize='small' sx={{ color: '#f97316' }} /></IconButton>
+                              <IconButton size='small' onClick={() => {}} title='WhatsApp'><ChatBubbleIcon fontSize='small' sx={{ color: '#22c55e' }} /></IconButton>
+                              <IconButton size='small' onClick={() => abrirBaixa(item)} title='Confirmar Pagamento'><CheckCircleIcon fontSize='small' sx={{ color: '#3b82f6' }} /></IconButton>
+                              <IconButton size='small' onClick={() => iniciarEdicao(item)} title='Editar'><EditIcon fontSize='small' /></IconButton>
+                              <IconButton size='small' onClick={() => {}} title='Excluir'><DeleteIcon fontSize='small' sx={{ color: '#dc2626' }} /></IconButton>
+                            </>
                           )}
                         </TableCell>
                       </TableRow>
@@ -224,6 +287,26 @@ const ClientesTab = () => {
             </Box>
           </Paper>
         </Box>
+
+      <Dialog open={!!modalBaixa} onClose={() => setModalBaixa(null)} maxWidth='xs' fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: '1rem' }}>Baixa Manual - {modalBaixa?.name}</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontSize: '0.85rem', color: '#64748b', mb: 0.5 }}>Vencimento atual: {formatarDataBR(modalBaixa?.attributes?.fin_vencimento)}</Typography>
+          <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mt: 2, mb: 0.5 }}>Quantos meses dar baixa?</Typography>
+          <TextField select fullWidth size='small' value={mesesBaixa} onChange={(e) => setMesesBaixa(Number(e.target.value))}>
+            {[...Array(12)].map((_, i) => (
+              <MenuItem key={i+1} value={i+1}>{i+1} {i+1 === 1 ? 'mês' : 'meses'}</MenuItem>
+            ))}
+          </TextField>
+          <Typography sx={{ fontSize: '0.85rem', color: '#64748b', mt: 2 }}>Novo vencimento: <strong>{formatarDataBR(calcNovoVencimento(modalBaixa?.attributes?.fin_vencimento, mesesBaixa))}</strong></Typography>
+          <Typography sx={{ fontSize: '0.85rem', color: '#64748b', mt: 1 }}>Valor total da baixa: <strong>R$ {valorTotal(modalBaixa || {}, mesesBaixa)}</strong></Typography>
+          <Typography sx={{ fontSize: '0.78rem', color: '#94a3b8', mt: 2 }}>Após confirmar, um recibo será enviado via WhatsApp.</Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setModalBaixa(null)} sx={{ textTransform: 'none', color: '#475569' }}>Cancelar</Button>
+          <Button onClick={confirmarBaixa} disabled={salvandoBaixa} variant='contained' sx={{ textTransform: 'none', fontWeight: 700, backgroundColor: '#2563eb', borderRadius: '8px' }}>Confirmar Baixa</Button>
+        </DialogActions>
+      </Dialog>
       </Box>
     </>
   );

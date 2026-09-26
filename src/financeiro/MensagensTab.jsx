@@ -6,6 +6,8 @@ import EventIcon from '@mui/icons-material/Event';
 import WarningIcon from '@mui/icons-material/Warning';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const variaveis = [
   { label: '{nome}', cor: '#f97316', bg: '#ffedd5' },
@@ -31,6 +33,9 @@ const cards = [
 const MensagensTab = () => {
   const [abertos, setAbertos] = useState({});
   const [ativos, setAtivos] = useState({ 1: true, 2: true, 3: true, 4: true, 5: true });
+  const userId = useSelector((state) => state.session.user.id);
+  const userAttributes = useSelector((state) => state.session.user.attributes) || {};
+  const [reciboTexto, setReciboTexto] = useState(['✅ *Pagamento Confirmado!* ✅', '', '```RECIBO DE PAGAMENTO', '=======================', 'Cliente : {nome}', 'Serviço : Rastreamento', 'Período : {vencimento}', 'Valor   : R$ {valor}', 'Multa   : {multa}', 'Juros   : {juros}', 'Desconto: {desconto}', '', 'Valor Total : {valor_atualizado}', '=======================', 'Pago em : {data_hoje}', 'Status  : ✅PAGO✅', 'Próx Venc: {prox_vencimento}', '=======================```'].join('\n'));
   const toggleAberto = (id) => setAbertos((a) => ({ ...a, [id]: !a[id] }));
   const toggleAtivo = (id) => setAtivos((a) => ({ ...a, [id]: !a[id] }));
   const iconePorTipo = (tipo) => {
@@ -38,6 +43,18 @@ const MensagensTab = () => {
     if (tipo === 'warn') return <WarningIcon sx={{ fontSize: 20 }} />;
     if (tipo === 'receipt') return <ReceiptIcon sx={{ fontSize: 20 }} />;
     return <NotificationsIcon sx={{ fontSize: 20 }} />;
+  };
+
+  const salvarTudo = async () => {
+    try {
+      const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto };
+      await fetchOrThrow('/api/users/' + userId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: userId, name: userAttributes.name || '-', email: userAttributes.email || (userAttributes.name || 'sem') + '@local', attributes: attrs }),
+      });
+      alert('Salvo!')
+    } catch (e) { console.error(e); alert('Erro ao salvar'); }
   };
 
   return (
@@ -96,17 +113,18 @@ const MensagensTab = () => {
                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', pt: 1, borderTop: '1px solid #cbd5e1' }}>Total: R$ 102,00</Typography>
                   </Box>
                 </Box>
-              ) : (
+              ) : c.id === 5 ? (
                 <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
-                  <Typography sx={{ fontSize: '0.85rem', color: '#94a3b8' }}>Configurações em breve...</Typography>
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
+                  <TextField fullWidth multiline minRows={12} value={reciboTexto} onChange={(e) => setReciboTexto(e.target.value)} sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace', fontSize: '0.82rem' } }} />
                 </Box>
-              )}
+              ) : null}
             </Collapse>
           </Paper>
         ))}
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-        <Button variant='contained' sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '10px', backgroundColor: '#2563eb' }}>
+        <Button variant='contained' onClick={salvarTudo} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '10px', backgroundColor: '#2563eb' }}>
           Salvar Tudo
         </Button>
       </Box>
