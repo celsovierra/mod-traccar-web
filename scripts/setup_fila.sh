@@ -18,14 +18,15 @@ else
   echo "   pymysql ja instalado."
 fi
 
-echo ">> [FILA] Criando tabela tc_fila_financeiro..."
-mysql -u root -p"Traccar@2026#Sec" traccar < /opt/traccar/scripts/sql_fila.sql 2>/dev/null || true
 
 echo ">> [FILA] Copiando scripts..."
 mkdir -p /opt/traccar/scripts
 cp "$(dirname "$0")/fila_financeiro.py" /opt/traccar/scripts/fila_financeiro.py
 cp "$(dirname "$0")/sql_fila.sql" /opt/traccar/scripts/sql_fila.sql
 chmod +x /opt/traccar/scripts/fila_financeiro.py
+
+echo ">> [FILA] Criando tabela tc_fila_financeiro..."
+mysql -u root -p"Traccar@2026#Sec" traccar < /opt/traccar/scripts/sql_fila.sql 2>/dev/null || true
 
 echo ">> [FILA] Registrando cron jobs..."
 CRON_LINHAS=$(cat <<CRONEOF
