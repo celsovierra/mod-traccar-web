@@ -13,7 +13,7 @@ except ImportError:
 
 DB = {
     "host": "127.0.0.1",
-    "user": "root",
+    "user": "traccar_user",
     "password": "Traccar@2026#Sec",
     "database": "traccar",
     "charset": "utf8mb4",
@@ -77,10 +77,6 @@ def povoar():
         conn.commit()
         print("Fila povoada: %d clientes" % inseridos)
     conn.close()
-        cur.execute("DELETE FROM tc_fila_financeiro")
-        conn.commit()
-    conn.close()
-    print("Fila limpa")
 
 def get_intervalo_segundos():
     conn = conectar()

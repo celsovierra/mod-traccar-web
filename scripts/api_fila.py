@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 DB = {
     "host": "127.0.0.1",
-    "user": "root",
+    "user": "traccar_user",
     "password": "Traccar@2026#Sec",
     "database": "traccar",
     "charset": "utf8mb4",
