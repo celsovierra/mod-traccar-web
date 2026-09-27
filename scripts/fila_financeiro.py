@@ -136,7 +136,7 @@ def enviar_whatsapp(url, key, instance, numero, texto):
         method="POST",
     )
     with urllib.request.urlopen(req, timeout=30) as r:
-        return r.status == 200
+        return r.status in (200, 201)
 
 def montar_texto(texto, item):
     venc_str = item["vencimento"].strftime("%d/%m/%Y") if item["vencimento"] else ""
