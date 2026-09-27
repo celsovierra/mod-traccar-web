@@ -30,7 +30,51 @@ const ClientesTab = () => {
   const [modalBaixa, setModalBaixa] = useState(null);
   const [mesesBaixa, setMesesBaixa] = useState(1);
   const [salvandoBaixa, setSalvandoBaixa] = useState(false);
+  const [aviso, setAviso] = useState(null);
+
+  const [enviandoCobranca, setEnviandoCobranca] = useState(false);
   const abrirBaixa = (item) => { setModalBaixa(item); setMesesBaixa(1); };
+  const mostrarAviso = (msg, ok) => { setAviso({ msg, ok }); setTimeout(() => setAviso(null), 3000); };
+  const abrirCobranca = async (item) => {
+    const tel1 = item.attributes?.fin_telefone1;
+    const tel2 = item.attributes?.fin_telefone2;
+    if (!tel1 && !tel2) { alert('Cliente sem telefone cadastrado'); return; }
+    const vencStr = item.attributes?.fin_vencimento;
+    if (!vencStr) { alert('Cliente sem vencimento cadastrado'); return; }
+    const parts = vencStr.split('-');
+    const venc = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const diff = Math.round((venc - hoje) / 86400000);
+    const adm = userAttributes || {};
+    const diasAntes = parseInt(adm.fin_msg_lembrete_dias || '3', 10);
+    let tipo = 'Atraso';
+    let tpl = adm.fin_msg_atraso;
+    if (diff === 0) { tipo = 'Vencimento'; tpl = adm.fin_msg_vencimento; }
+    else if (diff === diasAntes) { tipo = 'Lembrete'; tpl = adm.fin_msg_lembrete; }
+    if (!tpl) { alert('Template de mensagem nao configurado para ' + tipo); return; }
+    const valor = (item.attributes?.fin_valor || '0');
+    const vencBR = String(parts[2]).padStart(2,'0') + '/' + String(parts[1]).padStart(2,'0') + '/' + parts[0];
+    let texto = tpl;
+    texto = texto.split('{nome}').join(item.name || '');
+    texto = texto.split('{vencimento}').join(vencBR);
+    texto = texto.split('{valor}').join(valor);
+    const evoUrl = adm.fin_evo_url, evoKey = adm.fin_evo_key, evoInst = adm.fin_evo_instance;
+    if (!evoUrl || !evoKey || !evoInst) { alert('Evolution API nao configurada'); return; }
+    const nums = [tel1, tel2].filter(Boolean);
+    let enviados = 0;
+    for (let i = 0; i < nums.length; i++) {
+      try {
+        const r = await fetch(evoUrl.replace(/\/$/, '') + '/message/sendText/' + evoInst, {
+          method: 'POST',
+          headers: { apikey: evoKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ number: nums[i], text: texto }),
+        });
+        if (r.ok) enviados++;
+      } catch (e) { console.error('Falha', nums[i], e); }
+    }
+    if (enviados > 0) mostrarAviso('Mensagem enviada com sucesso', true);
+    else mostrarAviso('Erro ao enviar: nenhum numero recebeu', false);
+  };
   const calcNovoVencimento = (vencStr, meses) => {
     if (!vencStr) return null;
     const parts = vencStr.split('-');
@@ -100,6 +144,7 @@ const ClientesTab = () => {
         }
       }
       setModalBaixa(null);
+      mostrarAviso('Baixa enviada com sucesso', true);
     } catch (e) { console.error(e); }
     finally { setSalvandoBaixa(false); }
   };
@@ -308,7 +353,7 @@ const ClientesTab = () => {
                           ) : (
                             <>
                               <IconButton size='small' onClick={() => {}} title='Cobrança'><DescriptionIcon fontSize='small' sx={{ color: '#f97316' }} /></IconButton>
-                              <IconButton size='small' onClick={() => {}} title='WhatsApp'><ChatBubbleIcon fontSize='small' sx={{ color: '#22c55e' }} /></IconButton>
+                              <IconButton size='small' onClick={() => abrirCobranca(item)} title='WhatsApp'><ChatBubbleIcon fontSize='small' sx={{ color: '#22c55e' }} /></IconButton>
                               <IconButton size='small' onClick={() => abrirBaixa(item)} title='Confirmar Pagamento'><CheckCircleIcon fontSize='small' sx={{ color: '#3b82f6' }} /></IconButton>
                               <IconButton size='small' onClick={() => iniciarEdicao(item)} title='Editar'><EditIcon fontSize='small' /></IconButton>
                               <IconButton size='small' onClick={() => {}} title='Excluir'><DeleteIcon fontSize='small' sx={{ color: '#dc2626' }} /></IconButton>
@@ -346,7 +391,11 @@ const ClientesTab = () => {
           <Button onClick={confirmarBaixa} disabled={salvandoBaixa} variant='contained' sx={{ textTransform: 'none', fontWeight: 700, backgroundColor: '#2563eb', borderRadius: '8px' }}>Confirmar Baixa</Button>
         </DialogActions>
       </Dialog>
-      </Box>
+      {aviso && (
+        <Box sx={{ position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 9999, px: 4, py: 2, borderRadius: 2, backgroundColor: aviso.ok ? '#22c55e' : '#dc2626', color: '#fff', fontWeight: 700, fontSize: '1rem', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
+          {aviso.msg}
+        </Box>
+      )}      </Box>
     </>
   );
 };
