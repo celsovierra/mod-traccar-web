@@ -36,11 +36,13 @@ const MensagensTab = () => {
   const user = useSelector((state) => state.session.user);
   const userId = user.id;
   const userAttributes = useSelector((state) => state.session.user.attributes) || {};
+  const [vencimentoHora, setVencimentoHora] = useState(userAttributes.fin_msg_vencimento_hora || '08:30');
+const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_vencimento || 'Olá *{nome}*!' + String.fromCharCode(10) + String.fromCharCode(10) + 'Sua mensalidade está disponível para pagamento.' + String.fromCharCode(10) + String.fromCharCode(10) + '🗓 Vencimento: {vencimento}' + String.fromCharCode(10) + '💰 Valor: R$ {valor}' + String.fromCharCode(10) + String.fromCharCode(10) + 'PIX Copia e Cola:' + String.fromCharCode(10) + '{pix_copia_cola}' + String.fromCharCode(10) + String.fromCharCode(10) + 'Após o vencimento será cobrado juros.' + String.fromCharCode(10) + String.fromCharCode(10) + '_O pagamento é confirmado automaticamente._');
   const [lembreteDias, setLembreteDias] = useState(userAttributes.fin_msg_lembrete_dias || '3');
   const [lembreteHora, setLembreteHora] = useState(userAttributes.fin_msg_lembrete_hora || '13:00');
   const [lembreteTexto, setLembreteTexto] = useState(userAttributes.fin_msg_lembrete || '🚨 Olá *{nome}*, tudo bem?`nBom dia, aqui é um lembrete que sua fatura já está disponível.`n`n🗓 *Vencimento:* {vencimento}`n💰 *Valor:* R$ {valor}`n💸 *Desconto:* {desconto}`n`nPIX Copia e Cola:`n{pix_copia_cola}`n`nApós vencimento será cobrado juros pela operadora.`n`n_O pagamento é confirmado automaticamente. Você receberá o recibo em seguida, sem precisar enviar comprovante._');
   const [reciboTexto, setReciboTexto] = useState(['✅ *Pagamento Confirmado!* ✅', '', '```RECIBO DE PAGAMENTO', '=======================', 'Cliente : {nome}', 'Serviço : Rastreamento', 'Período : {vencimento}', 'Valor   : R$ {valor}', 'Multa   : {multa}', 'Juros   : {juros}', 'Desconto: {desconto}', '', 'Valor Total : {valor_atualizado}', '=======================', 'Pago em : {data_hoje}', 'Status  : ✅PAGO✅', 'Próx Venc: {prox_vencimento}', '=======================```'].join('\n'));
-  const toggleAberto = (id) => setAbertos((a) => ({ ...a, [id]: !a[id] }));
+  const toggleAberto = (id) => setAbertos((a) => a[id] ? {} : { [id]: true });
   const toggleAtivo = (id) => setAtivos((a) => ({ ...a, [id]: !a[id] }));
   const iconePorTipo = (tipo) => {
     if (tipo === 'event') return <EventIcon sx={{ fontSize: 20 }} />;
@@ -56,7 +58,7 @@ const MensagensTab = () => {
 
   const salvarTudo = async () => {
     try {
-      const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto, fin_msg_lembrete: lembreteTexto, fin_msg_lembrete_dias: lembreteDias, fin_msg_lembrete_hora: lembreteHora };
+      const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto, fin_msg_lembrete: lembreteTexto, fin_msg_lembrete_dias: lembreteDias, fin_msg_lembrete_hora: lembreteHora, fin_msg_vencimento: vencimentoTexto, fin_msg_vencimento_hora: vencimentoHora };
       await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -136,23 +138,23 @@ const MensagensTab = () => {
                     </Box>
                   </Box>
                   <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
-                  <Box sx={{ p: 2, backgroundColor: '#e5ddd5', borderRadius: '24px', width: '100%', maxWidth: '380px', minHeight: '500px', mx: 'auto', display: 'flex', flexDirection: 'column' }}>
-                      <Box sx={{ backgroundColor: '#dcf8c6', borderRadius: '8px 8px 8px 0', p: 1.5, width: '100%', flex: 1, display: 'flex', flexDirection: 'column', boxShadow: '0 1px 1px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' }}>
-                        <TextField fullWidth multiline minRows={20} value={lembreteTexto} onChange={(e) => setLembreteTexto(e.target.value)} variant='standard' InputProps={{ disableUnderline: true }} sx={{ '& .MuiInputBase-input': { fontSize: '0.82rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#111' } }} />
-                        <Typography sx={{ fontSize: '0.65rem', color: '#667781', textAlign: 'right', mt: 0.5 }}>13:00 ✓✓</Typography>
-                      </Box>
-                    </Box>
+                  <textarea value={lembreteTexto} onChange={(e) => { setLembreteTexto(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} style={{ width: '100%', minHeight: '220px', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontFamily: 'inherit', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }} />
+                </Box>
+              ) : c.id === 3 ? (
+                <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Horário de envio</Typography>
+                    <TextField fullWidth size='small' type='time' value={vencimentoHora} onChange={(e) => setVencimentoHora(e.target.value)} sx={{ maxWidth: 300 }} />
+                    <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8', mt: 0.5 }}>As mensagens serão enviadas a partir deste horário, em lotes graduais.</Typography>
+                  </Box>
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
+                  <textarea value={vencimentoTexto} onChange={(e) => { setVencimentoTexto(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} style={{ width: '100%', minHeight: '220px', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontFamily: 'inherit', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }} />
                 </Box>
               ) : c.id === 5 ? (
                 <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
                   <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
-                  <Box sx={{ p: 2, backgroundColor: '#e5ddd5', borderRadius: '24px', width: '100%', maxWidth: '380px', minHeight: '500px', mx: 'auto', display: 'flex', flexDirection: 'column' }}>
-                      <Box sx={{ backgroundColor: '#dcf8c6', borderRadius: '8px 8px 8px 0', p: 1.5, width: '100%', flex: 1, display: 'flex', flexDirection: 'column', boxShadow: '0 1px 1px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' }}>
-                        <TextField fullWidth multiline value={reciboTexto} onChange={(e) => setReciboTexto(e.target.value)} variant='standard' InputProps={{ disableUnderline: true }} sx={{ flex: 1, display: 'flex', flexDirection: 'column', '& .MuiInputBase-root': { alignItems: 'flex-start', flex: 1, height: '100%' }, '& .MuiInputBase-input': { fontSize: '0.82rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#111', fontFamily: 'inherit', height: '100% !important', overflowY: 'auto !important' } }} />
-                        <Typography sx={{ fontSize: '0.65rem', color: '#667781', textAlign: 'right', mt: 0.5 }}>13:00 ✓✓</Typography>
-                      </Box>
-                    </Box>
-                  </Box>
+                  <textarea value={reciboTexto} onChange={(e) => { setReciboTexto(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} style={{ width: '100%', minHeight: '220px', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontFamily: 'inherit', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }} />
+                </Box>
               ) : null}
             </Collapse>
           </Paper>
@@ -168,4 +170,3 @@ const MensagensTab = () => {
 };
 
 export default MensagensTab;
-
