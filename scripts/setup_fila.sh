@@ -5,7 +5,7 @@ echo ">> [FILA] Verificando Python3..."
 if ! command -v python3 >/dev/null 2>&1; then
   echo "   Instalando Python3..."
   apt-get update -qq
-  apt-get install -y python3 python3-pip
+  apt-get install -y python3 python3-pip python3-venv
 else
   echo "   Python3 ja instalado ($(python3 --version))."
 fi
@@ -13,7 +13,7 @@ fi
 echo ">> [FILA] Verificando pymysql..."
 if ! python3 -c "import pymysql" 2>/dev/null; then
   echo "   Instalando pymysql..."
-  pip3 install --break-system-packages pymysql 2>/dev/null || pip3 install pymysql
+  apt-get install -y python3-pip python3-pymysql 2>/dev/null || (python3 -m ensurepip --upgrade && python3 -m pip install --break-system-packages pymysql)
 else
   echo "   pymysql ja instalado."
 fi
@@ -43,7 +43,7 @@ echo ">> [FILA] Setup concluido!"
 echo ">> [FILA] Verificando Flask..."
 if ! python3 -c "import flask" 2>/dev/null; then
   echo "   Instalando Flask..."
-  pip3 install --break-system-packages flask 2>/dev/null || pip3 install flask
+  apt-get install -y python3-flask 2>/dev/null || python3 -m pip install --break-system-packages flask
 else
   echo "   Flask ja instalado."
 fi
