@@ -137,7 +137,7 @@ const MensagensTab = () => {
                   </Box>
                   <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
                   <Box sx={{ p: 2, backgroundColor: '#e5ddd5', borderRadius: '24px', width: '100%', maxWidth: '380px', minHeight: '500px', mx: 'auto' }}>
-                      <Box sx={{ backgroundColor: '#dcf8c6', borderRadius: '8px 8px 8px 0', p: 1.5, maxWidth: '85%', boxShadow: '0 1px 1px rgba(0,0,0,0.1)' }}>
+                      <Box sx={{ backgroundColor: '#dcf8c6', borderRadius: '8px 8px 8px 0', p: 1.5, width: '100%', height: '100%', boxShadow: '0 1px 1px rgba(0,0,0,0.1)' }}>
                         <TextField fullWidth multiline minRows={6} value={lembreteTexto} onChange={(e) => setLembreteTexto(e.target.value)} variant='standard' InputProps={{ disableUnderline: true }} sx={{ '& .MuiInputBase-input': { fontSize: '0.82rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#111' } }} />
                         <Typography sx={{ fontSize: '0.65rem', color: '#667781', textAlign: 'right', mt: 0.5 }}>13:00 ✓✓</Typography>
                       </Box>
@@ -147,7 +147,7 @@ const MensagensTab = () => {
                 <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
                   <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
                   <Box sx={{ p: 2, backgroundColor: '#e5ddd5', borderRadius: '24px', width: '100%', maxWidth: '380px', height: '500px', overflowY: 'auto', mx: 'auto' }}>
-                      <Box sx={{ backgroundColor: '#dcf8c6', borderRadius: '8px 8px 8px 0', p: 1.5, maxWidth: '85%', boxShadow: '0 1px 1px rgba(0,0,0,0.1)' }}>
+                      <Box sx={{ backgroundColor: '#dcf8c6', borderRadius: '8px 8px 8px 0', p: 1.5, width: '100%', height: '100%', boxShadow: '0 1px 1px rgba(0,0,0,0.1)' }}>
                         <TextField fullWidth multiline rows={16} value={reciboTexto} onChange={(e) => setReciboTexto(e.target.value)} variant='standard' InputProps={{ disableUnderline: true }} sx={{ '& .MuiInputBase-root': { alignItems: 'flex-start', height: '100%' }, '& .MuiInputBase-input': { fontSize: '0.82rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#111', fontFamily: 'inherit', height: '100% !important', overflowY: 'auto !important' } }} />
                         <Typography sx={{ fontSize: '0.65rem', color: '#667781', textAlign: 'right', mt: 0.5 }}>13:00 ✓✓</Typography>
                       </Box>
