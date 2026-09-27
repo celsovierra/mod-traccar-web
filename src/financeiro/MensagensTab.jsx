@@ -36,6 +36,9 @@ const MensagensTab = () => {
   const user = useSelector((state) => state.session.user);
   const userId = user.id;
   const userAttributes = useSelector((state) => state.session.user.attributes) || {};
+  const [lembreteDias, setLembreteDias] = useState(userAttributes.fin_msg_lembrete_dias || '3');
+  const [lembreteHora, setLembreteHora] = useState(userAttributes.fin_msg_lembrete_hora || '13:00');
+  const [lembreteTexto, setLembreteTexto] = useState(userAttributes.fin_msg_lembrete || '🚨 Olá *{nome}*, tudo bem?`nBom dia, aqui é um lembrete que sua fatura já está disponível.`n`n🗓 *Vencimento:* {vencimento}`n💰 *Valor:* R$ {valor}`n💸 *Desconto:* {desconto}`n`nPIX Copia e Cola:`n{pix_copia_cola}`n`nApós vencimento será cobrado juros pela operadora.`n`n_O pagamento é confirmado automaticamente. Você receberá o recibo em seguida, sem precisar enviar comprovante._');
   const [reciboTexto, setReciboTexto] = useState(['✅ *Pagamento Confirmado!* ✅', '', '```RECIBO DE PAGAMENTO', '=======================', 'Cliente : {nome}', 'Serviço : Rastreamento', 'Período : {vencimento}', 'Valor   : R$ {valor}', 'Multa   : {multa}', 'Juros   : {juros}', 'Desconto: {desconto}', '', 'Valor Total : {valor_atualizado}', '=======================', 'Pago em : {data_hoje}', 'Status  : ✅PAGO✅', 'Próx Venc: {prox_vencimento}', '=======================```'].join('\n'));
   const toggleAberto = (id) => setAbertos((a) => ({ ...a, [id]: !a[id] }));
   const toggleAtivo = (id) => setAtivos((a) => ({ ...a, [id]: !a[id] }));
@@ -48,7 +51,7 @@ const MensagensTab = () => {
 
   const salvarTudo = async () => {
     try {
-      const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto };
+      const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto, fin_msg_lembrete: lembreteTexto, fin_msg_lembrete_dias: lembreteDias, fin_msg_lembrete_hora: lembreteHora };
       await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -113,6 +116,22 @@ const MensagensTab = () => {
                     <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Juros (R$ 0,10/dia x 10d): + R$ 1,00</Typography>
                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', pt: 1, borderTop: '1px solid #cbd5e1' }}>Total: R$ 102,00</Typography>
                   </Box>
+                </Box>
+              ) : c.id === 2 ? (
+                <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+                    <Box>
+                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Dias antes do vencimento</Typography>
+                      <TextField fullWidth size='small' type='number' value={lembreteDias} onChange={(e) => setLembreteDias(e.target.value)} />
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Horário de envio</Typography>
+                      <TextField fullWidth size='small' type='time' value={lembreteHora} onChange={(e) => setLembreteHora(e.target.value)} />
+                      <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8', mt: 0.5 }}>As mensagens serão enviadas a partir deste horário, em lotes graduais.</Typography>
+                    </Box>
+                  </Box>
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
+                  <TextField fullWidth multiline minRows={10} value={lembreteTexto} onChange={(e) => setLembreteTexto(e.target.value)} sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace', fontSize: '0.82rem' } }} />
                 </Box>
               ) : c.id === 5 ? (
                 <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
