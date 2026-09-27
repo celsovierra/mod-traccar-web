@@ -62,7 +62,7 @@ const ClientesTab = () => {
       await fetchOrThrow('/api/users/' + modalBaixa.id, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: modalBaixa.id, name: modalBaixa.name || '-', email: modalBaixa.email || 'sem@local', attributes: attrs }),
+        body: JSON.stringify({ id: modalBaixa.id, name: modalBaixa.name || '-', email: modalBaixa.email || 'sem@local', attributes: attrs , administrator: modalBaixa.administrator, masteruser: modalBaixa.masteruser }),
       });
       setItems((prev) => prev.map((u) => u.id === modalBaixa.id ? { ...u, attributes: attrs } : u));
       const adm = userAttributes || {};
@@ -110,7 +110,7 @@ const ClientesTab = () => {
       await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: userId, name: user.name || '-', email: user.email || 'sem@local', attributes: attrs }),
+        body: JSON.stringify({ id: userId, name: user.name || '-', email: user.email || 'sem@local', attributes: attrs , administrator: user.administrator, masteruser: user.masteruser }),
       });
       alert('Salvo!')
     } catch (e) { console.error(e); alert('Erro ao salvar'); }
@@ -144,7 +144,7 @@ const ClientesTab = () => {
       await fetchOrThrow('/api/users/' + item.id, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: item.id, name: item.name || '-', email: item.email || item.name || 'sem@email.com', attributes: attrs }),
+        body: JSON.stringify({ id: item.id, name: item.name || '-', email: item.email || item.name || 'sem@email.com', attributes: attrs , administrator: user.administrator, masteruser: user.masteruser }),
       });
       setItems((prev) => prev.map((u) => u.id === item.id ? { ...u, attributes: attrs } : u));
       setEditando((e) => ({ ...e, [item.id]: false }));

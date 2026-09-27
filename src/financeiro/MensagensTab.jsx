@@ -37,6 +37,9 @@ const MensagensTab = () => {
   const userId = user.id;
   const userAttributes = useSelector((state) => state.session.user.attributes) || {};
   const [vencimentoHora, setVencimentoHora] = useState(userAttributes.fin_msg_vencimento_hora || '08:30');
+  const [atrasoDias, setAtrasoDias] = useState(userAttributes.fin_msg_atraso_dias || '1');
+  const [atrasoHora, setAtrasoHora] = useState(userAttributes.fin_msg_atraso_hora || '09:00');
+  const [atrasoTexto, setAtrasoTexto] = useState(userAttributes.fin_msg_atraso || 'Olá *{nome}*!' + String.fromCharCode(10) + String.fromCharCode(10) + 'Identificamos que sua mensalidade está em atraso.' + String.fromCharCode(10) + String.fromCharCode(10) + '📅 *Vencimento original:* {vencimento}' + String.fromCharCode(10) + '💵 *Valor mensal:* R$ {valor}' + String.fromCharCode(10) + '📊 *Multa:* {multa}' + String.fromCharCode(10) + '📈 *Juros:* {juros}' + String.fromCharCode(10) + '💰 *Total a pagar: {valor_atualizado}*' + String.fromCharCode(10) + String.fromCharCode(10) + 'Regularize agora pelo PIX:' + String.fromCharCode(10) + String.fromCharCode(10) + '{pix_copia_cola}' + String.fromCharCode(10) + String.fromCharCode(10) + '_Evite o bloqueio dos serviços._');
 const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_vencimento || 'Olá *{nome}*!' + String.fromCharCode(10) + String.fromCharCode(10) + 'Sua mensalidade está disponível para pagamento.' + String.fromCharCode(10) + String.fromCharCode(10) + '🗓 Vencimento: {vencimento}' + String.fromCharCode(10) + '💰 Valor: R$ {valor}' + String.fromCharCode(10) + String.fromCharCode(10) + 'PIX Copia e Cola:' + String.fromCharCode(10) + '{pix_copia_cola}' + String.fromCharCode(10) + String.fromCharCode(10) + 'Após o vencimento será cobrado juros.' + String.fromCharCode(10) + String.fromCharCode(10) + '_O pagamento é confirmado automaticamente._');
   const [lembreteDias, setLembreteDias] = useState(userAttributes.fin_msg_lembrete_dias || '3');
   const [lembreteHora, setLembreteHora] = useState(userAttributes.fin_msg_lembrete_hora || '13:00');
@@ -58,11 +61,11 @@ const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_ve
 
   const salvarTudo = async () => {
     try {
-      const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto, fin_msg_lembrete: lembreteTexto, fin_msg_lembrete_dias: lembreteDias, fin_msg_lembrete_hora: lembreteHora, fin_msg_vencimento: vencimentoTexto, fin_msg_vencimento_hora: vencimentoHora };
+      const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto, fin_msg_lembrete: lembreteTexto, fin_msg_lembrete_dias: lembreteDias, fin_msg_lembrete_hora: lembreteHora, fin_msg_vencimento: vencimentoTexto, fin_msg_vencimento_hora: vencimentoHora, fin_msg_atraso: atrasoTexto, fin_msg_atraso_dias: atrasoDias, fin_msg_atraso_hora: atrasoHora };
       await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: userId, name: user.name || '-', email: user.email || 'sem@local', attributes: attrs }),
+        body: JSON.stringify({ id: userId, name: user.name || '-', email: user.email || 'sem@local', attributes: attrs , administrator: user.administrator, masteruser: user.masteruser }),
       });
       alert('Salvo!')
     } catch (e) { console.error(e); alert('Erro ao salvar'); }
@@ -149,6 +152,22 @@ const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_ve
                   </Box>
                   <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
                   <textarea value={vencimentoTexto} onChange={(e) => { setVencimentoTexto(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} style={{ width: '100%', minHeight: '220px', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontFamily: 'inherit', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }} />
+                </Box>
+              ) : c.id === 4 ? (
+                <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+                    <Box>
+                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Cobrar a cada (dias)</Typography>
+                      <TextField fullWidth size='small' type='number' value={atrasoDias} onChange={(e) => setAtrasoDias(e.target.value)} />
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Horário de envio</Typography>
+                      <TextField fullWidth size='small' type='time' value={atrasoHora} onChange={(e) => setAtrasoHora(e.target.value)} />
+                      <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8', mt: 0.5 }}>As mensagens serão enviadas a partir deste horário, em lotes graduais.</Typography>
+                    </Box>
+                  </Box>
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
+                  <textarea value={atrasoTexto} onChange={(e) => { setAtrasoTexto(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} style={{ width: '100%', minHeight: '220px', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontFamily: 'inherit', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }} />
                 </Box>
               ) : c.id === 5 ? (
                 <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>

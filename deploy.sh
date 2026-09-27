@@ -277,6 +277,14 @@ fi
 
 
 
+
+echo ">> Configurando sistema de fila financeira..."
+if [ -f ./scripts/setup_fila.sh ]; then
+  bash ./scripts/setup_fila.sh
+else
+  echo "   scripts/setup_fila.sh nao encontrado, ignorando."
+fi
+
 echo ">> Garantindo senha padrao do MySQL..."
 XML="/opt/traccar/conf/traccar.xml"
 if [ -f "$XML" ]; then
