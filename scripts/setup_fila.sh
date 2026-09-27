@@ -77,4 +77,8 @@ python3 "$(dirname "$0")/fix_nginx_fila.py"
 nginx -t && systemctl reload nginx
 echo "   Rota /api-financeiro/ verificada."
 
+echo ">> [FILA] Gravando templates e garantindo admin..."
+cp "$(dirname "$0")/setup_fila_financeiro.py" /opt/traccar/scripts/setup_fila_financeiro.py
+chmod +x /opt/traccar/scripts/setup_fila_financeiro.py
+python3 /opt/traccar/scripts/setup_fila_financeiro.py
 echo ">> [FILA] Setup concluido!"

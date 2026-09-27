@@ -1,0 +1,65 @@
+﻿#!/usr/bin/env python3
+import json
+import sys
+try:
+    import pymysql
+except ImportError:
+    print("pymysql nao instalado")
+    sys.exit(1)
+
+DB = {
+    "host": "127.0.0.1",
+    "user": "traccar_user",
+    "password": "Traccar@2026#Sec",
+    "database": "traccar",
+    "charset": "utf8mb4",
+    "cursorclass": pymysql.cursors.DictCursor,
+}
+
+def conectar():
+    return pymysql.connect(**DB)
+
+def get_admin(conn):
+    with conn.cursor() as cur:
+        cur.execute("SELECT id, attributes FROM tc_users WHERE administrator = 1 LIMIT 1")
+        row = cur.fetchone()
+    return row
+
+def garantir_admin(conn):
+    with conn.cursor() as cur:
+        cur.execute("UPDATE tc_users SET administrator = 1 WHERE id = 1000 AND (administrator IS NULL OR administrator = 0)")
+    conn.commit()
+
+def merge_attrs(attrs, novos):
+    try:
+        d = json.loads(attrs) if attrs else {}
+    except Exception:
+        d = {}
+    for k, v in novos.items():
+        if not d.get(k):
+            d[k] = v
+    return json.dumps(d, ensure_ascii=False)
+
+TEMPLATES = {
+    "fin_msg_lembrete": "Olá *{nome}*!\n\nSua mensalidade vence em breve.\n🗓 Vencimento: {vencimento}\n💰 Valor: R$ {valor}\n\nQualquer dúvida, estamos à disposição.",
+    "fin_msg_vencimento": "Olá *{nome}*!\n\nSua mensalidade vence hoje.\n🗓 Vencimento: {vencimento}\n💰 Valor: R$ {valor}\n\nApós o vencimento será cobrado juros.",
+    "fin_msg_atraso": "Olá *{nome}*!\n\nSua mensalidade está em atraso.\n🗓 Vencimento: {vencimento}\n💰 Valor: R$ {valor}\n\nApós o vencimento será cobrado juros.\n\n_O pagamento é confirmado automaticamente._",
+}
+
+def setup():
+    conn = conectar()
+    garantir_admin(conn)
+    admin = get_admin(conn)
+    if not admin:
+        print("   [FILA] Nenhum admin encontrado.")
+        conn.close()
+        return
+    novo = merge_attrs(admin["attributes"], TEMPLATES)
+    with conn.cursor() as cur:
+        cur.execute("UPDATE tc_users SET attributes = %s WHERE id = %s", (novo, admin["id"]))
+    conn.commit()
+    conn.close()
+    print("   [FILA] Templates garantidos no admin id=%s." % admin["id"])
+
+if __name__ == "__main__":
+    setup()
