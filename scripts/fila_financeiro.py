@@ -82,18 +82,18 @@ def get_intervalo_segundos():
     conn = conectar()
     try:
         with conn.cursor() as cur:
-            cur.execute(\"SELECT attributes FROM tc_users WHERE administrator = 1 AND attributes LIKE %s LIMIT 1\", (\"%fin_fila_intervalo%\",))
+            cur.execute("SELECT attributes FROM tc_users WHERE administrator = 1 AND attributes LIKE %s LIMIT 1", ("%fin_fila_intervalo%",))
             row = cur.fetchone()
         if not row:
             return 10
-        v = get_attr(row[\"attributes\"], \"fin_fila_intervalo\") or \"10s\"
+        v = get_attr(row["attributes"], "fin_fila_intervalo") or "10s"
         import re
-        m = re.match(r\"^(\d+)([smh])$\", v)
+        m = re.match(r"^(\d+)([smh])$", v)
         if not m:
             return 10
         n = int(m.group(1))
         u = m.group(2)
-        return n if u == \"s\" else (n * 60 if u == \"m\" else n * 3600)
+        return n if u == "s" else (n * 60 if u == "m" else n * 3600)
     finally:
         conn.close()
 
