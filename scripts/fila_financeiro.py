@@ -77,42 +77,66 @@ def povoar():
         print("Fila povoada: %d clientes" % inseridos)
     conn.close()
 
-def povoar():
+def limpar():
     conn = conectar()
     with conn.cursor() as cur:
-        cur.execute("SELECT id, name, attributes FROM tc_users WHERE attributes IS NOT NULL")
-        users = cur.fetchall()
-        cur.execute("DELETE FROM tc_fila_financeiro WHERE DATE(created_at) = CURDATE()")
-        inseridos = 0
-        for u in users:
-            attrs = u.get("attributes") or "{}"
-            venc = to_date(get_attr(attrs, "fin_vencimento"))
-            if not venc:
-                continue
-            valor = get_attr(attrs, "fin_valor") or "0"
-            tel1 = get_attr(attrs, "fin_telefone1")
-            tel2 = get_attr(attrs, "fin_telefone2")
-            fone = tel1 or tel2
-            if not fone:
-                continue
-            dias_antes = int(get_attr(attrs, "fin_msg_lembrete_dias") or "3")
-            diff = (venc - hoje()).days
-            tipo = None
-            if diff == 0:
-                tipo = "Vencimento"
-            elif diff == dias_antes:
-                tipo = "Lembrete"
-            elif diff < 0:
-                tipo = "Atraso"
-            if not tipo:
-                continue
-            dias_atraso = abs(diff) if diff < 0 else 0
-            cur.execute("INSERT INTO tc_fila_financeiro (user_id, nome, telefone, tipo, valor, vencimento, dias_atraso, status) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-                (u["id"], u["name"], fone, tipo, valor, venc, dias_atraso, "Pendente"))
-            inseridos += 1
+        cur.execute("DELETE FROM tc_fila_financeiro")
         conn.commit()
-        print("Fila povoada: %d clientes" % inseridos)
     conn.close()
+    print("Fila limpa")
+
+def get_intervalo_segundos():
+    conn = conectar()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT attributes FROM tc_users WHERE administrator = 1 AND attributes LIKE %s LIMIT 1", ("%fin_fila_intervalo%",))
+            row = cur.fetchone()
+        if not row:
+            return 10
+        v = get_attr(row["attributes"], "fin_fila_intervalo") or "10s"
+        import re
+        m = re.match(r"^(\d+)([smh])$", v)
+        if not m:
+            return 10
+        n = int(m.group(1))
+        u = m.group(2)
+        return n if u == "s" else (n * 60 if u == "m" else n * 3600)
+    finally:
+        conn.close()
+
+def get_credenciais():
+    conn = conectar()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT attributes FROM tc_users WHERE administrator = 1 AND attributes LIKE %s LIMIT 1", ("%fin_evo_url%",))
+            row = cur.fetchone()
+        if not row:
+            return None
+        attrs = row["attributes"]
+        return {
+            "url": get_attr(attrs, "fin_evo_url"),
+            "key": get_attr(attrs, "fin_evo_key"),
+            "instance": get_attr(attrs, "fin_evo_instance"),
+            "lembrete": get_attr(attrs, "fin_msg_lembrete"),
+            "vencimento": get_attr(attrs, "fin_msg_vencimento"),
+            "atraso": get_attr(attrs, "fin_msg_atraso"),
+            "hora_lembrete": get_attr(attrs, "fin_msg_lembrete_hora") or "13:00",
+            "hora_vencimento": get_attr(attrs, "fin_msg_vencimento_hora") or "08:30",
+            "hora_atraso": get_attr(attrs, "fin_msg_atraso_hora") or "09:00",
+        }
+    finally:
+        conn.close()
+
+def enviar_whatsapp(url, key, instance, numero, texto):
+    body = json.dumps({"number": numero, "text": texto}).encode("utf-8")
+    req = urllib.request.Request(
+        url.rstrip("/") + "/message/sendText/" + instance,
+        data=body,
+        headers={"apikey": key, "Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return r.status == 200
 
 def montar_texto(texto, item):
     venc_str = item["vencimento"].strftime("%d/%m/%Y") if item["vencimento"] else ""
