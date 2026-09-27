@@ -49,6 +49,11 @@ const MensagensTab = () => {
     return <NotificationsIcon sx={{ fontSize: 20 }} />;
   };
 
+  const preview = (txt) => {
+    if (!txt) return '';
+    return txt.split('{nome}').join('João Silva').split('{vencimento}').join('10/10/2026').split('{prox_vencimento}').join('10/11/2026').split('{valor}').join('150,00').split('{valor_atualizado}').join('165,00').split('{multa}').join('5,00').split('{juros}').join('10,00').split('{desconto}').join('0,00').split('{data_hoje}').join('27/09/2026').split('{link_pagamento}').join('https://pagar.exemplo/abc').split('{pix_copia_cola}').join('00020126360014BR.GOV.BCB.PIX...');
+  };
+
   const salvarTudo = async () => {
     try {
       const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto, fin_msg_lembrete: lembreteTexto, fin_msg_lembrete_dias: lembreteDias, fin_msg_lembrete_hora: lembreteHora };
@@ -131,13 +136,23 @@ const MensagensTab = () => {
                     </Box>
                   </Box>
                   <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
-                  <TextField fullWidth multiline minRows={10} value={lembreteTexto} onChange={(e) => setLembreteTexto(e.target.value)} sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace', fontSize: '0.82rem' } }} />
+                  <Box sx={{ p: 2, backgroundColor: '#e5ddd5', borderRadius: '12px' }}>
+                      <Box sx={{ backgroundColor: '#dcf8c6', borderRadius: '8px 8px 8px 0', p: 1.5, maxWidth: '85%', boxShadow: '0 1px 1px rgba(0,0,0,0.1)' }}>
+                        <TextField fullWidth multiline minRows={6} value={lembreteTexto} onChange={(e) => setLembreteTexto(e.target.value)} variant='standard' InputProps={{ disableUnderline: true }} sx={{ '& .MuiInputBase-input': { fontSize: '0.82rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#111' } }} />
+                        <Typography sx={{ fontSize: '0.65rem', color: '#667781', textAlign: 'right', mt: 0.5 }}>13:00 ✓✓</Typography>
+                      </Box>
+                    </Box>
                 </Box>
               ) : c.id === 5 ? (
                 <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
                   <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
-                  <TextField fullWidth multiline minRows={12} value={reciboTexto} onChange={(e) => setReciboTexto(e.target.value)} sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace', fontSize: '0.82rem' } }} />
-                </Box>
+                  <Box sx={{ p: 2, backgroundColor: '#e5ddd5', borderRadius: '12px' }}>
+                      <Box sx={{ backgroundColor: '#dcf8c6', borderRadius: '8px 8px 8px 0', p: 1.5, maxWidth: '85%', boxShadow: '0 1px 1px rgba(0,0,0,0.1)' }}>
+                        <TextField fullWidth multiline minRows={10} value={reciboTexto} onChange={(e) => setReciboTexto(e.target.value)} variant='standard' InputProps={{ disableUnderline: true }} sx={{ '& .MuiInputBase-input': { fontSize: '0.82rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#111', fontFamily: 'inherit' } }} />
+                        <Typography sx={{ fontSize: '0.65rem', color: '#667781', textAlign: 'right', mt: 0.5 }}>13:00 ✓✓</Typography>
+                      </Box>
+                    </Box>
+                  </Box>
               ) : null}
             </Collapse>
           </Paper>
