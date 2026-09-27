@@ -44,6 +44,8 @@ TEMPLATES = {
     "fin_msg_lembrete": "Olá *{nome}*!\n\nSua mensalidade vence em breve.\n🗓 Vencimento: {vencimento}\n💰 Valor: R$ {valor}\n\nQualquer dúvida, estamos à disposição.",
     "fin_msg_vencimento": "Olá *{nome}*!\n\nSua mensalidade vence hoje.\n🗓 Vencimento: {vencimento}\n💰 Valor: R$ {valor}\n\nApós o vencimento será cobrado juros.",
     "fin_msg_atraso": "Olá *{nome}*!\n\nSua mensalidade está em atraso.\n🗓 Vencimento: {vencimento}\n💰 Valor: R$ {valor}\n\nApós o vencimento será cobrado juros.\n\n_O pagamento é confirmado automaticamente._",
+    "fin_msg_recibo": "✅ *Pagamento Confirmado!* ✅\n\nRECIBO DE PAGAMENTO\n=======================\nCliente : {nome}\nServiço : Rastreamento\nPeríodo : {vencimento}\nValor   : R$ {valor}\nMulta   : {multa}\nJuros   : {juros}\nDesconto: {desconto}\n\nValor Total : {valor_atualizado}\n=======================\nPago em : {data_hoje}\nStatus  : ✅PAGO✅\nPróx Venc: {prox_vencimento}\n=======================",
+
 }
 
 def setup():
