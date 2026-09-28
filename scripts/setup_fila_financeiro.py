@@ -49,13 +49,24 @@ def garantir_admin(conn):
         cur.execute("UPDATE tc_users SET administrator = 1 WHERE id = 1000 AND (administrator IS NULL OR administrator = 0)")
     conn.commit()
 
+TEXTOS_ANTIGOS = {
+    "fin_msg_atraso": [
+        "Olá *{nome}*!\n\nSua mensalidade está em atraso.\n🗓 Vencimento:{vencimento}\n💰 Valor: R$ {valor}\n\nApós o vencimento será cobrado juros.\n\n_O pagamento é confirmado automaticamente._",
+        "Olá *{nome}*!\n\nSua mensalidade está em atraso.\n🗓 Vencimento: {vencimento}\n💰 Valor: R$ {valor}\n\nApós o vencimento será cobrado juros.\n\n_O pagamento é confirmado automaticamente._",
+    ],
+}
+
 def merge_attrs(attrs, novos):
     try:
         d = json.loads(attrs) if attrs else {}
     except Exception:
         d = {}
     for k, v in novos.items():
-        if not d.get(k):
+        atual = d.get(k)
+        if not atual:
+            d[k] = v
+            continue
+        if k in TEXTOS_ANTIGOS and atual in TEXTOS_ANTIGOS[k]:
             d[k] = v
     return json.dumps(d, ensure_ascii=False)
 
