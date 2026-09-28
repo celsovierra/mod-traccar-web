@@ -75,6 +75,46 @@ const ClientesTab = () => {
     if (enviados > 0) mostrarAviso('Mensagem enviada com sucesso', true);
     else mostrarAviso('Erro ao enviar: nenhum numero recebeu', false);
   };
+  const enviarContrato = async (item) => {
+    const tel1 = item.attributes?.fin_telefone1;
+    const tel2 = item.attributes?.fin_telefone2;
+    if (!tel1 && !tel2) { alert('Cliente sem telefone cadastrado'); return; }
+    const adm = userAttributes || {};
+    const evoUrl = adm.fin_evo_url, evoKey = adm.fin_evo_key, evoInst = adm.fin_evo_instance;
+    if (!evoUrl || !evoKey || !evoInst) { alert('Evolution API nao configurada'); return; }
+    try {
+      const r = await fetch('/api-contratos/invites', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          template_id: null,
+          client_name: item.name,
+          client_user_id: item.id,
+          client_data: { phone: tel1 || tel2 },
+          expires_days: 7,
+        }),
+      });
+      const d = await r.json();
+      if (!d.success) throw new Error(d.error || 'Erro ao criar convite');
+      const link = window.location.origin + '/sign/' + d.token;
+      const texto = 'Ola *' + (item.name || '') + '*!\n\nSegue o link para preenchimento e assinatura do seu contrato de rastreamento:\n\n' + link + '\n\nO link expira em 7 dias.';
+      const nums = [tel1, tel2].filter(Boolean);
+      let enviados = 0;
+      for (let i = 0; i < nums.length; i++) {
+        try {
+          const rr = await fetch(evoUrl.replace(/\/$/, '') + '/message/sendText/' + evoInst, {
+            method: 'POST', headers: { apikey: evoKey, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ number: nums[i], text: texto }),
+          });
+          if (rr.ok) enviados++;
+        } catch (e) { console.error('Falha', nums[i], e); }
+      }
+      if (enviados > 0) mostrarAviso('Link de contrato enviado', true);
+      else mostrarAviso('Erro ao enviar o link', false);
+    } catch (e) {
+      console.error(e);
+      mostrarAviso('Erro: ' + e.message, false);
+    }
+  };
   const calcNovoVencimento = (vencStr, meses) => {
     if (!vencStr) return null;
     const parts = vencStr.split('-');
@@ -352,7 +392,7 @@ const ClientesTab = () => {
                             <IconButton size='small' color='primary' onClick={() => salvar(item)}><SaveIcon fontSize='small' /></IconButton>
                           ) : (
                             <>
-                              <IconButton size='small' onClick={() => {}} title='Cobrança'><DescriptionIcon fontSize='small' sx={{ color: '#f97316' }} /></IconButton>
+                              <IconButton size='small' onClick={() => enviarContrato(item)} title='Enviar Contrato'><DescriptionIcon fontSize='small' sx={{ color: '#f97316' }} /></IconButton>
                               <IconButton size='small' onClick={() => abrirCobranca(item)} title='WhatsApp'><ChatBubbleIcon fontSize='small' sx={{ color: '#22c55e' }} /></IconButton>
                               <IconButton size='small' onClick={() => abrirBaixa(item)} title='Confirmar Pagamento'><CheckCircleIcon fontSize='small' sx={{ color: '#3b82f6' }} /></IconButton>
                               <IconButton size='small' onClick={() => iniciarEdicao(item)} title='Editar'><EditIcon fontSize='small' /></IconButton>
