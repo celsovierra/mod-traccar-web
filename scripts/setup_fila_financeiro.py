@@ -7,11 +7,30 @@ except ImportError:
     print("pymysql nao instalado")
     sys.exit(1)
 
+def ler_traccar_xml():
+    path = "/opt/traccar/conf/traccar.xml"
+    try:
+        with open(path, "r") as f:
+            content = f.read()
+    except Exception:
+        return ("traccar_user", "Traccar@2026#Sec", "traccar")
+    import re
+    u = re.search(r"database\.user[^>]*>\s*([^<\s]+)", content)
+    p = re.search(r"database\.password[^>]*>\s*([^<\s]+)", content)
+    d = re.search(r"database\.name[^>]*>\s*([^<\s]+)", content)
+    return (
+        u.group(1) if u else "traccar_user",
+        p.group(1) if p else "Traccar@2026#Sec",
+        d.group(1) if d else "traccar",
+    )
+
+_db_user, _db_pass, _db_name = ler_traccar_xml()
+
 DB = {
     "host": "127.0.0.1",
-    "user": "traccar_user",
-    "password": "Traccar@2026#Sec",
-    "database": "traccar",
+    "user": _db_user,
+    "password": _db_pass,
+    "database": _db_name,
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
 }

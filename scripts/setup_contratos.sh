@@ -18,7 +18,10 @@ cp "$(dirname "$0")/api_contratos.py" /opt/traccar/scripts/api_contratos.py
 chmod +x /opt/traccar/scripts/api_contratos.py
 
 echo ">> [CONTRATOS] Criando tabelas..."
-mysql -u traccar_user -p"Traccar@2026#Sec" traccar < "$(dirname "$0")/sql_contratos.sql" 2>/dev/null || true
+DB_USER_XML=$(grep -oP "database.user.>\K[^<]+" /opt/traccar/conf/traccar.xml | head -1 | sed "s/[\x27\x22]//g")
+DB_PASS_XML=$(grep -oP "database.password.>\K[^<]+" /opt/traccar/conf/traccar.xml | head -1 | sed "s/[\x27\x22]//g")
+DB_NAME_XML=$(grep -oP "database.name.>\K[^<]+" /opt/traccar/conf/traccar.xml | head -1 | sed "s/[\x27\x22]//g")
+mysql -u "$DB_USER_XML" -p"$DB_PASS_XML" "$DB_NAME_XML" < "$(dirname "$0")/sql_contratos.sql" 2>/dev/null || true
 
 echo ">> [CONTRATOS] Criando servico systemd..."
 cat > /etc/systemd/system/contratos-api.service << SERVICEEOF

@@ -26,7 +26,10 @@ cp "$(dirname "$0")/sql_fila.sql" /opt/traccar/scripts/sql_fila.sql
 chmod +x /opt/traccar/scripts/fila_financeiro.py
 
 echo ">> [FILA] Criando tabela tc_fila_financeiro..."
-mysql -u traccar_user -p"Traccar@2026#Sec" traccar < /opt/traccar/scripts/sql_fila.sql 2>/dev/null || true
+DB_USER_XML=$(grep -oP "database.user.>\K[^<]+" /opt/traccar/conf/traccar.xml | head -1 | sed "s/[\x27\x22]//g")
+DB_PASS_XML=$(grep -oP "database.password.>\K[^<]+" /opt/traccar/conf/traccar.xml | head -1 | sed "s/[\x27\x22]//g")
+DB_NAME_XML=$(grep -oP "database.name.>\K[^<]+" /opt/traccar/conf/traccar.xml | head -1 | sed "s/[\x27\x22]//g")
+mysql -u "$DB_USER_XML" -p"$DB_PASS_XML" "$DB_NAME_XML" < /opt/traccar/scripts/sql_fila.sql 2>/dev/null || true
 
 echo ">> [FILA] Registrando cron jobs..."
 CRON_LINHAS=$(cat <<CRONEOF
