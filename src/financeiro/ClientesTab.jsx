@@ -209,11 +209,12 @@ const ClientesTab = () => {
         const vencDate = new Date(Number(vencParts[0]), Number(vencParts[1]) - 1, Number(vencParts[2]));
         const hojeDate = new Date(); hojeDate.setHours(0,0,0,0);
         const diasAtraso = Math.max(0, Math.round((hojeDate - vencDate) / 86400000));
+        const diasParaJuros = mesesBaixa * 30;
         const multaValor = parseFloat((adm.fin_multa_valor || '0').replace(',', '.')) || 0;
         const jurosDiaValor = parseFloat((adm.fin_juros_valor || '0').replace(',', '.')) || 0;
         const multaAtiva = (adm.fin_multa_ativo !== 'false');
         const multa = (multaAtiva && diasAtraso > 0) ? multaValor : 0;
-        const juros = (multaAtiva && diasAtraso > 0) ? (jurosDiaValor * diasAtraso) : 0;
+        const juros = (multaAtiva && diasAtraso > 0) ? (jurosDiaValor * diasParaJuros) : 0;
         const valorNum = parseFloat(valorT.replace('.', '').replace(',', '.')) || 0;
         const totalAtualizado = valorNum + multa + juros;
         const fmt = (n) => n.toFixed(2).replace('.', ',');
