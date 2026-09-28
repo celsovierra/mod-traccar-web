@@ -1529,7 +1529,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       const lat = position.latitude;
                       const lng = position.longitude;
                       if (isApp) {
-                        window.location.href = `geo:${lat},${lng}?q=${lat},${lng}`;
+                        window.location.href = `https://www.google.com/maps?q=${lat},${lng}`;
                       } else {
                         const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
                         window.open(mapsUrl, '_blank', 'noopener,noreferrer');
