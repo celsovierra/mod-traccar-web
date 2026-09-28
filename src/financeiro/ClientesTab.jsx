@@ -68,6 +68,7 @@ const ClientesTab = () => {
     if (diff === 0) { tipo = 'Vencimento'; tpl = adm.fin_msg_vencimento; }
     else if (diff < 0) { tipo = 'Atraso'; tpl = adm.fin_msg_atraso; }
     if (!tpl) { alert('Template de mensagem nao configurado para ' + tipo); return; }
+    const valorRaw = (item.attributes?.fin_valor || '0');
     const valorNum = parseFloat(valorRaw.replace(',', '.')) || 0;
     const multaNum = parseFloat((adm.fin_multa_valor || '0').replace(',', '.')) || 0;
     const jurosDiaNum = parseFloat((adm.fin_juros_valor || '0').replace(',', '.')) || 0;
