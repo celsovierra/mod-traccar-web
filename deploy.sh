@@ -311,5 +311,4 @@ else
   echo "   scripts/setup_contratos.sh nao encontrado, ignorando."
 fi
 
-fi
 
