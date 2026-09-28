@@ -47,11 +47,23 @@ const SignContractPage = () => {
     if (!token) { setError('Link invalido'); setLoading(false); return; }
     fetch('/api-contratos/invites/by-token/' + token)
       .then((r) => r.json())
-      .then((d) => {
+      .then(async (d) => {
         const data = d.data || null;
         if (!d.success || !data) { setError('Convite nao encontrado'); return; }
         if (data.status === 'signed') { setError('Este contrato ja foi assinado'); return; }
         if (new Date(data.expires_at) < new Date()) { setError('Este link expirou'); return; }
+        // Se o convite nao tem template, busca o template padrao
+        if (!data.template || !data.template.content) {
+          try {
+            const rt = await fetch('/api-contratos/templates');
+            const dt = await rt.json();
+            const tpls = dt.data || [];
+            const padrao = tpls.find((t) => t.is_default) || tpls[0];
+            if (padrao) {
+              data.template = { content: padrao.content, name: padrao.name };
+            }
+          } catch (e) { console.error('Erro ao buscar template', e); }
+        }
         setInvite(data);
       })
       .catch(() => setError('Erro ao carregar convite'))
