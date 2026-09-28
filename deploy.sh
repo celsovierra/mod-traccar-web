@@ -284,6 +284,10 @@ if [ -f "$XML" ]; then
   DB_USER=$(grep -oP "database.user.>\K[^<]+" "$XML" | head -1 | sed "s/[\x27\x22]//g")
   DB_PASS_ATUAL=$(grep -oP "database.password.>\K[^<]+" "$XML" | head -1 | sed "s/[\x27\x22]//g")
   DB_PASS_NOVA="Traccar@2026#Sec"
+  if ! sudo mysql -e "SELECT user FROM mysql.user WHERE user='$DB_USER'" 2>/dev/null | grep -q "$DB_USER"; then
+    sudo mysql -e "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS_NOVA'; GRANT ALL PRIVILEGES ON *.* TO '$DB_USER'@'localhost' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+    echo "   Usuario $DB_USER criado."
+  fi
   if [ "$DB_PASS_ATUAL" != "$DB_PASS_NOVA" ]; then
     sudo mysql -e "ALTER USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS_NOVA'; FLUSH PRIVILEGES;"
     sed -i "s|<entry key='database.password'>.*</entry>|<entry key='database.password'>$DB_PASS_NOVA</entry>|" "$XML"
