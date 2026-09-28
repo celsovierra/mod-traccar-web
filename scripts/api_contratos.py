@@ -205,12 +205,18 @@ def create_invite():
     iid = str(uuid.uuid4())
     token = secrets.token_urlsafe(24)[:32]
     expires = datetime.now() + timedelta(days=int(d.get("expires_days", 7)))
+    status_in = d.get("status") or "pending"
+    if status_in not in ("pending", "signed"):
+        status_in = "pending"
+    signed_at = None
+    if status_in == "signed":
+        signed_at = datetime.now()
     conn = conectar()
     try:
         with conn.cursor() as cur:
-            cur.execute("INSERT INTO contract_invites (id, template_id, token, status, client_name, client_user_id, client_data, expires_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-                (iid, d.get("template_id"), token, "pending", d.get("client_name"),
-                 d.get("client_user_id"), json.dumps(d.get("client_data") or {}), expires))
+            cur.execute("INSERT INTO contract_invites (id, template_id, token, status, client_name, client_user_id, client_data, expires_at, signed_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                (iid, d.get("template_id"), token, status_in, d.get("client_name"),
+                 d.get("client_user_id"), json.dumps(d.get("client_data") or {}), expires, signed_at))
         conn.commit()
         return jsonify({"success": True, "token": token, "invite_id": iid})
     finally:

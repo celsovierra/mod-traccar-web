@@ -120,6 +120,30 @@ const ClientesTab = () => {
       setConfirmarExclusao(null);
     }
   };
+  const marcarAssinado = async (item) => {
+    if (!window.confirm('Marcar ' + (item.name || '') + ' como contrato ASSINADO (historico)?')) return;
+    try {
+      const r = await fetch('/api-contratos/invites', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          template_id: null,
+          client_name: item.name,
+          client_user_id: item.id,
+          client_data: { historico: true },
+          expires_days: 3650,
+          status: 'signed',
+          signed_at: new Date().toISOString(),
+        }),
+      });
+      const d = await r.json();
+      if (!d.success) throw new Error(d.error || 'Erro');
+      setContratosMap((m) => ({ ...m, [item.id]: 'signed' }));
+      mostrarAviso('Marcado como assinado', true);
+    } catch (e) {
+      console.error(e);
+      mostrarAviso('Erro: ' + e.message, false);
+    }
+  };
   const enviarContrato = async (item) => {
     const tel1 = item.attributes?.fin_telefone1;
     const tel2 = item.attributes?.fin_telefone2;
@@ -442,7 +466,7 @@ const ClientesTab = () => {
                           {editando[item.id] ? (
                             <TextField size='small' value={rascunho[item.id]?.contrato || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], contrato: e.target.value } }))} />
                           ) : (
-                            (() => { const st = contratosMap[item.id]; if (st === 'signed') return <span style={{ backgroundColor: '#dcfce7', color: '#16a34a', padding: '2px 10px', borderRadius: 12, fontWeight: 700, fontSize: '0.75rem' }}>Assinado</span>; if (st === 'pending') return <span style={{ backgroundColor: '#fed7aa', color: '#ea580c', padding: '2px 10px', borderRadius: 12, fontWeight: 700, fontSize: '0.75rem' }}>Pendente</span>; return <span>-</span>; })()
+                            (() => { const st = contratosMap[item.id]; const stBadge = (txt, bg, cor) => <span style={{ backgroundColor: bg, color: cor, padding: '2px 10px', borderRadius: 12, fontWeight: 700, fontSize: '0.75rem' }}>{txt}</span>; if (st === 'signed') return stBadge('Assinado', '#dcfce7', '#16a34a'); if (st === 'pending') return stBadge('Pendente', '#fed7aa', '#ea580c'); return <span style={{ cursor: 'pointer' }} onDoubleClick={() => marcarAssinado(item)} title='Duplo clique para marcar como assinado (historico)'>-</span>; })()
                           )}
                         </TableCell>
                         <TableCell sx={{ py: 1.6, textAlign: 'right', whiteSpace: 'nowrap' }}>
