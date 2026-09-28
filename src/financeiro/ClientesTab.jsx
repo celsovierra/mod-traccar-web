@@ -66,14 +66,30 @@ const ClientesTab = () => {
     let tipo = 'Atraso';
     let tpl = adm.fin_msg_atraso;
     if (diff === 0) { tipo = 'Vencimento'; tpl = adm.fin_msg_vencimento; }
-    else if (diff === diasAntes) { tipo = 'Lembrete'; tpl = adm.fin_msg_lembrete; }
+    else if (diff > 0 && diff <= diasAntes) { tipo = 'Lembrete'; tpl = adm.fin_msg_lembrete; }
     if (!tpl) { alert('Template de mensagem nao configurado para ' + tipo); return; }
-    const valor = (item.attributes?.fin_valor || '0');
+    const valorRaw = (item.attributes?.fin_valor || '0');
+    const valorNum = parseFloat(valorRaw.replace(',', '.')) || 0;
+    const multaNum = parseFloat((adm.fin_multa_valor || '0').replace(',', '.')) || 0;
+    const jurosDiaNum = parseFloat((adm.fin_juros_valor || '0').replace(',', '.')) || 0;
+    const multaAtiva = (adm.fin_multa_ativo !== 'false');
+    const diasAtraso = diff < 0 ? Math.abs(diff) : 0;
+    const multa = multaAtiva ? multaNum : 0;
+    const juros = multaAtiva ? (jurosDiaNum * diasAtraso) : 0;
+    const total = valorNum + multa + juros;
+    const fmt = (n) => n.toFixed(2).replace('.', ',');
     const vencBR = String(parts[2]).padStart(2,'0') + '/' + String(parts[1]).padStart(2,'0') + '/' + parts[0];
     let texto = tpl;
     texto = texto.split('{nome}').join(item.name || '');
     texto = texto.split('{vencimento}').join(vencBR);
-    texto = texto.split('{valor}').join(valor);
+    texto = texto.split('{valor}').join(fmt(valorNum));
+    texto = texto.split('{multa}').join(fmt(multa));
+    texto = texto.split('{juros}').join(fmt(juros));
+    texto = texto.split('{valor_atualizado}').join(fmt(total));
+    texto = texto.split('{data_hoje}').join(new Date().toLocaleDateString('pt-BR'));
+    texto = texto.split('{desconto}').join('0,00');
+    texto = texto.split('{link_pagamento}').join('');
+    texto = texto.split('{pix_copia_cola}').join('');
     const evoUrl = adm.fin_evo_url, evoKey = adm.fin_evo_key, evoInst = adm.fin_evo_instance;
     if (!evoUrl || !evoKey || !evoInst) { alert('Evolution API nao configurada'); return; }
     const nums = [tel1, tel2].filter(Boolean);
