@@ -203,7 +203,6 @@ def calcular_valores(item):
     return valor, multa, juros, total
 
 def montar_texto(texto, item):
-def montar_texto(texto, item):
     venc_str = item["vencimento"].strftime("%d/%m/%Y") if item["vencimento"] else ""
     hoje_str = hoje().strftime("%d/%m/%Y")
     valor, multa, juros, total = calcular_valores(item)
