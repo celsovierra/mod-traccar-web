@@ -65,6 +65,7 @@ const StreamPage = lazy(() => import('./other/StreamPage'));
 const AuditPage = lazy(() => import('./reports/AuditPage'));
 const ToolsPage = lazy(() => import('./settings/ToolsPage'));
 const FinanceiroPage = lazy(() => import('./financeiro/FinanceiroPage'));
+const SignContractPage = lazy(() => import('./financeiro/SignContractPage'));
 
 const Navigation = () => {
   const dispatch = useDispatch();
@@ -130,6 +131,7 @@ const Navigation = () => {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/change-server" element={<ChangeServerPage />} />
         <Route path="/privacidade" element={<PrivacyPage />} />
+        <Route path="/sign/:token" element={<SignContractPage />} />
         <Route path="/" element={<App />}>
           <Route index element={<MainPage />} />
 

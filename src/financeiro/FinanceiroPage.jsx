@@ -5,7 +5,7 @@ import ClientesTab from './ClientesTab';
 import FilaTab from './FilaTab';
 import MensagensTab from './MensagensTab';
 import ConexoesTab from './ConexoesTab';
-import ContratoTab from './ContratoTab';
+import ContratosTab from './ContratosTab';
 
 const FinanceiroPage = () => {
   const [tab, setTab] = useState(0);
@@ -28,7 +28,7 @@ const FinanceiroPage = () => {
         {tab === 1 && <FilaTab />}
         {tab === 2 && <MensagensTab />}
         {tab === 3 && <ConexoesTab />}
-        {tab === 4 && <ContratoTab />}
+        {tab === 4 && <ContratosTab />}
       </Box>
     </Box>
   );
