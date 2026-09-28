@@ -384,13 +384,13 @@ const ClientesTab = () => {
           <Paper elevation={0} sx={{ borderRadius: '24px', border: '1px solid #edf2f7', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.06)', overflow: 'hidden', backgroundColor: '#ffffff' }}>
             <Box sx={{ overflowX: 'auto' }}>
               <Table>
-                <TableHead sx={{ backgroundColor: '#f8fafc' }}>
+                <TableHead sx={{ backgroundColor: '#f8fafc', position: 'sticky', top: 0, zIndex: 5 }}>
                   <TableRow>
                     <TableCell sx={headCell}>{t('sharedName')}</TableCell>
                     <TableCell sx={headCell}>Telefone 1</TableCell>
-                    <TableCell sx={headCell}>Telefone 2</TableCell>
+                    <TableCell sx={{ ...headCell, display: { xs: 'none', md: 'table-cell' } }}>Telefone 2</TableCell>
                     <TableCell sx={headCell}>Valor</TableCell>
-                    <TableCell sx={headCell}>Vencimento</TableCell>
+                    <TableCell sx={{ ...headCell, display: { xs: 'none', md: 'table-cell' } }}>Vencimento</TableCell>
                     <TableCell sx={headCell}>Contrato</TableCell>
                     <TableCell sx={{ ...headCell, textAlign: 'right' }}>Acoes</TableCell>
                   </TableRow>
@@ -417,7 +417,7 @@ const ClientesTab = () => {
                             <span>{item.attributes?.fin_telefone1 || '-'}</span>
                           )}
                         </TableCell>
-                        <TableCell sx={bodyCell}>
+                        <TableCell sx={{ ...bodyCell, display: { xs: 'none', md: 'table-cell' } }}>
                           {editando[item.id] ? (
                             <TextField size='small' value={rascunho[item.id]?.telefone2 || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], telefone2: formatarTelefone(e.target.value) } }))} />
                           ) : (
@@ -431,7 +431,7 @@ const ClientesTab = () => {
                             <span>{item.attributes?.fin_valor || '-'}</span>
                           )}
                         </TableCell>
-                        <TableCell sx={bodyCell}>
+                        <TableCell sx={{ ...bodyCell, display: { xs: 'none', md: 'table-cell' } }}>
                           {editando[item.id] ? (
                             <TextField size='small' type='date' value={rascunho[item.id]?.vencimento || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], vencimento: e.target.value } }))} />
                           ) : (
