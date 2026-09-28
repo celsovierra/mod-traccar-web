@@ -203,20 +203,23 @@ def calcular_valores(item):
     return valor, multa, juros, total
 
 def montar_texto(texto, item):
+def montar_texto(texto, item):
     venc_str = item["vencimento"].strftime("%d/%m/%Y") if item["vencimento"] else ""
     hoje_str = hoje().strftime("%d/%m/%Y")
+    valor, multa, juros, total = calcular_valores(item)
     t = texto or ""
     t = t.replace("{nome}", item["nome"] or "")
     t = t.replace("{vencimento}", venc_str)
     t = t.replace("{prox_vencimento}", venc_str)
-    t = t.replace("{valor}", item["valor"] or "0")
-    t = t.replace("{valor_atualizado}", item["valor"] or "0")
+    t = t.replace("{valor}", fmt_moeda(valor))
+    t = t.replace("{valor_atualizado}", fmt_moeda(total))
     t = t.replace("{data_hoje}", hoje_str)
-    t = t.replace("{multa}", "")
-    t = t.replace("{juros}", "")
+    t = t.replace("{multa}", fmt_moeda(multa))
+    t = t.replace("{juros}", fmt_moeda(juros))
     t = t.replace("{desconto}", "")
     t = t.replace("{link_pagamento}", "")
     t = t.replace("{pix_copia_cola}", "")
+    return t
     return t
 
 def hora_agora():
