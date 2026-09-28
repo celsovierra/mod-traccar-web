@@ -66,7 +66,11 @@ def povoar():
             elif diff == dias_antes:
                 tipo = "Lembrete"
             elif diff < 0:
-                tipo = "Atraso"
+                atraso_dias_cfg = int(get_attr(attrs, "fin_msg_atraso_dias") or "1")
+                if atraso_dias_cfg < 1:
+                    atraso_dias_cfg = 1
+                if abs(diff) % atraso_dias_cfg == 0:
+                    tipo = "Atraso"
             if not tipo:
                 continue
             dias_atraso = abs(diff) if diff < 0 else 0
@@ -137,6 +141,45 @@ def enviar_whatsapp(url, key, instance, numero, texto):
     )
     with urllib.request.urlopen(req, timeout=30) as r:
         return r.status in (200, 201)
+
+def get_admin_attrs():
+    conn = conectar()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT attributes FROM tc_users WHERE administrator = 1 LIMIT 1")
+            row = cur.fetchone()
+        if not row or not row["attributes"]:
+            return {}
+        return json.loads(row["attributes"])
+    except Exception:
+        return {}
+    finally:
+        conn.close()
+def fmt_moeda(v):
+    return ("%.2f" % float(v)).replace(".", ",")
+
+def calcular_valores(item):
+    valor_str = (item.get("valor") or "0").replace(",", ".")
+    try:
+        valor = float(valor_str)
+    except Exception:
+        valor = 0.0
+    multa = 0.0
+    juros = 0.0
+    if item.get("tipo") == "Atraso":
+        attrs = get_admin_attrs()
+        try:
+            multa = float((attrs.get("fin_multa_valor") or "0").replace(",", "."))
+        except Exception:
+            multa = 0.0
+        try:
+            juros_dia = float((attrs.get("fin_juros_valor") or "0").replace(",", "."))
+        except Exception:
+            juros_dia = 0.0
+        dias = int(item.get("dias_atraso") or 0)
+        juros = juros_dia * dias
+    total = valor + multa + juros
+    return valor, multa, juros, total
 
 def montar_texto(texto, item):
     venc_str = item["vencimento"].strftime("%d/%m/%Y") if item["vencimento"] else ""

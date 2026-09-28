@@ -43,8 +43,11 @@ def merge_attrs(attrs, novos):
 TEMPLATES = {
     "fin_msg_lembrete": "Olá *{nome}*!\n\nSua mensalidade vence em breve.\n🗓 Vencimento: {vencimento}\n💰 Valor: R$ {valor}\n\nQualquer dúvida, estamos à disposição.",
     "fin_msg_vencimento": "Olá *{nome}*!\n\nSua mensalidade vence hoje.\n🗓 Vencimento: {vencimento}\n💰 Valor: R$ {valor}\n\nApós o vencimento será cobrado juros.",
-    "fin_msg_atraso": "Olá *{nome}*!\n\nSua mensalidade está em atraso.\n🗓 Vencimento: {vencimento}\n💰 Valor: R$ {valor}\n\nApós o vencimento será cobrado juros.\n\n_O pagamento é confirmado automaticamente._",
+    "fin_msg_atraso": "Olá *{nome}*!\n\nIdentificamos que sua mensalidade está em atraso.\n\n📅 *Vencimento original:* {vencimento}\n💵 *Valor mensal:* R$ {valor}\n📊 *Multa:* {multa}\n📈 *Juros:* {juros}\n💰 *Total a pagar: {valor_atualizado}*\n\nRegularize agora pelo PIX:\n\n{pix_copia_cola}\n\n_Evite o bloqueio dos serviços._",
     "fin_msg_recibo": "✅ *Pagamento Confirmado!* ✅\n\nRECIBO DE PAGAMENTO\n=======================\nCliente : {nome}\nServiço : Rastreamento\nPeríodo : {vencimento}\nValor   : R$ {valor}\nMulta   : {multa}\nJuros   : {juros}\nDesconto: {desconto}\n\nValor Total : {valor_atualizado}\n=======================\nPago em : {data_hoje}\nStatus  : ✅PAGO✅\nPróx Venc: {prox_vencimento}\n=======================",
+    "fin_multa_valor": "1",
+    "fin_juros_valor": "0,10",
+    "fin_msg_atraso_dias": "1",
 
 }
 
