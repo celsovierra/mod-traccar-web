@@ -32,6 +32,7 @@ const ClientesTab = () => {
   const [salvandoBaixa, setSalvandoBaixa] = useState(false);
   const [aviso, setAviso] = useState(null);
   const [contratosMap, setContratosMap] = useState({});
+  const [confirmarExclusao, setConfirmarExclusao] = useState(null);
 
   const [enviandoCobranca, setEnviandoCobranca] = useState(false);
   const carregarContratos = async () => {
@@ -89,6 +90,19 @@ const ClientesTab = () => {
     }
     if (enviados > 0) mostrarAviso('Mensagem enviada com sucesso', true);
     else mostrarAviso('Erro ao enviar: nenhum numero recebeu', false);
+  };
+  const excluirUsuario = async () => {
+    if (!confirmarExclusao) return;
+    try {
+      await fetchOrThrow('/api/users/' + confirmarExclusao.id, { method: 'DELETE' });
+      setItems((prev) => prev.filter((u) => u.id !== confirmarExclusao.id));
+      setConfirmarExclusao(null);
+      mostrarAviso('Cliente excluido com sucesso', true);
+    } catch (e) {
+      console.error(e);
+      mostrarAviso('Erro ao excluir: ' + e.message, false);
+      setConfirmarExclusao(null);
+    }
   };
   const enviarContrato = async (item) => {
     const tel1 = item.attributes?.fin_telefone1;
@@ -412,7 +426,7 @@ const ClientesTab = () => {
                               <IconButton size='small' onClick={() => abrirCobranca(item)} title='WhatsApp'><ChatBubbleIcon fontSize='small' sx={{ color: '#22c55e' }} /></IconButton>
                               <IconButton size='small' onClick={() => abrirBaixa(item)} title='Confirmar Pagamento'><CheckCircleIcon fontSize='small' sx={{ color: '#3b82f6' }} /></IconButton>
                               <IconButton size='small' onClick={() => iniciarEdicao(item)} title='Editar'><EditIcon fontSize='small' /></IconButton>
-                              <IconButton size='small' onClick={() => {}} title='Excluir'><DeleteIcon fontSize='small' sx={{ color: '#dc2626' }} /></IconButton>
+                              <IconButton size='small' onClick={() => setConfirmarExclusao(item)} title='Excluir'><DeleteIcon fontSize='small' sx={{ color: '#dc2626' }} /></IconButton>
                             </>
                           )}
                         </TableCell>
@@ -451,7 +465,18 @@ const ClientesTab = () => {
         <Box sx={{ position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 9999, px: 4, py: 2, borderRadius: 2, backgroundColor: aviso.ok ? '#22c55e' : '#dc2626', color: '#fff', fontWeight: 700, fontSize: '1rem', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
           {aviso.msg}
         </Box>
-      )}      </Box>
+      )}
+      <Dialog open={!!confirmarExclusao} onClose={() => setConfirmarExclusao(null)} maxWidth='xs' fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Excluir cliente</DialogTitle>
+        <DialogContent>
+          <Typography>Tem certeza que deseja excluir <strong>{confirmarExclusao?.name}</strong>? Esta acao nao pode ser desfeita.</Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setConfirmarExclusao(null)} sx={{ textTransform: 'none', color: '#475569' }}>Cancelar</Button>
+          <Button onClick={excluirUsuario} variant='contained' sx={{ textTransform: 'none', fontWeight: 700, backgroundColor: '#dc2626' }}>Excluir</Button>
+        </DialogActions>
+      </Dialog>
+      </Box>
     </>
   );
 };
