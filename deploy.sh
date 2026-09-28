@@ -278,6 +278,21 @@ fi
 
 
 
+echo ">> Garantindo senha padrao do MySQL..."
+XML="/opt/traccar/conf/traccar.xml"
+if [ -f "$XML" ]; then
+  DB_USER=$(grep -oP "database.user.>\K[^<]+" "$XML" | head -1 | sed "s/[\x27\x22]//g")
+  DB_PASS_ATUAL=$(grep -oP "database.password.>\K[^<]+" "$XML" | head -1 | sed "s/[\x27\x22]//g")
+  DB_PASS_NOVA="Traccar@2026#Sec"
+  if [ "$DB_PASS_ATUAL" != "$DB_PASS_NOVA" ]; then
+    sudo mysql -e "ALTER USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS_NOVA'; FLUSH PRIVILEGES;"
+    sed -i "s|<entry key='database.password'>.*</entry>|<entry key='database.password'>$DB_PASS_NOVA</entry>|" "$XML"
+    echo "   Senha MySQL padronizada."
+  else
+    echo "   Senha MySQL ja esta padrao."
+  fi
+fi
+
 echo ">> Configurando sistema de fila financeira..."
 if [ -f ./scripts/setup_fila.sh ]; then
   bash ./scripts/setup_fila.sh
@@ -292,18 +307,5 @@ else
   echo "   scripts/setup_contratos.sh nao encontrado, ignorando."
 fi
 
-echo ">> Garantindo senha padrao do MySQL..."
-XML="/opt/traccar/conf/traccar.xml"
-if [ -f "$XML" ]; then
-  DB_USER=$(grep -oP "database.user.>\K[^<]+" "$XML" | head -1 | sed "s/[\x27\x22]//g")
-  DB_PASS_ATUAL=$(grep -oP "database.password.>\K[^<]+" "$XML" | head -1 | sed "s/[\x27\x22]//g")
-  DB_PASS_NOVA="Traccar@2026#Sec"
-  if [ "$DB_PASS_ATUAL" != "$DB_PASS_NOVA" ]; then
-    sudo mysql -e "ALTER USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS_NOVA'; FLUSH PRIVILEGES;"
-    sed -i "s|<entry key='database.password'>.*</entry>|<entry key='database.password'>$DB_PASS_NOVA</entry>|" "$XML"
-    echo "   Senha MySQL padronizada."
-  else
-    echo "   Senha MySQL ja esta padrao."
-  fi
 fi
 
