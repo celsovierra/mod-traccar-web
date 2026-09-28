@@ -115,6 +115,10 @@ export default defineConfig(() => ({
         target: 'https://gpscell.site',
         changeOrigin: true,
       },
+      '/api-financeiro': {
+        target: 'https://gpscell.site',
+        changeOrigin: true,
+      },
     },
     hmr: { overlay: false },
     port: 3000,

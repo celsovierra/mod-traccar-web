@@ -3,6 +3,7 @@ import sys
 import json
 import time
 import datetime
+import secrets
 import urllib.request
 try:
     import pymysql
@@ -219,7 +220,6 @@ def montar_texto(texto, item):
     t = t.replace("{link_pagamento}", "")
     t = t.replace("{pix_copia_cola}", "")
     return t
-    return t
 
 def hora_agora():
     n = datetime.datetime.now()
@@ -232,6 +232,49 @@ def hora_config(hhmm):
     except Exception:
         return 0
 
+def criar_pix_mercadopago(attrs, item, valor_total):
+    """Cria um PIX no Mercado Pago e retorna (pix_copia_cola, link_pagamento, payment_id)."""
+    token = attrs.get("fin_gw_token") or ""
+    if not token:
+        return None, None, None
+    try:
+        valor = float(str(valor_total).replace(",", "."))
+    except Exception:
+        valor = 0.0
+    if valor <= 0:
+        return None, None, None
+    descricao = "Mensalidade Rastreamento - %s" % (item.get("nome") or "")
+    body = {
+        "transaction_amount": round(valor, 2),
+        "description": descricao,
+        "payment_method_id": "pix",
+        "payer": {
+            "email": "cliente@%s.com" % (item.get("user_id") or "x"),
+            "first_name": item.get("nome") or "Cliente",
+        },
+    }
+    data = json.dumps(body).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.mercadopago.com/v1/payments",
+        data=data,
+        headers={
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json",
+            "X-Idempotency-Key": "fila-%s-%s" % (item.get("id"), int(time.time())),
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            resp = json.loads(r.read().decode())
+    except Exception as e:
+        print("   [PIX] Erro ao criar pagamento:", e)
+        return None, None, None
+    payment_id = resp.get("id")
+    point = resp.get("point_of_interaction", {}).get("transaction_data", {})
+    qr_code = point.get("qr_code") or ""
+    ticket_url = point.get("ticket_url") or ""
+    return qr_code, ticket_url, payment_id
 def processar(forcar=False):
     cred = get_credenciais()
     intervalo = get_intervalo_segundos()
@@ -262,8 +305,27 @@ def processar(forcar=False):
             if not forcar and agora < hora_config(hora_cfg):
                 pulados += 1
                 continue
+            # Gera PIX no Mercado Pago se configurado
+            attrs_admin = get_admin_attrs()
+            gw_ativo = attrs_admin.get("fin_gw_ativo") or ""
+            pix_copia = ""
+            link_pag = ""
+            payment_id = None
+            if gw_ativo == "mercadopago" and attrs_admin.get("fin_gw_token"):
+                valor_total_calc = calcular_valores(item)[3]
+                pix_copia, link_pag, payment_id = criar_pix_mercadopago(attrs_admin, item, valor_total_calc)
+                if payment_id:
+                    import secrets
+                    token_pag = secrets.token_urlsafe(24)[:32]
+                    cur.execute("UPDATE tc_fila_financeiro SET pix_id=%s, token_pag=%s WHERE id=%s", (str(payment_id), token_pag, item["id"]))
+                    conn.commit()
+                    dominio = attrs_admin.get("fin_dominio") or "https://gpscell.site"
+                    link_pag = dominio.rstrip("/") + "/pagar/" + token_pag
             texto = montar_texto(tpl, item)
+            texto = texto.replace("{pix_copia_cola}", pix_copia or "")
+            texto = texto.replace("{link_pagamento}", link_pag or "")
             try:
+                ok = enviar_whatsapp(cred["url"], cred["key"], cred["instance"], item["telefone"], texto)
                 ok = enviar_whatsapp(cred["url"], cred["key"], cred["instance"], item["telefone"], texto)
                 if ok:
                     cur.execute("UPDATE tc_fila_financeiro SET status=%s, enviado_em=NOW() WHERE id=%s", ("Enviado", item["id"]))

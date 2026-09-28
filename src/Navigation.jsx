@@ -66,6 +66,7 @@ const AuditPage = lazy(() => import('./reports/AuditPage'));
 const ToolsPage = lazy(() => import('./settings/ToolsPage'));
 const FinanceiroPage = lazy(() => import('./financeiro/FinanceiroPage'));
 const SignContractPage = lazy(() => import('./financeiro/SignContractPage'));
+const PagamentoPage = lazy(() => import('./financeiro/PagamentoPage'));
 
 const Navigation = () => {
   const dispatch = useDispatch();
@@ -132,6 +133,7 @@ const Navigation = () => {
         <Route path="/change-server" element={<ChangeServerPage />} />
         <Route path="/privacidade" element={<PrivacyPage />} />
         <Route path="/sign/:token" element={<SignContractPage />} />
+        <Route path="/pagar/:token" element={<PagamentoPage />} />
         <Route path="/" element={<App />}>
           <Route index element={<MainPage />} />
 
