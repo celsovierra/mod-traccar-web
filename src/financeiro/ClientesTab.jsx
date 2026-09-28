@@ -74,8 +74,8 @@ const ClientesTab = () => {
     const jurosDiaNum = parseFloat((adm.fin_juros_valor || '0').replace(',', '.')) || 0;
     const multaAtiva = (adm.fin_multa_ativo !== 'false');
     const diasAtraso = diff < 0 ? Math.abs(diff) : 0;
-    const multa = multaAtiva ? multaNum : 0;
-    const juros = multaAtiva ? (jurosDiaNum * diasAtraso) : 0;
+    const multa = (multaAtiva && tipo === 'Atraso') ? multaNum : 0;
+    const juros = (multaAtiva && tipo === 'Atraso') ? (jurosDiaNum * diasAtraso) : 0;
     const total = valorNum + multa + juros;
     const fmt = (n) => n.toFixed(2).replace('.', ',');
     const vencBR = String(parts[2]).padStart(2,'0') + '/' + String(parts[1]).padStart(2,'0') + '/' + parts[0];
