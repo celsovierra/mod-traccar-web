@@ -285,6 +285,13 @@ else
   echo "   scripts/setup_fila.sh nao encontrado, ignorando."
 fi
 
+echo ">> Configurando sistema de contratos..."
+if [ -f ./scripts/setup_contratos.sh ]; then
+  bash ./scripts/setup_contratos.sh
+else
+  echo "   scripts/setup_contratos.sh nao encontrado, ignorando."
+fi
+
 echo ">> Garantindo senha padrao do MySQL..."
 XML="/opt/traccar/conf/traccar.xml"
 if [ -f "$XML" ]; then
