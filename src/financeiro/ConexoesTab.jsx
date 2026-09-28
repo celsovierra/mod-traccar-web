@@ -14,6 +14,7 @@ import fetchOrThrow from '../common/util/fetchOrThrow';
 const cards = [
   { id: 1, titulo: 'WhatsApp (Evolution API)', icone: 'wifi' },
   { id: 2, titulo: 'Gateway de Pagamento', icone: 'card' },
+  { id: 3, titulo: 'Google Drive (Contratos)', icone: 'drive' },
 ];
 
 const ConexoesTab = () => {
@@ -26,6 +27,10 @@ const ConexoesTab = () => {
   const [gwAtivo, setGwAtivo] = useState('mercadopago');
   const [gwToken, setGwToken] = useState('');
   const [gwUrlWebhook, setGwUrlWebhook] = useState('');
+  const [gdClientId, setGdClientId] = useState('');
+  const [gdClientSecret, setGdClientSecret] = useState('');
+  const [gdRefreshToken, setGdRefreshToken] = useState('');
+  const [gdFolderId, setGdFolderId] = useState('');
   const user = useSelector((state) => state.session.user);
   const userId = user.id;
   const userAttributes = useSelector((state) => state.session.user.attributes) || {};
@@ -37,6 +42,10 @@ const ConexoesTab = () => {
     setGwAtivo(userAttributes.fin_gw_ativo || 'mercadopago');
     setGwToken(userAttributes.fin_gw_token || '');
     setGwUrlWebhook(userAttributes.fin_gw_webhook || ('https://' + window.location.hostname + '/api/webhook/mercadopago'));
+    setGdClientId(userAttributes.fin_gd_client_id || '');
+    setGdClientSecret(userAttributes.fin_gd_client_secret || '');
+    setGdRefreshToken(userAttributes.fin_gd_refresh_token || '');
+    setGdFolderId(userAttributes.fin_gd_folder_id || '');
     if (userAttributes.fin_evo_key && userAttributes.fin_evo_instance) {
       testarConexao(userAttributes.fin_evo_url, userAttributes.fin_evo_key, userAttributes.fin_evo_instance);
     }
@@ -65,6 +74,10 @@ const ConexoesTab = () => {
         fin_gw_ativo: gwAtivo,
         fin_gw_token: gwToken,
         fin_gw_webhook: gwUrlWebhook,
+        fin_gd_client_id: gdClientId,
+        fin_gd_client_secret: gdClientSecret,
+        fin_gd_refresh_token: gdRefreshToken,
+        fin_gd_folder_id: gdFolderId,
       };
       await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
@@ -123,6 +136,10 @@ const ConexoesTab = () => {
     setGwAtivo(userAttributes.fin_gw_ativo || 'mercadopago');
     setGwToken(userAttributes.fin_gw_token || '');
     setGwUrlWebhook(userAttributes.fin_gw_webhook || ('https://' + window.location.hostname + '/api/webhook/mercadopago'));
+    setGdClientId(userAttributes.fin_gd_client_id || '');
+    setGdClientSecret(userAttributes.fin_gd_client_secret || '');
+    setGdRefreshToken(userAttributes.fin_gd_refresh_token || '');
+    setGdFolderId(userAttributes.fin_gd_folder_id || '');
     if (userAttributes.fin_evo_key && userAttributes.fin_evo_instance) {
       testarConexao(userAttributes.fin_evo_url, userAttributes.fin_evo_key, userAttributes.fin_evo_instance);
     }
@@ -166,7 +183,7 @@ const ConexoesTab = () => {
                     )}
                   </Box>
                 </Box>
-              ) : (
+              ) : c.id === 2 ? (
                 <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
                   <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Gateway Ativo para Cobranças</Typography>
                   <TextField select fullWidth size='small' value={gwAtivo} onChange={(e) => setGwAtivo(e.target.value)} sx={{ mb: 3 }}>
@@ -187,6 +204,20 @@ const ConexoesTab = () => {
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                     <Button variant='contained' startIcon={carregando ? <CircularProgress size={16} color='inherit' /> : <SaveIcon />} onClick={salvarConexao} disabled={carregando} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '8px', backgroundColor: '#2563eb' }}>Salvar</Button>
+                  </Box>
+                </Box>
+              ) : (
+                <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Client ID</Typography>
+                  <TextField fullWidth size='small' value={gdClientId} onChange={(e) => setGdClientId(e.target.value)} sx={{ mb: 2.5 }} />
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Client Secret</Typography>
+                  <TextField fullWidth size='small' type='password' value={gdClientSecret} onChange={(e) => setGdClientSecret(e.target.value)} sx={{ mb: 2.5 }} />
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Refresh Token</Typography>
+                  <TextField fullWidth size='small' type='password' value={gdRefreshToken} onChange={(e) => setGdRefreshToken(e.target.value)} sx={{ mb: 2.5 }} />
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Folder ID</Typography>
+                  <TextField fullWidth size='small' value={gdFolderId} onChange={(e) => setGdFolderId(e.target.value)} sx={{ mb: 2.5 }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                    <Button variant='contained' onClick={salvarConexao} disabled={carregando} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '8px', backgroundColor: '#2563eb' }}>Salvar</Button>
                   </Box>
                 </Box>
               )}
