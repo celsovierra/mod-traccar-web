@@ -390,7 +390,7 @@ const ClientesTab = () => {
                     <TableCell sx={headCell}>Telefone 1</TableCell>
                     <TableCell sx={{ ...headCell, display: { xs: 'none', md: 'table-cell' } }}>Telefone 2</TableCell>
                     <TableCell sx={headCell}>Valor</TableCell>
-                    <TableCell sx={{ ...headCell, display: { xs: 'none', md: 'table-cell' } }}>Vencimento</TableCell>
+                    <TableCell sx={headCell}>Vencimento</TableCell>
                     <TableCell sx={headCell}>Contrato</TableCell>
                     <TableCell sx={{ ...headCell, textAlign: 'right' }}>Acoes</TableCell>
                   </TableRow>
@@ -431,7 +431,7 @@ const ClientesTab = () => {
                             <span>{item.attributes?.fin_valor || '-'}</span>
                           )}
                         </TableCell>
-                        <TableCell sx={{ ...bodyCell, display: { xs: 'none', md: 'table-cell' } }}>
+                        <TableCell sx={bodyCell}>
                           {editando[item.id] ? (
                             <TextField size='small' type='date' value={rascunho[item.id]?.vencimento || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], vencimento: e.target.value } }))} />
                           ) : (
