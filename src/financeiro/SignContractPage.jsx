@@ -184,7 +184,7 @@ const SignContractPage = () => {
   );
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc' }}>
+    <Box sx={{ height: '100dvh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc', overflow: 'hidden' }}>
       <Box sx={{ p: 2, maxWidth: 540, mx: 'auto', width: '100%' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#64748b', mb: 0.5 }}>
           <span>Etapa {step} de {TOTAL_STEPS}</span>
@@ -195,7 +195,7 @@ const SignContractPage = () => {
         </Box>
       </Box>
 
-      <Box sx={{ flexGrow: 1, px: 2, py: 3, maxWidth: 540, mx: 'auto', width: '100%' }}>
+      <Box sx={{ flexGrow: 1, px: 2, py: 3, maxWidth: 540, mx: 'auto', width: '100%', overflowY: 'auto' }}>
         <Card elevation={0} sx={{ border: '1px solid #e2e8f0' }}>
           <CardContent sx={{ p: 3 }}>
             {step === 1 && (

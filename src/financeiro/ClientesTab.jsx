@@ -31,8 +31,23 @@ const ClientesTab = () => {
   const [mesesBaixa, setMesesBaixa] = useState(1);
   const [salvandoBaixa, setSalvandoBaixa] = useState(false);
   const [aviso, setAviso] = useState(null);
+  const [contratosMap, setContratosMap] = useState({});
 
   const [enviandoCobranca, setEnviandoCobranca] = useState(false);
+  const carregarContratos = async () => {
+    try {
+      const r = await fetch('/api-contratos/invites');
+      const d = await r.json();
+      const m = {};
+      (d.data || []).forEach((inv) => {
+        if (!inv.client_user_id) return;
+        const cur = m[inv.client_user_id];
+        if (inv.status === 'signed') m[inv.client_user_id] = 'signed';
+        else if (!cur) m[inv.client_user_id] = 'pending';
+      });
+      setContratosMap(m);
+    } catch (e) { console.error('Erro ao carregar contratos', e); }
+  };
   const abrirBaixa = (item) => { setModalBaixa(item); setMesesBaixa(1); };
   const mostrarAviso = (msg, ok) => { setAviso({ msg, ok }); setTimeout(() => setAviso(null), 3000); };
   const abrirCobranca = async (item) => {
@@ -276,6 +291,7 @@ const ClientesTab = () => {
       void reloadKey;
       setItems([]);
       await loadItems(0, signal);
+      await carregarContratos();
     },
     [reloadKey, loadItems],
   );
@@ -384,7 +400,7 @@ const ClientesTab = () => {
                           {editando[item.id] ? (
                             <TextField size='small' value={rascunho[item.id]?.contrato || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], contrato: e.target.value } }))} />
                           ) : (
-                            <span>{item.attributes?.fin_contrato || '-'}</span>
+                            (() => { const st = contratosMap[item.id]; if (st === 'signed') return <span style={{ backgroundColor: '#dcfce7', color: '#16a34a', padding: '2px 10px', borderRadius: 12, fontWeight: 700, fontSize: '0.75rem' }}>Assinado</span>; if (st === 'pending') return <span style={{ backgroundColor: '#fed7aa', color: '#ea580c', padding: '2px 10px', borderRadius: 12, fontWeight: 700, fontSize: '0.75rem' }}>Pendente</span>; return <span>-</span>; })()
                           )}
                         </TableCell>
                         <TableCell sx={{ py: 1.6, textAlign: 'right', whiteSpace: 'nowrap' }}>
