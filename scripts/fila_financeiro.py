@@ -168,16 +168,18 @@ def calcular_valores(item):
     juros = 0.0
     if item.get("tipo") == "Atraso":
         attrs = get_admin_attrs()
-        try:
-            multa = float((attrs.get("fin_multa_valor") or "0").replace(",", "."))
-        except Exception:
-            multa = 0.0
-        try:
-            juros_dia = float((attrs.get("fin_juros_valor") or "0").replace(",", "."))
-        except Exception:
-            juros_dia = 0.0
-        dias = int(item.get("dias_atraso") or 0)
-        juros = juros_dia * dias
+        ativo = str(attrs.get("fin_multa_ativo") or "true").lower()
+        if ativo == "true":
+            try:
+                multa = float((attrs.get("fin_multa_valor") or "0").replace(",", "."))
+            except Exception:
+                multa = 0.0
+            try:
+                juros_dia = float((attrs.get("fin_juros_valor") or "0").replace(",", "."))
+            except Exception:
+                juros_dia = 0.0
+            dias = int(item.get("dias_atraso") or 0)
+            juros = juros_dia * dias
     total = valor + multa + juros
     return valor, multa, juros, total
 

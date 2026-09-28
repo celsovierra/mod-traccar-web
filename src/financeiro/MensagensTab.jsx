@@ -32,12 +32,14 @@ const cards = [
 
 const MensagensTab = () => {
   const [abertos, setAbertos] = useState({});
-  const [ativos, setAtivos] = useState({ 1: true, 2: true, 3: true, 4: true, 5: true });
   const user = useSelector((state) => state.session.user);
   const userId = user.id;
   const userAttributes = useSelector((state) => state.session.user.attributes) || {};
+  const [ativos, setAtivos] = useState({ 1: (userAttributes.fin_multa_ativo !== 'false'), 2: true, 3: true, 4: true, 5: true });
   const [vencimentoHora, setVencimentoHora] = useState(userAttributes.fin_msg_vencimento_hora || '08:30');
   const [atrasoDias, setAtrasoDias] = useState(userAttributes.fin_msg_atraso_dias || '1');
+  const [multaValor, setMultaValor] = useState(userAttributes.fin_multa_valor || '1');
+  const [jurosValor, setJurosValor] = useState(userAttributes.fin_juros_valor || '0,10');
   const [atrasoHora, setAtrasoHora] = useState(userAttributes.fin_msg_atraso_hora || '09:00');
   const [atrasoTexto, setAtrasoTexto] = useState(userAttributes.fin_msg_atraso || 'Olá *{nome}*!' + String.fromCharCode(10) + String.fromCharCode(10) + 'Identificamos que sua mensalidade está em atraso.' + String.fromCharCode(10) + String.fromCharCode(10) + '📅 *Vencimento original:* {vencimento}' + String.fromCharCode(10) + '💵 *Valor mensal:* R$ {valor}' + String.fromCharCode(10) + '📊 *Multa:* {multa}' + String.fromCharCode(10) + '📈 *Juros:* {juros}' + String.fromCharCode(10) + '💰 *Total a pagar: {valor_atualizado}*' + String.fromCharCode(10) + String.fromCharCode(10) + 'Regularize agora pelo PIX:' + String.fromCharCode(10) + String.fromCharCode(10) + '{pix_copia_cola}' + String.fromCharCode(10) + String.fromCharCode(10) + '_Evite o bloqueio dos serviços._');
 const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_vencimento || 'Olá *{nome}*!' + String.fromCharCode(10) + String.fromCharCode(10) + 'Sua mensalidade está disponível para pagamento.' + String.fromCharCode(10) + String.fromCharCode(10) + '🗓 Vencimento: {vencimento}' + String.fromCharCode(10) + '💰 Valor: R$ {valor}' + String.fromCharCode(10) + String.fromCharCode(10) + 'PIX Copia e Cola:' + String.fromCharCode(10) + '{pix_copia_cola}' + String.fromCharCode(10) + String.fromCharCode(10) + 'Após o vencimento será cobrado juros.' + String.fromCharCode(10) + String.fromCharCode(10) + '_O pagamento é confirmado automaticamente._');
@@ -61,7 +63,7 @@ const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_ve
 
   const salvarTudo = async () => {
     try {
-      const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto, fin_msg_lembrete: lembreteTexto, fin_msg_lembrete_dias: lembreteDias, fin_msg_lembrete_hora: lembreteHora, fin_msg_vencimento: vencimentoTexto, fin_msg_vencimento_hora: vencimentoHora, fin_msg_atraso: atrasoTexto, fin_msg_atraso_dias: atrasoDias, fin_msg_atraso_hora: atrasoHora };
+      const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto, fin_msg_lembrete: lembreteTexto, fin_msg_lembrete_dias: lembreteDias, fin_msg_lembrete_hora: lembreteHora, fin_msg_vencimento: vencimentoTexto, fin_msg_vencimento_hora: vencimentoHora, fin_msg_atraso: atrasoTexto, fin_msg_atraso_dias: atrasoDias, fin_msg_atraso_hora: atrasoHora, fin_multa_valor: multaValor, fin_juros_valor: jurosValor, fin_multa_ativo: ativos[1] ? 'true' : 'false' };
       await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -107,7 +109,7 @@ const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_ve
                       <TextField select fullWidth size='small' defaultValue='fixo' sx={{ mb: 1.5 }}>
                         <MenuItem value='fixo'>Valor fixo (R$)</MenuItem>
                       </TextField>
-                      <TextField fullWidth size='small' defaultValue='1' />
+                      <TextField fullWidth size='small' value={multaValor} onChange={(e) => setMultaValor(e.target.value)} />
                       <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', mt: 0.5 }}>Valor fixo em reais cobrado por atraso. Ex: R$ 5,00</Typography>
                     </Box>
                     <Box>
@@ -115,16 +117,16 @@ const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_ve
                       <TextField select fullWidth size='small' defaultValue='fixo' sx={{ mb: 1.5 }}>
                         <MenuItem value='fixo'>Valor fixo por dia (R$)</MenuItem>
                       </TextField>
-                      <TextField fullWidth size='small' defaultValue='0,10' />
+                      <TextField fullWidth size='small' value={jurosValor} onChange={(e) => setJurosValor(e.target.value)} />
                       <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', mt: 0.5 }}>Valor fixo em reais cobrado por dia de atraso. Ex: R$ 1,00/dia</Typography>
                     </Box>
                   </Box>
                   <Box sx={{ mt: 3, p: 2, backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                     <Typography sx={{ fontWeight: 700, color: '#1e293b', fontSize: '0.85rem', mb: 1 }}>Simulação (R$ 100,00 com 10 dias de atraso)</Typography>
                     <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Valor: R$ 100,00</Typography>
-                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Multa (R$ 1,00): + R$ 1,00</Typography>
-                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Juros (R$ 0,10/dia x 10d): + R$ 1,00</Typography>
-                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', pt: 1, borderTop: '1px solid #cbd5e1' }}>Total: R$ 102,00</Typography>
+                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Multa (R$ {multaValor}): + R$ {((parseFloat(multaValor.replace(',','.')) || 0)).toFixed(2).replace('.', ',')}</Typography>
+                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Juros (R$ {jurosValor}/dia x 10d): + R$ {((parseFloat(jurosValor.replace(',','.')) || 0) * 10).toFixed(2).replace('.', ',')}</Typography>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', pt: 1, borderTop: '1px solid #cbd5e1' }}>Total: R$ {(100 + (parseFloat(multaValor.replace(',','.')) || 0) + (parseFloat(jurosValor.replace(',','.')) || 0) * 10).toFixed(2).replace('.', ',')}</Typography>
                   </Box>
                 </Box>
               ) : c.id === 2 ? (
