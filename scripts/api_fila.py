@@ -45,7 +45,7 @@ def get_fila():
     try:
         conn = conectar()
         with conn.cursor() as cur:
-            cur.execute("SELECT id, user_id, nome, telefone, tipo, valor, vencimento, dias_atraso, enviado_em, status, erro FROM tc_fila_financeiro ORDER BY id DESC")
+            cur.execute("SELECT id, user_id, nome, telefone, tipo, valor, vencimento, dias_atraso, enviado_em, status, erro FROM tc_fila_financeiro ORDER BY FIELD(tipo, 'Lembrete', 'Vencimento', 'Atraso'), id DESC")
             rows = cur.fetchall()
         conn.close()
         for r in rows:
