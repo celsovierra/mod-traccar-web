@@ -122,7 +122,7 @@ const ConexoesTab = () => {
       } else {
         alert('Nao foi possivel gerar o QR. Resposta: ' + JSON.stringify(d));
       }
-      await testarConexao(base, evoKey, inst);
+    } catch (e) { console.error(e); alert('Erro: ' + e.message); } finally { setCarregando(false); }
   };
 
   const desconectar = async () => {
