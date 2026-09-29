@@ -35,6 +35,8 @@ DB = {
     "cursorclass": pymysql.cursors.DictCursor,
 }
 
+app = Flask(__name__)
+
 def conectar():
     return pymysql.connect(**DB)
 
