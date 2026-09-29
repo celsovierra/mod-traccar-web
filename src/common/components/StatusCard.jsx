@@ -1099,15 +1099,16 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const handleSavePlate = async () => {
     setSavingPlate(true);
     try {
-      const getResponse = await fetch(`/api/devices/${deviceId}`, {
-        method: 'GET',
-        credentials: 'same-origin',
-      });
-      if (!getResponse.ok) {
-        throw new Error('Nao foi possivel carregar os dados do veiculo.');
+      let currentDevice = device;
+      if (admin) {
+        const getResponse = await fetch(`/api/devices/${deviceId}`, {
+          credentials: 'same-origin',
+        });
+        if (!getResponse.ok) {
+          throw new Error('Nao foi possivel carregar os dados do veiculo.');
+        }
+        currentDevice = await getResponse.json();
       }
-      const currentDevice = await getResponse.json();
-
       const updatedDevice = {
         ...currentDevice,
         model: editModel,
@@ -1125,9 +1126,11 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         throw new Error(detail || 'Nao foi possivel salvar.');
       }
       dispatch(devicesActions.update([updatedDevice]));
-      const refreshRes = await fetch('/api/devices', { credentials: 'same-origin' });
-      if (refreshRes.ok) {
-        dispatch(devicesActions.refresh(await refreshRes.json()));
+      if (admin) {
+        const refreshRes = await fetch('/api/devices', { credentials: 'same-origin' });
+        if (refreshRes.ok) {
+          dispatch(devicesActions.refresh(await refreshRes.json()));
+        }
       }
       setEditPlateOpen(false);
       setToast({ message: 'Placa e modelo atualizados.', severity: 'success' });
