@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense } from 'react';
+﻿import { lazy, Suspense, useEffect } from 'react';
 import { Route, Routes, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import MainPage from './main/MainPage';
@@ -68,7 +68,26 @@ const FinanceiroPage = lazy(() => import('./financeiro/FinanceiroPage'));
 const SignContractPage = lazy(() => import('./financeiro/SignContractPage'));
 const PagamentoPage = lazy(() => import('./financeiro/PagamentoPage'));
 
+const prefetchPages = () => {
+  import('./settings/ToolsPage');
+  import('./financeiro/FinanceiroPage');
+  import('./reports/CombinedReportPage');
+  import('./reports/PositionsReportPage');
+  import('./reports/StatisticsPage');
+  import('./reports/EventReportPage');
+  import('./reports/TripReportPage');
+  import('./reports/StopReportPage');
+  import('./reports/SummaryReportPage');
+  import('./settings/PreferencesPage');
+  import('./settings/UsersPage');
+};
+
 const Navigation = () => {
+
+  useEffect(() => {
+    const id = window.setTimeout(prefetchPages, 2000);
+    return () => window.clearTimeout(id);
+  }, []);
   const dispatch = useDispatch();
   const { setLocalLanguage } = useLocalization();
 

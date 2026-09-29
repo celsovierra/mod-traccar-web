@@ -482,8 +482,7 @@ const ClientesTab = () => {
     async ({ signal }) => {
       void reloadKey;
       setItems([]);
-      await loadItems(0, signal);
-      await carregarContratos();
+      await Promise.all([loadItems(0, signal), carregarContratos()]);
     },
     [reloadKey, loadItems],
   );

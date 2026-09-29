@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useCallback } from 'react';
-import { Table, TableRow, TableCell, TableHead, TableBody, Box, Paper, Typography, Chip, Button, CircularProgress, Select, MenuItem, FormControl, InputLabel, TextField } from '@mui/material';
+import { Table, TableRow, TableCell, TableHead, TableBody, Box, Paper, Typography, Chip, Button, CircularProgress, Select, MenuItem, FormControl, InputLabel, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { useSelector } from 'react-redux';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -10,6 +10,7 @@ const FilaTab = () => {
   const [itens, setItens] = useState([]);
   const [carregando, setCarregando] = useState(false);
   const [filtro, setFiltro] = useState('Todos');
+  const [erroModal, setErroModal] = useState(null);
   const [intervalo, setIntervalo] = useState(10);
   const [unidade, setUnidade] = useState('s');
   const user = useSelector((state) => state.session.user);
@@ -121,13 +122,25 @@ const FilaTab = () => {
                   <TableCell sx={bodyCell}>{i.vencimento}</TableCell>
                   <TableCell sx={bodyCell}>{i.dias_atraso}</TableCell>
                   <TableCell sx={bodyCell}>{i.enviado_em || '-'}</TableCell>
-                  <TableCell sx={bodyCell}><Chip label={i.status} size='small' color={corStatus(i.status)} sx={{ fontSize: '0.7rem', fontWeight: 700 }} /></TableCell>
+                  <TableCell sx={bodyCell}><Chip label={i.status} size='small' color={corStatus(i.status)} onClick={() => i.status === 'Erro' && setErroModal(i)} sx={{ fontSize: '0.7rem', fontWeight: 700, cursor: i.status === 'Erro' ? 'pointer' : 'default' }} /></TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </Box>
       </Paper>
+
+      <Dialog open={!!erroModal} onClose={() => setErroModal(null)} maxWidth='sm' fullWidth>
+        <DialogTitle sx={{ fontWeight: 800, color: '#dc2626' }}>Erro no envio</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontWeight: 700, mb: 1 }}>{erroModal?.nome}</Typography>
+          <Typography sx={{ fontSize: '0.85rem', color: '#475569', mb: 1 }}>Telefone: {erroModal?.telefone}</Typography>
+          <Typography sx={{ fontSize: '0.85rem', color: '#475569' }}>Status: {erroModal?.status}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setErroModal(null)} variant='contained' sx={{ textTransform: 'none', fontWeight: 700 }}>Fechar</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
