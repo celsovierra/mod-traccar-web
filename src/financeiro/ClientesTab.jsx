@@ -146,6 +146,21 @@ const ClientesTab = () => {
       mostrarAviso('Erro: ' + e.message, false);
     }
   };
+  const marcarNaoCobrar = async (item, marcado) => {
+    try {
+      const attrs = { ...(item.attributes || {}), fin_nao_cobrar: marcado ? 'true' : 'false' };
+      await fetchOrThrow('/api/users/' + item.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: item.id, name: item.name || '-', email: item.email || 'sem@local', attributes: attrs, administrator: item.administrator, masteruser: item.masteruser }),
+      });
+      setItems((prev) => prev.map((u) => u.id === item.id ? { ...u, attributes: attrs } : u));
+      mostrarAviso(marcado ? 'Cliente marcado como NAO COBRAR' : 'Cliente voltou a ser cobrado', true);
+    } catch (e) {
+      console.error(e);
+      mostrarAviso('Erro: ' + e.message, false);
+    }
+  };
   const baixarModelo = async () => {
     try {
       const wb = new ExcelJS.Workbook();
@@ -464,6 +479,10 @@ const ClientesTab = () => {
     if (!searchKeyword) return true;
     const k = searchKeyword.toLowerCase();
     return (u.name && u.name.toLowerCase().includes(k)) || (u.email && u.email.toLowerCase().includes(k));
+  }).sort((a, b) => {
+    const aNao = a.attributes?.fin_nao_cobrar === 'true' ? 1 : 0;
+    const bNao = b.attributes?.fin_nao_cobrar === 'true' ? 1 : 0;
+    return aNao - bNao;
   });
 
   const getAvatarIcon = (item) => {

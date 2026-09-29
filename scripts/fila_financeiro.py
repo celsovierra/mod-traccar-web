@@ -69,6 +69,8 @@ def povoar():
         inseridos = 0
         for u in users:
             attrs = u.get("attributes") or "{}"
+            if get_attr(attrs, "fin_nao_cobrar") == "true":
+                continue
             venc = to_date(get_attr(attrs, "fin_vencimento"))
             if not venc:
                 continue
