@@ -312,3 +312,10 @@ else
 fi
 
 
+
+echo ">> Configurando device-edit-proxy..."
+if [ -f ./deploy/deploy_all.sh ]; then
+  bash ./deploy/deploy_all.sh
+else
+  echo "   deploy/deploy_all.sh nao encontrado, ignorando."
+fi
