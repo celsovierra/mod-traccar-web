@@ -228,6 +228,28 @@ async function handleGeofenceUnlink(req, res, deviceId, geofenceId, cookieHeader
     sendJson(res, 500, { error: 'Erro interno' });
   }
 }
+async function handleGeofenceList(req, res, deviceId, cookieHeader) {
+  try {
+    const authorized = await checkDeviceAccess(deviceId, cookieHeader);
+    if (!authorized) {
+      sendJson(res, 403, { error: 'Sem permissao' });
+      return;
+    }
+    const [rows] = await pool.query(
+      'SELECT g.id, g.name, g.description, g.area, g.attributes FROM tc_geofences g INNER JOIN tc_device_geofence dg ON g.id = dg.geofenceid WHERE dg.deviceid = ?',
+      [deviceId]
+    );
+    const out = rows.map((r) => {
+      let attrs = {};
+      try { attrs = r.attributes ? JSON.parse(r.attributes) : {}; } catch (e) {}
+      return { id: r.id, name: r.name, description: r.description, area: r.area, attributes: attrs };
+    });
+    sendJson(res, 200, out);
+  } catch (error) {
+    console.error('Erro ao listar geofences:', error);
+    sendJson(res, 500, { error: 'Erro interno' });
+  }
+}
 const server = http.createServer(async (req, res) => {
   const cookieHeader = req.headers.cookie;
 
@@ -240,6 +262,7 @@ const server = http.createServer(async (req, res) => {
   const anchorMatch = req.url.match(/^\/api-anchor\/(\d+)$/);
   const relayStatusMatch = req.url.match(/^\/api-relay-status\/(\d+)$/);
   const geofenceUnlinkMatch = req.url.match(/^\/api-device-geofence\/(\d+)\/(\d+)$/);
+  const geofenceListMatch = req.url.match(/^\/api-device-geofence\/(\d+)$/);
 
   if (req.method === 'PUT' && deviceEditMatch) {
     await handleDeviceEdit(req, res, parseInt(deviceEditMatch[1], 10), cookieHeader);
@@ -253,6 +276,11 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'DELETE' && anchorMatch) {
     await handleAnchorDelete(req, res, parseInt(anchorMatch[1], 10), cookieHeader);
+    return;
+  }
+
+  if (req.method === 'GET' && geofenceListMatch) {
+    await handleGeofenceList(req, res, parseInt(geofenceListMatch[1], 10), cookieHeader);
     return;
   }
 
