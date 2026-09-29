@@ -94,19 +94,35 @@ const ConexoesTab = () => {
   const gerarQrCode = async () => {
     setCarregando(true);
     try {
-      const base = (evoUrl || '').replace(/\/$/, '');
-      const r = await fetch(base + '/instance/create', {
-        method: 'POST',
-        headers: { apikey: evoKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ instanceName: evoInst, qrcode: true, integration: 'WHATSAPP-BAILEYS' }),
-      });
-      const d = await r.json();
-      if (d?.qrcode?.base64) {
-        const w = window.open('', '_blank');
-        w.document.write('<img src="' + d.qrcode.base64 + '" style="width:400px" />');
+      const base = (evoUrl || 'https://evolution.gpscell.site').replace(/\/$/, '');
+      const inst = evoInst || 'localhost';
+      if (!evoKey) { alert('Preencha a API Key antes de gerar o QR.'); return; }
+      console.log('[QR] URL:', base, '| Instancia:', inst);
+      let d = null;
+      // 1) tenta conectar (instancia ja existente)
+      let r = await fetch(base + '/instance/connect/' + inst, { headers: { apikey: evoKey } });
+      console.log('[QR] connect status:', r.status);
+      if (r.ok) { d = await r.json(); }
+      // 2) se nao veio QR, tenta criar a instancia
+      if (!d || (!d.base64 && !(d.qrcode && d.qrcode.base64))) {
+        r = await fetch(base + '/instance/create', {
+          method: 'POST',
+          headers: { apikey: evoKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instanceName: inst, qrcode: true, integration: 'WHATSAPP-BAILEYS' }),
+        });
+        console.log('[QR] create status:', r.status);
+        d = await r.json();
       }
-      await testarConexao(evoUrl, evoKey, evoInst);
-    } catch (e) { console.error(e); } finally { setCarregando(false); }
+      console.log('[QR] resposta:', d);
+      const qr = (d && (d.base64 || (d.qrcode && d.qrcode.base64))) || null;
+      if (qr) {
+        const w = window.open('', '_blank');
+        if (!w) { alert('Habilite popups para ver o QR Code.'); return; }
+        w.document.write('<html><head><title>QR Code WhatsApp</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#fff"><img src="' + qr + '" style="width:400px;height:400px" /></body></html>');
+      } else {
+        alert('Nao foi possivel gerar o QR. Resposta: ' + JSON.stringify(d));
+      }
+      await testarConexao(base, evoKey, inst);
   };
 
   const desconectar = async () => {
