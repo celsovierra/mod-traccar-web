@@ -215,7 +215,7 @@ const ClientesTab = () => {
           nome,
           tel1: idxTel1 ? String(row.getCell(Number(idxTel1)).value || '').trim() : '',
           tel2: idxTel2 ? String(row.getCell(Number(idxTel2)).value || '').trim() : '',
-          valor: idxValor ? String(row.getCell(Number(idxValor)).value || '').trim() : '',
+          valor: idxValor ? (() => { const raw = row.getCell(Number(idxValor)).value; if (raw === null || raw === undefined || raw === '') return ''; const num = parseFloat(String(raw).replace(',', '.')) || 0; return num.toFixed(2).replace('.', ','); })() : '',
           venc: idxVenc ? row.getCell(Number(idxVenc)).value : '',
         });
       });
