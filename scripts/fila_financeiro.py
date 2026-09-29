@@ -85,7 +85,7 @@ def povoar():
             tipo = None
             if diff == 0:
                 tipo = "Vencimento"
-            elif diff > 0 and diff <= dias_antes:
+            elif diff == dias_antes:
                 tipo = "Lembrete"
             elif diff < 0:
                 atraso_dias_cfg = int(get_attr(attrs, "fin_msg_atraso_dias") or "1")
