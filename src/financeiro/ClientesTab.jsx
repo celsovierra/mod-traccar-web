@@ -560,10 +560,13 @@ const ClientesTab = () => {
                             <Avatar sx={{ width: 34, height: 34, backgroundColor: avatarStyle.bg, color: avatarStyle.color }}>
                               {getAvatarIcon(item)}
                             </Avatar>
-                            <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#1e293b' }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: item.attributes?.fin_nao_cobrar === 'true' ? '#dc2626' : '#1e293b' }}>
                               {item.name}
                             </Typography>
-                          </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto', gap: 0.5 }}>
+                              <input type='checkbox' checked={item.attributes?.fin_nao_cobrar === 'true'} onChange={(e) => marcarNaoCobrar(item, e.target.checked)} style={{ cursor: 'pointer', width: 16, height: 16 }} />
+                              <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>Não cobrar</span>
+                            </Box>
                         </TableCell>
                         <TableCell sx={bodyCell}>
                           {editando[item.id] ? (
