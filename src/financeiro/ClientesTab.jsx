@@ -8,11 +8,13 @@ import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import { useAsyncTask, useScrollToLoad, pageSize } from '../reactHelper';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from '../settings/components/SearchHeader';
+import ExcelJS from 'exceljs';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
@@ -144,6 +146,102 @@ const ClientesTab = () => {
       mostrarAviso('Erro: ' + e.message, false);
     }
   };
+  const baixarModelo = async () => {
+    try {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('Clientes');
+      ws.columns = [
+        { header: 'Nome', key: 'nome', width: 30 },
+        { header: 'Telefone 1', key: 'tel1', width: 20 },
+        { header: 'Telefone 2', key: 'tel2', width: 20 },
+        { header: 'Valor', key: 'valor', width: 12 },
+        { header: 'Vencimento', key: 'venc', width: 15 },
+      ];
+      ws.addRow({ nome: 'Cliente Exemplo', tel1: '5586999990000', tel2: '', valor: '100,00', venc: '16/12/2026' });
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'modelo-clientes.xlsx';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      mostrarAviso('Erro ao gerar modelo: ' + e.message, false);
+    }
+  };
+  const uploadExcel = async (file) => {
+    if (!file) return;
+    try {
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(await file.arrayBuffer());
+      const ws = wb.worksheets[0];
+      if (!ws) { mostrarAviso('Planilha vazia', false); return; }
+      const header = {};
+      ws.getRow(1).eachCell((cell, col) => {
+        const key = String(cell.value || '').toLowerCase().trim();
+        header[col] = key;
+      });
+      const idxNome = Object.keys(header).find((k) => header[k].includes('nome'));
+      const idxTel1 = Object.keys(header).find((k) => header[k].includes('telefone 1') || header[k] === 'telefone1');
+      const idxTel2 = Object.keys(header).find((k) => header[k].includes('telefone 2') || header[k] === 'telefone2');
+      const idxValor = Object.keys(header).find((k) => header[k].includes('valor'));
+      const idxVenc = Object.keys(header).find((k) => header[k].includes('vencimento'));
+      if (!idxNome) { mostrarAviso('Coluna Nome nao encontrada', false); return; }
+      let atualizados = 0;
+      let ignorados = 0;
+      const linhas = [];
+      ws.eachRow((row, rowNum) => {
+        if (rowNum === 1) return;
+        const nome = String(row.getCell(Number(idxNome)).value || '').trim();
+        if (!nome) return;
+        linhas.push({
+          nome,
+          tel1: idxTel1 ? String(row.getCell(Number(idxTel1)).value || '').trim() : '',
+          tel2: idxTel2 ? String(row.getCell(Number(idxTel2)).value || '').trim() : '',
+          valor: idxValor ? String(row.getCell(Number(idxValor)).value || '').trim() : '',
+          venc: idxVenc ? row.getCell(Number(idxVenc)).value : '',
+        });
+      });
+      for (let i = 0; i < linhas.length; i++) {
+        const l = linhas[i];
+        const item = items.find((u) => (u.name || '').toLowerCase() === l.nome.toLowerCase());
+        if (!item) { ignorados++; continue; }
+        const attrs = { ...(item.attributes || {}) };
+        if (l.tel1) attrs.fin_telefone1 = l.tel1;
+        if (l.tel2) attrs.fin_telefone2 = l.tel2;
+        if (l.valor) attrs.fin_valor = l.valor;
+        if (l.venc) {
+          let v = l.venc;
+          if (v instanceof Date) {
+            v = v.toISOString().slice(0, 10);
+          } else {
+            v = String(v).trim();
+            if (v.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+              const [d, m, a] = v.split('/');
+              v = a + '-' + m + '-' + d;
+            }
+          }
+          attrs.fin_vencimento = v;
+        }
+        try {
+          await fetchOrThrow('/api/users/' + item.id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: item.id, name: item.name || '-', email: item.email || 'sem@local', attributes: attrs, administrator: item.administrator, masteruser: item.masteruser }),
+          });
+          setItems((prev) => prev.map((u) => u.id === item.id ? { ...u, attributes: attrs } : u));
+          atualizados++;
+        } catch (e) { console.error('Falha ao atualizar', l.nome, e); }
+      }
+      mostrarAviso('Atualizados: ' + atualizados + ' | Ignorados: ' + ignorados, true);
+    } catch (e) {
+      console.error(e);
+      mostrarAviso('Erro ao ler planilha: ' + e.message, false);
+    }
+  };
+
   const enviarContrato = async (item) => {
     const tel1 = item.attributes?.fin_telefone1;
     const tel2 = item.attributes?.fin_telefone2;
@@ -402,8 +500,22 @@ const ClientesTab = () => {
     <>
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', maxWidth: 1200, mx: 'auto', px: { xs: 1.5, sm: 3 }, boxSizing: 'border-box' }}>
         <Box sx={{ flexShrink: 0, backgroundColor: '#ffffff', pt: { xs: 1.5, sm: 2 }, pb: 1, zIndex: 10 }}>
-          <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
-        </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ flexGrow: 1 }}>
+              <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
+            </Box>
+            <input
+              id="upload-excel-input"
+              type="file"
+              accept=".xlsx,.xls"
+              style={{ display: 'none' }}
+              onChange={(e) => { uploadExcel(e.target.files[0]); e.target.value = ''; }}
+            />
+            <Button variant='outlined' onClick={baixarModelo} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '8px', borderColor: '#e2e8f0', color: '#475569' }}>Baixar Modelo</Button>
+            <label htmlFor="upload-excel-input">
+              <Button component='span' variant='outlined' startIcon={<UploadFileIcon />} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '8px', borderColor: '#e2e8f0', color: '#475569' }}>Importar Excel</Button>
+            </label>
+          </Box>
         <Box sx={{ flexGrow: 1, overflowY: 'auto', pb: 8 }}>
           <Paper elevation={0} sx={{ borderRadius: '24px', border: '1px solid #edf2f7', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.06)', overflow: 'hidden', backgroundColor: '#ffffff' }}>
             <Box sx={{ overflowX: 'auto' }}>
@@ -459,7 +571,7 @@ const ClientesTab = () => {
                           {editando[item.id] ? (
                             <TextField size='small' type='date' value={rascunho[item.id]?.vencimento || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], vencimento: e.target.value } }))} />
                           ) : (
-                            <span>{item.attributes?.fin_vencimento || '-'}</span>
+                            <span>{item.attributes?.fin_vencimento ? formatarDataBR(item.attributes.fin_vencimento) : '-'}</span>
                           )}
                         </TableCell>
                         <TableCell sx={bodyCell}>
@@ -528,6 +640,7 @@ const ClientesTab = () => {
           <Button onClick={excluirUsuario} variant='contained' sx={{ textTransform: 'none', fontWeight: 700, backgroundColor: '#dc2626' }}>Excluir</Button>
         </DialogActions>
       </Dialog>
+      </Box>
       </Box>
     </>
   );
