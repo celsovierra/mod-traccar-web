@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useCallback, useEffect } from 'react';
+﻿import { lazy, Suspense, useState, useCallback, useEffect } from 'react';
 import { Paper } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { useTheme } from '@mui/material/styles';
@@ -120,6 +120,7 @@ const MainPage = () => {
 
   const [devicesOpen, setDevicesOpen] = useState(desktop);
   const [eventsOpen, setEventsOpen] = useState(false);
+  const [cardVisible, setCardVisible] = useState(true);
 
   const onEventsClick = useCallback(() => setEventsOpen(true), [setEventsOpen]);
 
@@ -128,6 +129,16 @@ const MainPage = () => {
       setDevicesOpen(false);
     }
   }, [desktop, mapOnSelect, selectedDeviceId]);
+
+  useEffect(() => {
+    const handler = () => setCardVisible(true);
+    window.addEventListener('showStatusCard', handler);
+    return () => window.removeEventListener('showStatusCard', handler);
+  }, []);
+
+  useEffect(() => {
+    if (selectedDeviceId) setCardVisible(true);
+  }, [selectedDeviceId]);
 
   const handleToggleDevices = useCallback((open) => {
     setDevicesOpen(open);
@@ -206,11 +217,11 @@ const MainPage = () => {
 
       <EventsDrawer open={eventsOpen} onClose={() => setEventsOpen(false)} />
 
-      {selectedDeviceId && (desktop || !devicesOpen) && (
+      {selectedDeviceId && cardVisible && (desktop || !devicesOpen) && (
         <StatusCard
           deviceId={selectedDeviceId}
           position={selectedPosition}
-          onClose={() => dispatch(devicesActions.selectId(null))}
+          onClose={() => setCardVisible(false)}
           desktopPadding={theme.dimensions.drawerWidthDesktop}
         />
       )}

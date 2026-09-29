@@ -1,11 +1,12 @@
-import { useCallback, useState } from 'react';
+﻿import { useCallback, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch } from 'react-redux';
 import MapView from '../map/core/MapView';
 import MapSelectedDevice from '../map/main/MapSelectedDevice';
 import MapAccuracy from '../map/main/MapAccuracy';
-import MapGeofence from '../map/MapGeofence';
+import MapGeofence from '../map/MapGeofence';
+
 import AnchorMapLayer from '../features/anchor/AnchorMapLayer';
 import MapCurrentLocation from '../map/MapCurrentLocation';
 import PoiMap from '../map/main/PoiMap';
@@ -34,6 +35,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   const onMarkerClick = useCallback(
     (_, deviceId) => {
       dispatch(devicesActions.selectId(deviceId));
+      window.dispatchEvent(new CustomEvent('showStatusCard'));
     },
     [dispatch],
   );

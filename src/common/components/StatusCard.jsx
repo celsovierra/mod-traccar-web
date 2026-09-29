@@ -151,6 +151,7 @@ const useStyles = makeStyles()((theme) => ({
     overflow: 'hidden',
   },
   headerRight: {
+    position: 'relative',
     display: 'flex',
     alignItems: 'center',
     gap: 6,
@@ -1354,8 +1355,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       </Typography>
                     </Box>
 
-                    <IconButton size="small" onClick={onClose} sx={{ color: '#4b5563' }}>
-                      <CloseIcon fontSize="small" />
+                    <IconButton size="small" onClick={onClose} sx={{ position: 'absolute', top: -26, right: -8, color: '#fff', backgroundColor: '#dc2626', '&:hover': { backgroundColor: '#991b1b' }, width: 26, height: 26, borderRadius: '50%', boxShadow: '0 2px 6px rgba(220,38,38,0.4)' }}>
+                      <CloseIcon sx={{ fontSize: 16, fontWeight: 'bold' }} />
                     </IconButton>
                   </Box>
                 </Box>
