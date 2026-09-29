@@ -970,8 +970,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     setLoadingGeofences(true);
     try {
       const [devGeoRes, allGeoRes] = await Promise.all([
-        fetchOrThrow(`/api/geofences?deviceId=${deviceId}`),
-        fetchOrThrow('/api/geofences?all=true').catch(() => fetchOrThrow('/api/geofences')),
+        admin ? fetchOrThrow(`/api/geofences?deviceId=${deviceId}`) : fetchOrThrow(`/api-device-geofence/${deviceId}`),
+        admin ? fetchOrThrow(`/api/geofences?all=true`).catch(() => fetchOrThrow(`/api/geofences`)) : Promise.resolve({ json: async () => [] }),
       ]);
 
       const linkedList = await devGeoRes.json();

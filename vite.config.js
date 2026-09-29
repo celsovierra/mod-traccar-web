@@ -111,6 +111,22 @@ export default defineConfig(() => ({
         target: 'https://gpscell.site',
         changeOrigin: true,
       },
+      '/api-device-geofence': {
+        target: 'https://gpscell.site',
+        changeOrigin: true,
+      },
+      '/api-device-edit': {
+        target: 'https://gpscell.site',
+        changeOrigin: true,
+      },
+      '/api-anchor': {
+        target: 'https://gpscell.site',
+        changeOrigin: true,
+      },
+      '/api-relay-status': {
+        target: 'https://gpscell.site',
+        changeOrigin: true,
+      },
       '/api-contratos': {
         target: 'https://gpscell.site',
         changeOrigin: true,
