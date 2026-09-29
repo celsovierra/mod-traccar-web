@@ -186,6 +186,14 @@ const ClientesTab = () => {
       mostrarAviso('Erro ao gerar modelo: ' + e.message, false);
     }
   };
+  const normalizarNome = (s) => {
+    return String(s || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
   const uploadExcel = async (file) => {
     if (!file) return;
     try {
@@ -219,9 +227,12 @@ const ClientesTab = () => {
           venc: idxVenc ? row.getCell(Number(idxVenc)).value : '',
         });
       });
+      // Busca TODOS os clientes do servidor
+      const todosResp = await fetchOrThrow('/api/users?limit=5000&offset=0');
+      const todos = await todosResp.json();
       for (let i = 0; i < linhas.length; i++) {
         const l = linhas[i];
-        const item = items.find((u) => (u.name || '').toLowerCase() === l.nome.toLowerCase());
+        const item = todos.find((u) => normalizarNome(u.name) === normalizarNome(l.nome));
         if (!item) { ignorados++; continue; }
         const attrs = { ...(item.attributes || {}) };
         if (l.tel1) attrs.fin_telefone1 = l.tel1;
@@ -566,6 +577,7 @@ const ClientesTab = () => {
                             <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto', gap: 0.5 }}>
                               <input type='checkbox' checked={item.attributes?.fin_nao_cobrar === 'true'} onChange={(e) => marcarNaoCobrar(item, e.target.checked)} style={{ cursor: 'pointer', width: 16, height: 16 }} />
                               <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>Não cobrar</span>
+                            </Box>
                             </Box>
                         </TableCell>
                         <TableCell sx={bodyCell}>
