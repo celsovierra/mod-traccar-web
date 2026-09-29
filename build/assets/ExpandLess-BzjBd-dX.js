@@ -1,0 +1,1 @@
+import{f as e,ot as t}from"./CircularProgress-jXCvfP9m.js";var n=t(),r=e((0,n.jsx)(`path`,{d:`m12 8-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z`}),`ExpandLess`);export{r as t};

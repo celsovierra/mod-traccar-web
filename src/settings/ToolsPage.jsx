@@ -103,15 +103,7 @@ const ToolsPage = () => {
       bg: '#fee2e2',
       show: admin,
     },
-    {
-      title: 'Atualizar Versao',
-      description: 'Busca a ultima atualizacao do sistema e reinicia o servidor',
-      action: handleUpdateVersion,
-      icon: updating ? null : <CloudUploadIcon sx={{ fontSize: 24, color: "#16a34a" }} />,
-      bg: '#dcfce7',
-      show: admin,
-    },
-  ];
+];
 
   return (
     <PageLayout menu={<SettingsMenu />} breadcrumbs={['settingsTitle', 'Ferramentas']}>

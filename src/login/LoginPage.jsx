@@ -117,6 +117,10 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 const LoginPage = () => {
+  const [loginCfg, setLoginCfg] = useState({});
+  useEffect(() => {
+    fetch('/api-contratos/login-config').then((r) => r.json()).then((d) => setLoginCfg(d || {})).catch(() => {});
+  }, []);
   const { classes } = useStyles();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -220,13 +224,13 @@ const LoginPage = () => {
   const header = (
     <>
       <div className={classes.iconBox}>
-        <NavigationIcon fontSize="large" />
+        {loginCfg.logo ? <img src={loginCfg.logo} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <NavigationIcon fontSize="large" />}
       </div>
-      <Typography variant="h5" sx={{ fontWeight: 800, color: '#ffffff', letterSpacing: '-0.5px' }}>
-        GPScell
+      <Typography variant="h5" sx={{ fontWeight: 800, color: loginCfg.corTexto || '#ffffff', letterSpacing: '-0.5px', WebkitTextStroke: '0.7px #ffffff', textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>
+        {loginCfg.nome || 'GUImod'}
       </Typography>
-      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500, mt: 0.5 }}>
-        Sistema de Rastreamento Veicular
+      <Typography variant="body2" sx={{ color: loginCfg.corTexto || 'rgba(255,255,255,0.9)', opacity: 0.95, fontWeight: 600, mt: 0.5, textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
+        {loginCfg.subtitulo || 'Sistema de Rastreamento Veicular'}
       </Typography>
     </>
   );

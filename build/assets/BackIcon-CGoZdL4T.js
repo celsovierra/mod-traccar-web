@@ -1,1 +1,0 @@
-import{O as e,p as t,st as n}from"./mui-BQxnoIY0.js";import{t as r}from"./ArrowBack-CTP2yDXg.js";var i=n(),a=t((0,i.jsx)(`path`,{d:`m12 4-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z`}),`ArrowForward`),o=()=>e().direction===`rtl`?(0,i.jsx)(a,{}):(0,i.jsx)(r,{});export{o as t};

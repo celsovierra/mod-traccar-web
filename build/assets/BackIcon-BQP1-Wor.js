@@ -1,0 +1,1 @@
+import{D as e,ot as t}from"./CircularProgress-jXCvfP9m.js";import{t as n}from"./ArrowBack-6DUV-VaR.js";import{t as r}from"./ArrowForward-jehub4jZ.js";var i=t(),a=()=>e().direction===`rtl`?(0,i.jsx)(r,{}):(0,i.jsx)(n,{});export{a as t};

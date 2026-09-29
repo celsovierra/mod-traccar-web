@@ -223,24 +223,12 @@ const SettingsMenu = () => {
               selected={location.pathname === '/settings/tools'}
             />
             <MenuItem
-              title={updateAvailable ? "Atualizar Versao (nova!)" : "Atualizar Versao"}
-              icon={
-                <CloudUploadIcon
-                  fontSize="small"
-                  sx={{
-                    color: '#16a34a',
-                    animation: updateAvailable ? 'pulseUpdate 1s infinite' : 'none',
-                    '@keyframes pulseUpdate': {
-                      '0%': { opacity: 1, transform: 'scale(1)' },
-                      '50%': { opacity: 0.4, transform: 'scale(1.25)' },
-                      '100%': { opacity: 1, transform: 'scale(1)' },
-                    },
-                  }}
-                />
-              }
-              onClick={handleUpdateVersion}
+              title="Editar Area de Login"
+              link="/settings/login-editor"
+              icon={<DrawIcon fontSize="small" />}
+              selected={location.pathname === '/settings/login-editor'}
             />
-            <Box
+<Box
               onClick={handleVersionClick}
               sx={{
                 mx: 1.5,

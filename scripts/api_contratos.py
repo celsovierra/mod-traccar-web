@@ -309,5 +309,34 @@ def drive_status():
     except Exception as e:
         return jsonify({"success": True, "connected": False, "message": str(e)})
 
+@app.route("/login-config", methods=["GET"])
+def get_login_config():
+    try:
+        conn = pymysql.connect(**DB)
+        cur = conn.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS login_config (id INT PRIMARY KEY, config LONGTEXT)")
+        cur.execute("SELECT config FROM login_config WHERE id = 1")
+        row = cur.fetchone()
+        cur.close(); conn.close()
+        if row:
+            return jsonify(json.loads(row[0]))
+        return jsonify({})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/login-config", methods=["POST"])
+def set_login_config():
+    try:
+        data = request.get_json(force=True) or {}
+        conn = pymysql.connect(**DB)
+        cur = conn.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS login_config (id INT PRIMARY KEY, config LONGTEXT)")
+        cur.execute("REPLACE INTO login_config (id, config) VALUES (1, %s)", (json.dumps(data),))
+        conn.commit()
+        cur.close(); conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8093)

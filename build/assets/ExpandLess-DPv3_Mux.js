@@ -1,1 +1,0 @@
-import{p as e,st as t}from"./mui-BQxnoIY0.js";var n=t(),r=e((0,n.jsx)(`path`,{d:`m12 8-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z`}),`ExpandLess`);export{r as t};
