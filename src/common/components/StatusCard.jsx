@@ -1038,14 +1038,20 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     const snoozeUntil = Date.now() + 12 * 60 * 60 * 1000;
 
     try {
-      await fetchOrThrow('/api/permissions', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          deviceId: Number(deviceId),
-          geofenceId: Number(geofence.id),
-        }),
-      });
+      if (admin) {
+        await fetchOrThrow('/api/permissions', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            deviceId: Number(deviceId),
+            geofenceId: Number(geofence.id),
+          }),
+        });
+      } else {
+        await fetchOrThrow(`/api-device-geofence/${deviceId}/${geofence.id}`, {
+          method: 'DELETE',
+        });
+      }
 
       const currentSnooze = { ...(device?.attributes?.geofenceSnooze || {}) };
       currentSnooze[geofence.id] = snoozeUntil;
@@ -1056,12 +1062,14 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
           attributes: { ...device.attributes, geofenceSnooze: currentSnooze },
         };
         dispatch(devicesActions.update([updatedDevice]));
-        await fetch(`/api/devices/${deviceId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'same-origin',
-          body: JSON.stringify(updatedDevice),
-        }).catch(() => {});
+        if (admin) {
+          await fetch(`/api/devices/${deviceId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(updatedDevice),
+          }).catch(() => {});
+        }
       }
 
       setDeviceGeofences((prev) =>

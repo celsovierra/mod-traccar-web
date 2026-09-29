@@ -1,4 +1,4 @@
-const http = require('http');
+﻿const http = require('http');
 const mysql = require('mysql2/promise');
 
 const PORT = process.env.PORT || 8090;
@@ -198,6 +198,36 @@ async function handleAnchorDelete(req, res, deviceId, cookieHeader) {
   }
 }
 
+async function handleGeofenceUnlink(req, res, deviceId, geofenceId, cookieHeader) {
+  try {
+    const authorized = await checkDeviceAccess(deviceId, cookieHeader);
+    if (!authorized) {
+      sendJson(res, 403, { error: 'Sem permissao' });
+      return;
+    }
+    const [rows] = await pool.query(
+      'SELECT attributes FROM tc_devices WHERE id = ?',
+      [deviceId]
+    );
+    if (rows.length === 0) {
+      sendJson(res, 404, { error: 'Dispositivo nao encontrado' });
+      return;
+    }
+    let attributes = {};
+    try { attributes = rows[0].attributes ? JSON.parse(rows[0].attributes) : {}; } catch (e) {}
+    const snoozeUntil = Date.now() + 12 * 60 * 60 * 1000;
+    if (!attributes.geofenceSnooze) attributes.geofenceSnooze = {};
+    attributes.geofenceSnooze[geofenceId] = snoozeUntil;
+    await pool.query(
+      'UPDATE tc_devices SET attributes = ? WHERE id = ?',
+      [JSON.stringify(attributes), deviceId]
+    );
+    sendJson(res, 200, { success: true, snoozeUntil });
+  } catch (error) {
+    console.error('Erro ao desvincular geofence:', error);
+    sendJson(res, 500, { error: 'Erro interno' });
+  }
+}
 const server = http.createServer(async (req, res) => {
   const cookieHeader = req.headers.cookie;
 
@@ -209,6 +239,7 @@ const server = http.createServer(async (req, res) => {
   const deviceEditMatch = req.url.match(/^\/api-device-edit\/(\d+)$/);
   const anchorMatch = req.url.match(/^\/api-anchor\/(\d+)$/);
   const relayStatusMatch = req.url.match(/^\/api-relay-status\/(\d+)$/);
+  const geofenceUnlinkMatch = req.url.match(/^\/api-device-geofence\/(\d+)\/(\d+)$/);
 
   if (req.method === 'PUT' && deviceEditMatch) {
     await handleDeviceEdit(req, res, parseInt(deviceEditMatch[1], 10), cookieHeader);
@@ -222,6 +253,11 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'DELETE' && anchorMatch) {
     await handleAnchorDelete(req, res, parseInt(anchorMatch[1], 10), cookieHeader);
+    return;
+  }
+
+  if (req.method === 'DELETE' && geofenceUnlinkMatch) {
+    await handleGeofenceUnlink(req, res, parseInt(geofenceUnlinkMatch[1], 10), parseInt(geofenceUnlinkMatch[2], 10), cookieHeader);
     return;
   }
 
