@@ -319,3 +319,11 @@ if [ -f ./deploy/deploy_all.sh ]; then
 else
   echo "   deploy/deploy_all.sh nao encontrado, ignorando."
 fi
+
+echo ">> Configurando client_max_body_size no nginx..."
+if [ -f ./scripts/fix_nginx_body_size.py ]; then
+  python3 ./scripts/fix_nginx_body_size.py
+  nginx -t && systemctl reload nginx
+else
+  echo "   fix_nginx_body_size.py nao encontrado."
+fi
