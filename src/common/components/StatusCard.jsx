@@ -27,18 +27,23 @@ import {
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close';
+import SensorsIcon from '@mui/icons-material/Sensors';
+import SpeedIcon from '@mui/icons-material/Speed';
+import LockIcon from '@mui/icons-material/Lock';
+import PowerIcon from '@mui/icons-material/Power';
+import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
+import BatteryFullIcon from '@mui/icons-material/BatteryFull';
+import SatelliteAltIcon from '@mui/icons-material/SatelliteAlt';
 import RouteIcon from '@mui/icons-material/Route';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShareIcon from '@mui/icons-material/Share';
-import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PlaceIcon from '@mui/icons-material/Place';
-import SpeedIcon from '@mui/icons-material/Speed';
 import LockPersonIcon from '@mui/icons-material/LockPerson';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
@@ -652,6 +657,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
   const [removing, setRemoving] = useState(false);
   const [editPlateOpen, setEditPlateOpen] = useState(false);
+  const [showSensors, setShowSensors] = useState(false);
   const [editModel, setEditModel] = useState('');
   const [editPlate, setEditPlate] = useState('');
   const [savingPlate, setSavingPlate] = useState(false);
@@ -1278,6 +1284,27 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
             style={{ position: 'relative' }}
           >
             <Card elevation={3} className={classes.card}>
+      {!showSensors && <Box onClick={() => setShowSensors(!showSensors)} sx={{ position: 'absolute', top: -14, right: 16, backgroundColor: '#1e293b', borderRadius: '16px 16px 0 0', padding: '2px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 -2px 8px rgba(0,0,0,0.15)', zIndex: 6 }}>
+        <Typography sx={{ color: '#fff', fontSize: '0.68rem', fontWeight: 700, letterSpacing: 0.5 }}>SENSORES</Typography>
+      </Box>}
+{showSensors && (<Box sx={{ position: 'absolute', bottom: '100%', left: 0, right: 0, mb: -1, backgroundColor: '#1e293b', color: '#fff', borderRadius: '16px 16px 0 0', p: 2, zIndex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                    <SensorsIcon sx={{ fontSize: 20 }} />
+                    <Typography sx={{ fontWeight: 800, fontSize: '0.95rem' }}>Sensores</Typography>
+                    <Box onClick={() => setShowSensors(false)} sx={{ ml: 'auto', backgroundColor: 'rgba(255,255,255,0.15)', color: '#fff', borderRadius: '10px', padding: '3px 10px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 0.5 }}>RECOLHER <KeyboardArrowDownIcon sx={{ fontSize: 14 }} /></Box>
+                  </Box>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><SpeedIcon sx={{ fontSize: 14, color: '#94a3b8' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Velocidade</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{position ? formatSpeed(position.speed, speedUnit, t) : '0 km/h'}</Typography></Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><PowerIcon sx={{ fontSize: 14, color: '#94a3b8' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Alimentacao</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{position?.attributes?.power ? 'Ligado' : '-'}</Typography></Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><SignalCellularAltIcon sx={{ fontSize: 14, color: '#94a3b8' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>GSM</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{position?.attributes?.rssi ?? '-'}</Typography></Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><BatteryFullIcon sx={{ fontSize: 14, color: '#94a3b8' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Tensao Ext.</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{position?.attributes?.power ? `${position.attributes.power} V` : '-'}</Typography></Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><SatelliteAltIcon sx={{ fontSize: 14, color: '#94a3b8' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Satelites</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{position?.attributes?.sat ?? '-'}</Typography></Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><LockIcon sx={{ fontSize: 14, color: '#94a3b8' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Bloqueio</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{position?.attributes?.blocked ? 'Ligado' : 'Desligado'}</Typography></Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><BatteryFullIcon sx={{ fontSize: 14, color: '#94a3b8' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Bateria</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{position?.attributes?.batteryLevel ?? '-'}%</Typography></Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><VpnKeyIcon sx={{ fontSize: 14, color: '#94a3b8' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Ignicao</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{isIgnitionOn ? 'Ligada' : 'Desligada'}</Typography></Box>
+                  </Box>
+                </Box>
+              )}
               <Box className={classes.toggleTab} onClick={() => setExpanded(!expanded)}>
                 {expanded ? (
                   <KeyboardArrowDownIcon sx={{ fontSize: 18, color: '#6c757d' }} />
@@ -1336,7 +1363,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                               color: ignitionColor,
                             }}
                           >
-                            {isIgnitionOn ? 'IgniÃ§Ã£o ligada' : 'IgniÃ§Ã£o desligada'}</Typography>
+                            {isIgnitionOn ? 'Ignição ligada' : 'Ignição desligada'}</Typography>
                         </Box>
                         {stoppedStatus && (
                           <Box sx={{ mt: '2px' }}>
@@ -2007,8 +2034,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
           </Box>
         </Box>
       </Dialog>
-
-      <RemoveDialog
+<RemoveDialog
         open={removing}
         endpoint="devices"
         itemId={deviceId}
