@@ -78,9 +78,17 @@ const set = (k, v) => setCfg((c) => ({ ...c, [k]: v }));
             <input type="file" hidden accept="image/*" onChange={(e) => {
               const file = e.target.files[0];
               if (!file) return;
-              const reader = new FileReader();
-              reader.onload = () => set('logo', reader.result);
-              reader.readAsDataURL(file);
+              const img = new Image();
+              img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const max = 300;
+                let w = img.width, h = img.height;
+                if (w > h) { if (w > max) { h = h * max / w; w = max; } } else { if (h > max) { w = w * max / h; h = max; } }
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                set('logo', canvas.toDataURL('image/png', 0.85));
+              };
+              img.src = URL.createObjectURL(file);
             }} />
           </Button>
           {campo('Nome', 'nome')}
