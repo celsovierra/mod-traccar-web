@@ -65,7 +65,7 @@ def povoar():
     with conn.cursor() as cur:
         cur.execute("SELECT id, name, attributes FROM tc_users WHERE attributes IS NOT NULL")
         users = cur.fetchall()
-        cur.execute("DELETE FROM tc_fila_financeiro WHERE DATE(created_at) = CURDATE()")
+        cur.execute("DELETE FROM tc_fila_financeiro")
         inseridos = 0
         for u in users:
             attrs = u.get("attributes") or "{}"
@@ -327,7 +327,6 @@ def processar(forcar=False):
             texto = texto.replace("{pix_copia_cola}", pix_copia or "")
             texto = texto.replace("{link_pagamento}", link_pag or "")
             try:
-                ok = enviar_whatsapp(cred["url"], cred["key"], cred["instance"], item["telefone"], texto)
                 ok = enviar_whatsapp(cred["url"], cred["key"], cred["instance"], item["telefone"], texto)
                 if ok:
                     cur.execute("UPDATE tc_fila_financeiro SET status=%s, enviado_em=NOW() WHERE id=%s", ("Enviado", item["id"]))

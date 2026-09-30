@@ -585,35 +585,35 @@ const ClientesTab = () => {
                         </TableCell>
                         <TableCell sx={bodyCell}>
                           {editando[item.id] ? (
-                            <TextField size='small' value={rascunho[item.id]?.telefone1 || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], telefone1: formatarTelefone(e.target.value) } }))} />
+                            <TextField size='small' variant='standard' InputProps={{ disableUnderline: true }} sx={{ width: 120 }} value={rascunho[item.id]?.telefone1 || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], telefone1: formatarTelefone(e.target.value) } }))} />
                           ) : (
                             <span>{item.attributes?.fin_telefone1 || '-'}</span>
                           )}
                         </TableCell>
                         <TableCell sx={{ ...bodyCell, display: { xs: 'none', md: 'table-cell' } }}>
                           {editando[item.id] ? (
-                            <TextField size='small' value={rascunho[item.id]?.telefone2 || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], telefone2: formatarTelefone(e.target.value) } }))} />
+                            <TextField size='small' variant='standard' InputProps={{ disableUnderline: true }} sx={{ width: 120 }} value={rascunho[item.id]?.telefone2 || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], telefone2: formatarTelefone(e.target.value) } }))} />
                           ) : (
                             <span>{item.attributes?.fin_telefone2 || '-'}</span>
                           )}
                         </TableCell>
                         <TableCell sx={bodyCell}>
                           {editando[item.id] ? (
-                            <TextField size='small' placeholder='12,00' value={rascunho[item.id]?.valor || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], valor: formatarValor(e.target.value) } }))} />
+                            <TextField size='small' variant='standard' InputProps={{ disableUnderline: true }} sx={{ width: 80 }} placeholder='12,00' value={rascunho[item.id]?.valor || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], valor: formatarValor(e.target.value) } }))} />
                           ) : (
                             <span>{item.attributes?.fin_valor || '-'}</span>
                           )}
                         </TableCell>
                         <TableCell sx={bodyCell}>
                           {editando[item.id] ? (
-                            <TextField size='small' type='date' value={rascunho[item.id]?.vencimento || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], vencimento: e.target.value } }))} />
+                            <TextField size='small' variant='standard' InputProps={{ disableUnderline: true }} sx={{ width: 130 }} type='date' value={rascunho[item.id]?.vencimento || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], vencimento: e.target.value } }))} />
                           ) : (
                             <span>{item.attributes?.fin_vencimento ? formatarDataBR(item.attributes.fin_vencimento) : '-'}</span>
                           )}
                         </TableCell>
                         <TableCell sx={bodyCell}>
                           {editando[item.id] ? (
-                            <TextField size='small' value={rascunho[item.id]?.contrato || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], contrato: e.target.value } }))} />
+                            <TextField size='small' variant='standard' InputProps={{ disableUnderline: true }} sx={{ width: 120 }} value={rascunho[item.id]?.contrato || ''} onChange={(e) => setRascunho((r) => ({ ...r, [item.id]: { ...r[item.id], contrato: e.target.value } }))} />
                           ) : (
                             (() => { const st = contratosMap[item.id]; const stBadge = (txt, bg, cor) => <span style={{ backgroundColor: bg, color: cor, padding: '2px 10px', borderRadius: 12, fontWeight: 700, fontSize: '0.75rem' }}>{txt}</span>; if (st === 'signed') return stBadge('Assinado', '#dcfce7', '#16a34a'); if (st === 'pending') return stBadge('Pendente', '#fed7aa', '#ea580c'); return <span style={{ cursor: 'pointer' }} onDoubleClick={() => marcarAssinado(item)} title='Duplo clique para marcar como assinado (historico)'>-</span>; })()
                           )}
