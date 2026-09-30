@@ -18,6 +18,8 @@ import ExcelJS from 'exceljs';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
+const norm = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
 const ClientesTab = () => {
   const t = useTranslation();
   const [reloadKey, reload] = useReducer((k) => k + 1, 0);
@@ -489,8 +491,8 @@ const ClientesTab = () => {
 
   const filteredItems = items.filter((u) => !u.temporary).filter((u) => {
     if (!searchKeyword) return true;
-    const k = searchKeyword.toLowerCase();
-    return (u.name && u.name.toLowerCase().includes(k)) || (u.email && u.email.toLowerCase().includes(k));
+    const k = norm(searchKeyword);
+    return (u.name && norm(u.name).includes(k)) || (u.email && norm(u.email).includes(k));
   }).sort((a, b) => {
     const aNao = a.attributes?.fin_nao_cobrar === 'true' ? 1 : 0;
     const bNao = b.attributes?.fin_nao_cobrar === 'true' ? 1 : 0;
