@@ -41,11 +41,11 @@ const LoginEditorPage = () => {
   const fecharPaleta = () => setPaletaKey(null);
 const set = (k, v) => setCfg((c) => ({ ...c, [k]: v }));
   useEffect(() => {
-    fetch('/api-contratos/login-config').then((r) => r.json()).then((d) => { if (d && Object.keys(d).length) setCfg({ ...defaults, ...d }); }).catch(() => {});
+    fetch('/api-contratos/login-config').then((r) => r.json()).then((d) => { if (d && !d.error) setCfg({ ...defaults, ...d }); }).catch(() => {});
   }, []);
   const salvar = async () => {
     try {
-      const r = await fetch('/api-contratos/login-config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cfg) });
+      const r = await fetch('/api-contratos/login-config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(Object.entries(cfg).filter(([k]) => ['nome','subtitulo','corFundo','corIcone','corTexto','corBotao','corTitulo','corSubtitulo','tema','imagem','logo'].includes(k)))) });
       if (r.ok) alert('Salvo!'); else alert('Erro ao salvar');
     } catch { alert('Erro ao salvar'); }
   };

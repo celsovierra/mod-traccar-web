@@ -327,3 +327,6 @@ if [ -f ./scripts/fix_nginx_body_size.py ]; then
 else
   echo "   fix_nginx_body_size.py nao encontrado."
 fi
+
+echo ">> Limpando configs de login invalidas..."
+mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "DELETE FROM login_config WHERE config LIKE '%""error""%';" 2>/dev/null || true
