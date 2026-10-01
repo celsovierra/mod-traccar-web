@@ -330,3 +330,6 @@ fi
 
 echo ">> Limpando configs de login invalidas..."
 mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "DELETE FROM login_config WHERE config LIKE '%""error""%';" 2>/dev/null || true
+
+echo ">> Removendo notificacoes duplicadas no Traccar..."
+mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "DELETE n1 FROM tc_notifications n1 INNER JOIN tc_notifications n2 WHERE n1.id > n2.id AND n1.type = n2.type;" 2>/dev/null || true
