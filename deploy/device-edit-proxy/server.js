@@ -254,6 +254,9 @@ async function handleGeofenceList(req, res, deviceId, cookieHeader) {
     sendJson(res, 500, { error: 'Erro interno' });
   }
 }
+const server = http.createServer(async (req, res) => {
+  const cookieHeader = req.headers.cookie;
+
   if (!cookieHeader) {
     sendJson(res, 401, { error: 'Nao autenticado' });
     return;
