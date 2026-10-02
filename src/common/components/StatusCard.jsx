@@ -986,7 +986,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
       const linkedMap = new Map();
       linkedList
-        .forEach((g) => linkedMap.set(g.id, { ...g, linked: true }));
+        .forEach((g) => linkedMap.set(g.id, { ...g, linked: g.linked !== false, snoozeUntil: g.snoozeUntil || null }));
 
       const snoozeMap = { ...(device?.attributes?.geofenceSnooze || {}) };
       const now = Date.now();
