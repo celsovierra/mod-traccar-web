@@ -244,10 +244,12 @@ async function handleGeofenceList(req, res, deviceId, cookieHeader) {
       'SELECT g.id, g.name, g.description, g.area, g.attributes FROM tc_geofences g INNER JOIN tc_device_geofence dg ON g.id = dg.geofenceid WHERE dg.deviceid = ?',
       [deviceId]
     );
-    const out = rows.filter((r) => !snooze[r.id] || snooze[r.id] < now).map((r) => {
+    const out = rows.map((r) => {
       let attrs = {};
       try { attrs = r.attributes ? JSON.parse(r.attributes) : {}; } catch (e) {}
-      return { id: r.id, name: r.name, description: r.description, area: r.area, attributes: attrs };
+      const sn = snooze[r.id];
+      const snoozeAtivo = sn && sn > now;
+      return { id: r.id, name: r.name, description: r.description, area: r.area, attributes: attrs, linked: !snoozeAtivo, snoozeUntil: snoozeAtivo ? sn : null };
     });
   } catch (error) {
     console.error('Erro ao listar geofences:', error);
