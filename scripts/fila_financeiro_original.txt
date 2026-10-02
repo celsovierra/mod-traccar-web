@@ -1,27 +1,10 @@
 ﻿#!/usr/bin/env python3
 import sys
-import os
-import time
 import json
+import time
 import datetime
 import secrets
 import urllib.request
-
-LOCKFILE = '/tmp/fila_financeiro.lock'
-
-def ja_rodando():
-    if os.path.exists(LOCKFILE):
-        try:
-            with open(LOCKFILE) as f:
-                pid = int(f.read().strip())
-            os.kill(pid, 0)
-            return True
-        except (OSError, ValueError):
-            pass
-    with open(LOCKFILE, 'w') as f:
-        f.write(str(os.getpid()))
-    return False
-
 try:
     import pymysql
 except ImportError:
@@ -361,9 +344,6 @@ def processar(forcar=False):
     print("Enviados: %d, Erros: %d, Pulados: %d" % (enviados, erros, pulados))
 
 if __name__ == "__main__":
-    if ja_rodando():
-        print("Ja existe uma execucao rodando. Saindo.")
-        sys.exit(0)
     acao = sys.argv[1] if len(sys.argv) > 1 else "processar"
     if acao == "povoar":
         povoar()
@@ -375,7 +355,4 @@ if __name__ == "__main__":
         processar(forcar=True)
     else:
         print("Uso: fila_financeiro.py [povoar|limpar|processar|processar-forcar]")
-    try:
-        os.remove(LOCKFILE)
-    except OSError:
-        pass
+
