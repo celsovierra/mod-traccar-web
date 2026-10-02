@@ -240,25 +240,20 @@ async function handleGeofenceList(req, res, deviceId, cookieHeader) {
     try { devAttrs = devRows[0]?.attributes ? JSON.parse(devRows[0].attributes) : {}; } catch (e) {}
     const snooze = devAttrs.geofenceSnooze || {};
     const now = Date.now();
-    const [rows] = await pool.query(
-      'SELECT g.id, g.name, g.description, g.area, g.attributes FROM tc_geofences g INNER JOIN tc_device_geofence dg ON g.id = dg.geofenceid WHERE dg.deviceid = ?',
-      [deviceId]
-    );
+    const [rows] = await pool.query('SELECT g.id, g.name, g.description, g.area FROM tc_geofences g INNER JOIN tc_device_geofence dg ON g.id = dg.geofenceid WHERE dg.deviceid = ?', [deviceId]);
     const out = rows.map((r) => {
-      let attrs = {};
-      try { attrs = r.attributes ? JSON.parse(r.attributes) : {}; } catch (e) {}
       const sn = snooze[r.id];
       const snoozeAtivo = sn && sn > now;
-      return { id: r.id, name: r.name, description: r.description, area: r.area, attributes: attrs, linked: !snoozeAtivo, snoozeUntil: snoozeAtivo ? sn : null };
+      return { id: r.id, name: r.name, description: r.description, area: r.area, attributes: {}, linked: !snoozeAtivo, snoozeUntil: snoozeAtivo ? sn : null };
     });
+    const json = JSON.stringify(out);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(json);
   } catch (error) {
     console.error('Erro ao listar geofences:', error);
     sendJson(res, 500, { error: 'Erro interno' });
   }
 }
-const server = http.createServer(async (req, res) => {
-  const cookieHeader = req.headers.cookie;
-
   if (!cookieHeader) {
     sendJson(res, 401, { error: 'Nao autenticado' });
     return;
