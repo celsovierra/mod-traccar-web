@@ -82,7 +82,14 @@ const ClientesTab = () => {
     const diasAtraso = diff < 0 ? Math.abs(diff) : 0;
     const multa = (multaAtiva && tipo === 'Atraso') ? multaNum : 0;
     const juros = (multaAtiva && tipo === 'Atraso') ? (jurosDiaNum * diasAtraso) : 0;
-    const total = valorNum + multa + juros;
+    let mesesAtraso = 1;
+    if (tipo === 'Atraso') {
+      mesesAtraso = (hoje.getFullYear() - venc.getFullYear()) * 12 + (hoje.getMonth() - venc.getMonth()) + 1;
+      if (hoje.getDate() < venc.getDate()) mesesAtraso -= 1;
+      if (mesesAtraso < 1) mesesAtraso = 1;
+    }
+    const valorBaseTotal = valorNum * mesesAtraso;
+    const total = valorBaseTotal + multa + juros;
     const fmt = (n) => n.toFixed(2).replace('.', ',');
     const vencBR = String(parts[2]).padStart(2,'0') + '/' + String(parts[1]).padStart(2,'0') + '/' + parts[0];
     let texto = tpl;

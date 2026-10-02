@@ -1,0 +1,1 @@
+import{f as e,st as t}from"./CircularProgress-CqZms1FQ.js";var n=t(),r=e((0,n.jsx)(`path`,{d:`M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z`}),`ChevronRight`);export{r as t};

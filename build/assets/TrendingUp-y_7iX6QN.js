@@ -1,1 +1,0 @@
-import{f as e,ot as t}from"./CircularProgress-jXCvfP9m.js";var n=t(),r=e((0,n.jsx)(`path`,{d:`M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z`}),`Star`),i=e((0,n.jsx)(`path`,{d:`m16 6 2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z`}),`TrendingUp`);export{r as n,i as t};
