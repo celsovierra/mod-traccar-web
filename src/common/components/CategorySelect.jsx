@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+﻿import { useState, useRef } from "react";
 import { Box, Menu, MenuItem, Typography, Grid, IconButton, Divider, Dialog, DialogContent, DialogTitle, TextField, Button } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
@@ -40,12 +40,12 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
   const fileInputRef = useRef(null);
   const clickCountRef = useRef(0);
   const clickTimerRef = useRef(null);
-  const selected = value || "default";
+  const selected = value || "moto_vermlha";
 
-  const defaultOption = { id: "default", name: "Padrão", icon: defaultSvg };
+  const defaultOption = { id: "default", name: "PadrÃ£o", icon: defaultSvg };
   const allOptions = [defaultOption, ...staticOptions, ...rotativeOptions];
 
-  const selectedOption = allOptions.find((o) => o.id === selected) || defaultOption;
+  const selectedOption = allOptions.find((o) => o.id === selected) || rotativeOptions.find((o) => o.id === "moto_vermlha") || defaultOption;
   const previewOption = allOptions.find((o) => o.id === sizeEditorKey) || defaultOption;
 
   const handleSelect = (id) => {
@@ -85,7 +85,7 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
         body: JSON.stringify({ key: sizeEditorKey, ...sizeForm }),
       });
       if (!response.ok) throw new Error(await response.text());
-      window.alert("Tamanho salvo! Recarregando a página para aplicar...");
+      window.alert("Tamanho salvo! Recarregando a pÃ¡gina para aplicar...");
       window.location.reload();
     } catch (err) {
       window.alert("Erro ao salvar tamanho: " + err.message);
@@ -102,7 +102,7 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
   const handleFileChange = (event) => {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
-    const name = window.prompt("Nome do ícone:", file.name.replace(/\.[^/.]+$/, ""));
+    const name = window.prompt("Nome do Ã­cone:", file.name.replace(/\.[^/.]+$/, ""));
     if (!name) {
       event.target.value = "";
       return;
@@ -117,10 +117,10 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
           body: JSON.stringify({ name, dataUrl: reader.result }),
         });
         if (!response.ok) throw new Error(await response.text());
-        window.alert("Ícone salvo em src/resources/images/icon/rotativos/. Recarregando a página...");
+        window.alert("Ãcone salvo em src/resources/images/icon/rotativos/. Recarregando a pÃ¡gina...");
         window.location.reload();
       } catch (err) {
-        window.alert("Erro ao salvar ícone: " + err.message);
+        window.alert("Erro ao salvar Ã­cone: " + err.message);
       } finally {
         setUploading(false);
       }
@@ -188,7 +188,7 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
       </Box>
 
       <Typography sx={{ fontSize: "0.65rem", color: "#94a3b8", mt: 0.5, ml: 0.5 }}>
-        Dica: clique 3x seguidas num ícone da lista pra ajustar o tamanho dele
+        Dica: clique 3x seguidas num Ã­cone da lista pra ajustar o tamanho dele
       </Typography>
 
       <Menu
@@ -202,7 +202,7 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
             size="small"
             onClick={handleUploadClick}
             disabled={uploading}
-            title="Enviar novo ícone (rotativo)"
+            title="Enviar novo Ã­cone (rotativo)"
             sx={{ color: "#7c3aed", backgroundColor: "#f5f3ff", "&:hover": { backgroundColor: "#ede9fe" } }}
           >
             <AddPhotoAlternateIcon fontSize="small" />
@@ -222,15 +222,15 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
               onClick={() => handleIconClick(defaultOption)}
               sx={{ flexDirection: "column", borderRadius: "12px", gap: 0.5, py: 1 }}
             >
-              <img src={defaultOption.icon} alt="Padrão" style={{ width: 36, height: 36, objectFit: "contain" }} />
-              <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, textAlign: "center" }}>Padrão</Typography>
+              <img src={defaultOption.icon} alt="PadrÃ£o" style={{ width: 36, height: 36, objectFit: "contain" }} />
+              <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, textAlign: "center" }}>PadrÃ£o</Typography>
             </MenuItem>
           </Grid>
         </Grid>
         <Divider sx={{ my: 0.5 }} />
-        {renderGroup("Ícones que seguem a rota", rotativeOptions)}
+        {renderGroup("Ãcones que seguem a rota", rotativeOptions)}
         <Divider sx={{ my: 0.5 }} />
-        {renderGroup("Ícones estáticos", staticOptions)}
+        {renderGroup("Ãcones estÃ¡ticos", staticOptions)}
       </Menu>
 
       <Dialog open={Boolean(sizeEditorKey)} onClose={() => setSizeEditorKey(null)} maxWidth="xs" fullWidth>
@@ -262,7 +262,7 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
           >
             <img
               src={previewOption.icon}
-              alt="prévia"
+              alt="prÃ©via"
               style={{
                 width: "60%",
                 height: "60%",
@@ -273,7 +273,7 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
             />
           </Box>
           <Typography sx={{ fontSize: "0.68rem", color: "#94a3b8", textAlign: "center", mt: -1.5 }}>
-            Prévia (aproximada) de como o ícone vai ficar
+            PrÃ©via (aproximada) de como o Ã­cone vai ficar
           </Typography>
           <TextField
             label="Tamanho"
@@ -281,7 +281,7 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
             inputProps={{ step: 0.05, min: 0.1, max: 5 }}
             value={sizeForm.tamanho}
             onChange={(e) => setSizeForm({ ...sizeForm, tamanho: e.target.value })}
-            helperText="Tamanho geral do ícone no mapa (1 = normal)"
+            helperText="Tamanho geral do Ã­cone no mapa (1 = normal)"
             fullWidth
           />
           <TextField
@@ -290,7 +290,7 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
             inputProps={{ step: 0.05, min: 0.1, max: 3 }}
             value={sizeForm.largura}
             onChange={(e) => setSizeForm({ ...sizeForm, largura: e.target.value })}
-            helperText="Só a largura da imagem (1 = original)"
+            helperText="SÃ³ a largura da imagem (1 = original)"
             fullWidth
           />
           <TextField
@@ -299,7 +299,7 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
             inputProps={{ step: 0.05, min: 0.1, max: 3 }}
             value={sizeForm.altura}
             onChange={(e) => setSizeForm({ ...sizeForm, altura: e.target.value })}
-            helperText="Só a altura da imagem (1 = original)"
+            helperText="SÃ³ a altura da imagem (1 = original)"
             fullWidth
           />
           <Button
