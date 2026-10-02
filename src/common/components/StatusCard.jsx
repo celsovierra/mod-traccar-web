@@ -1162,27 +1162,24 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       : 'Nao disponivel';
 
     const message = [
-      `ðŸï¸ *RELATORIO DE MONITORAMENTO*`,
+      '📍 *RELATORIO DE MONITORAMENTO*',
       '',
-      `ðŸ‘¤ ${device.name}`,
+      `👤 ${device.name}`,
       `${statusEmoji} ${isOnline ? 'Conectado / Online' : 'Desconectado / Offline'}`,
-      `ðŸ”‘ ${ignitionText}`,
-      `${isBlocked ? 'ðŸ”’ Bloqueado' : 'ðŸ”“ Desbloqueado'}`,
+      `🔑 ${ignitionText}`,
+      `${isBlocked ? '🔒 Bloqueado' : '🔓 Desbloqueado'}`,
       '',
-      `â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€`,
-      `ðŸ›µ ${modelText}`,
-      `ðŸ”¢ ${plateText}`,
-      `â±ï¸ ${speedKmh} km/h`,
-      `â³ ${stoppedText}`,
-      `â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€`,
+      `🚵 ${modelText}`,
+      `🔢 ${plateText}`,
+      `⚡ ${speedKmh} km/h`,
+      `🛑 ${stoppedText}`,
+      '───────────────',
       '',
-      `ðŸ“ ${addressText}`,
-      `ðŸ•’ ${dateText}`,
+      `📍 ${addressText}`,
       '',
-      `ðŸ—ºï¸ *LocalizaÃ§Ã£o no Mapa:*`,
+      `🗺️ *Localizacao no Mapa:*`,
       mapsLink,
-    ].join('\\n');
-
+    ].join('\n');
     const isApp = /wv|WebView|Android.*Version/i.test(navigator.userAgent) || window.ReactNativeWebView;
 
     if (isApp) {
