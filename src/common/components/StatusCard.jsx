@@ -977,8 +977,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     setLoadingGeofences(true);
     try {
       const [devGeoRes, allGeoRes] = await Promise.all([
-        admin ? fetchOrThrow(`/api/geofences?deviceId=${deviceId}`) : fetchOrThrow(`/api-device-geofence/${deviceId}`),
-        admin ? fetchOrThrow(`/api/geofences?all=true`).catch(() => fetchOrThrow(`/api/geofences`)) : Promise.resolve({ json: async () => [] }),
+        fetchOrThrow(`/api-device-geofence/${deviceId}`),
+        Promise.resolve({ json: async () => [] }),
       ]);
 
       const linkedList = await devGeoRes.json();
@@ -1045,20 +1045,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     const snoozeUntil = Date.now() + 12 * 60 * 60 * 1000;
 
     try {
-      if (admin) {
-        await fetchOrThrow('/api/permissions', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            deviceId: Number(deviceId),
-            geofenceId: Number(geofence.id),
-          }),
-        });
-      } else {
-        await fetchOrThrow(`/api-device-geofence/${deviceId}/${geofence.id}`, {
-          method: 'DELETE',
-        });
-      }
+      await fetchOrThrow(`/api-device-geofence/${deviceId}/${geofence.id}`, {
+        method: 'DELETE',
+      });
 
       const currentSnooze = { ...(device?.attributes?.geofenceSnooze || {}) };
       currentSnooze[geofence.id] = snoozeUntil;

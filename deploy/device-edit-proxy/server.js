@@ -235,16 +235,20 @@ async function handleGeofenceList(req, res, deviceId, cookieHeader) {
       sendJson(res, 403, { error: 'Sem permissao' });
       return;
     }
+    const [devRows] = await pool.query('SELECT attributes FROM tc_devices WHERE id = ?', [deviceId]);
+    let devAttrs = {};
+    try { devAttrs = devRows[0]?.attributes ? JSON.parse(devRows[0].attributes) : {}; } catch (e) {}
+    const snooze = devAttrs.geofenceSnooze || {};
+    const now = Date.now();
     const [rows] = await pool.query(
       'SELECT g.id, g.name, g.description, g.area, g.attributes FROM tc_geofences g INNER JOIN tc_device_geofence dg ON g.id = dg.geofenceid WHERE dg.deviceid = ?',
       [deviceId]
     );
-    const out = rows.map((r) => {
+    const out = rows.filter((r) => !snooze[r.id] || snooze[r.id] < now).map((r) => {
       let attrs = {};
       try { attrs = r.attributes ? JSON.parse(r.attributes) : {}; } catch (e) {}
       return { id: r.id, name: r.name, description: r.description, area: r.area, attributes: attrs };
     });
-    sendJson(res, 200, out);
   } catch (error) {
     console.error('Erro ao listar geofences:', error);
     sendJson(res, 500, { error: 'Erro interno' });
