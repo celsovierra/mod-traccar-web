@@ -335,4 +335,4 @@ echo ">> Removendo notificacoes duplicadas no Traccar..."
 mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "DELETE n1 FROM tc_notifications n1 INNER JOIN tc_notifications n2 WHERE n1.id > n2.id AND n1.type = n2.type;" 2>/dev/null || true
 
 echo ">> Vinculando notificacao 171 (ignicao ligada) aos mesmos devices da 161..."
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "INSERT IGNORE INTO tc_device_notification (deviceid, notificationid) SELECT deviceid, 171 FROM tc_device_notification WHERE notificationid = 161;" 2>/dev/null || true
+mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "INSERT IGNORE INTO tc_device_notification (deviceid, notificationid) SELECT dn.deviceid, n171.id FROM tc_device_notification dn JOIN tc_notifications n161 ON n161.id = dn.notificationid AND n161.type = 'ignitionOff' JOIN tc_notifications n171 ON n171.type = 'ignitionOn' WHERE dn.notificationid = n161.id;" 2>/dev/null || true
