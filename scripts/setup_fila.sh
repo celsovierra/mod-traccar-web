@@ -34,13 +34,13 @@ mysql -u "$DB_USER_XML" -p"$DB_PASS_XML" "$DB_NAME_XML" < /opt/traccar/scripts/s
 echo ">> [FILA] Registrando cron jobs..."
 CRON_LINHAS=$(cat <<CRONEOF
 0 7 * * * /usr/bin/python3 /opt/traccar/scripts/fila_financeiro.py povoar >> /var/log/fila_financeiro.log 2>&1
-0 0 * * * /usr/bin/python3 /opt/traccar/scripts/fila_financeiro.py limpar >> /var/log/fila_financeiro.log 2>&1
+0 5 * * * /usr/bin/python3 /opt/traccar/scripts/fila_financeiro.py limpar >> /var/log/fila_financeiro.log 2>&1
 */5 * * * * /usr/bin/python3 /opt/traccar/scripts/fila_financeiro.py processar >> /var/log/fila_financeiro.log 2>&1
 CRONEOF
 )
 
 ( crontab -l 2>/dev/null | grep -v "fila_financeiro.py" ; echo "$CRON_LINHAS" ) | crontab -
-echo "   Cron registrado: povoar 7h, limpar 0h, processar a cada 5min."
+echo "   Cron registrado: limpar 5h, povoar 7h, processar a cada 5min."
 
 echo ">> [FILA] Setup concluido!"
 
