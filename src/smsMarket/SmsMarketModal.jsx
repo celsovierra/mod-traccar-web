@@ -668,6 +668,14 @@ const SmsMarketModal = ({ device, onClose }) => {
         },
       }}
     >
+      <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 10, display: 'flex', gap: 0.5, backgroundColor: '#fff', borderRadius: '50%', p: 0.3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <IconButton onClick={() => setShowSettings(!showSettings)} size="small" color="primary">
+          <SettingsIcon />
+        </IconButton>
+        <IconButton onClick={onClose} size="small">
+          <CloseIcon />
+        </IconButton>
+      </Box>
       <Box
         display="flex"
         justifyContent="space-between"
@@ -713,12 +721,6 @@ const SmsMarketModal = ({ device, onClose }) => {
               )}
             </Typography>
           </Paper>
-          <IconButton onClick={() => setShowSettings(!showSettings)} size="small" color="primary">
-            <SettingsIcon />
-          </IconButton>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
         </Box>
       </Box>
 
