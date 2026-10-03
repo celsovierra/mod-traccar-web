@@ -112,6 +112,9 @@ const useStyles = makeStyles()((theme) => ({
     },
     '& input': {
       fontSize: '16px',
+      color: '#0f172a !important',
+      WebkitTextFillColor: '#0f172a !important',
+      caretColor: '#0f172a',
     },
   },
 }));
