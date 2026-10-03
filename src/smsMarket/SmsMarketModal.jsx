@@ -727,12 +727,12 @@ const SmsMarketModal = ({ device, onClose }) => {
       <Collapse in={showSettings} sx={{ mb: 2 }}>
         <Box p={2} mb={2} bgcolor="#f1f8e9" borderRadius="8px" border="1px solid #c8e6c9">
           <Typography variant="subtitle2" fontWeight="bold" color="success.dark" mb={1}>
-            Configurar Credenciais ENVIAR COMANDO
+            Configurar Credenciais SMS Market
           </Typography>
           <TextField
             size="small"
             fullWidth
-            label="Usuï¿½rio / Login"
+            label="Usuario / Login"
             value={creds.user}
             onChange={(e) => setCreds({ ...creds, user: e.target.value })}
             sx={{ mb: 1, bgcolor: '#fff' }}
