@@ -219,7 +219,18 @@ def calcular_valores(item):
                 juros_dia = 0.0
             dias = int(item.get("dias_atraso") or 0)
             juros = juros_dia * dias
-    total = valor + multa + juros
+    # MESMA REGRA DO BOTAO MANUAL: meses em atraso
+    meses = 1
+    if item.get("tipo") == "Atraso" and item.get("vencimento"):
+        venc = item["vencimento"]
+        hj = hoje()
+        meses = (hj.year - venc.year) * 12 + (hj.month - venc.month) + 1
+        if hj.day < venc.day:
+            meses -= 1
+        if meses < 1:
+            meses = 1
+    valor_base = valor * meses
+    total = valor_base + multa + juros
     return valor, multa, juros, total
 
 def montar_texto(texto, item):
