@@ -53,11 +53,14 @@ const SignaturePad = forwardRef(({ width = 400, height = 200, showError = false,
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
     const pos = getPos(e);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
     setIsDrawing(true);
   };
-
   const draw = (e) => {
     e.preventDefault();
     if (!isDrawing) return;
@@ -65,6 +68,8 @@ const SignaturePad = forwardRef(({ width = 400, height = 200, showError = false,
     if (!ctx) return;
     const pos = getPos(e);
     ctx.lineTo(pos.x, pos.y);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
     ctx.stroke();
     if (!hasDrawn) setHasDrawn(true);
   };
