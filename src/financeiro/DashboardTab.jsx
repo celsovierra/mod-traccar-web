@@ -16,7 +16,7 @@ const fmtBR = (n) => Number(n || 0).toFixed(2).replace('.', ',');
 const CORES_DIA = ['#ef4444', '#3b82f6', '#a855f7', '#22c55e', '#f97316', '#06b6d4', '#ec4899', '#eab308'];
 const nomeMes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-const DashboardTab = ({ onVoltar }) => {
+const DashboardTab = ({ onClose }) => {
   const [items, setItems] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [diaAberto, setDiaAberto] = useState(null);
@@ -116,7 +116,7 @@ const DashboardTab = ({ onVoltar }) => {
               <Typography sx={{ fontSize: '0.85rem', color: '#64748b' }}>Acompanhe o resumo das cobrancas e recebimentos dos seus clientes.</Typography>
             </Box>
           </Box>
-          <Button variant='outlined' startIcon={<ArrowBackIcon />} onClick={onVoltar} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '10px', borderColor: '#e2e8f0', color: '#2563eb', backgroundColor: '#eff6ff', px: 2.5, py: 1 }}>Voltar para Clientes</Button>
+          <Button variant='outlined' startIcon={<ArrowBackIcon />} onClick={onClose} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '10px', borderColor: '#e2e8f0', color: '#2563eb', backgroundColor: '#eff6ff', px: 2.5, py: 1 }}>Voltar para Clientes</Button>
         </Box>
 
         {carregando ? (
