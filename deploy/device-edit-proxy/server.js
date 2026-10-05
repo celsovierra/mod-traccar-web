@@ -245,7 +245,15 @@ async function handleGeofenceList(req, res, deviceId, cookieHeader) {
     const snooze = devAttrs.geofenceSnooze || {};
     const now = Date.now();
     const [rows] = await pool.query('SELECT g.id, g.name, g.description, g.area FROM tc_geofences g INNER JOIN tc_device_geofence dg ON g.id = dg.geofenceid WHERE dg.deviceid = ?', [deviceId]);
-    const out = rows.map((r) => {
+    const idsVinculados = rows.map((r) => r.id);
+    const idsSnooze = Object.keys(snooze).map(Number).filter((id) => snooze[id] > now && !idsVinculados.includes(id));
+    let rowsSnooze = [];
+    if (idsSnooze.length > 0) {
+      const [rs] = await pool.query('SELECT id, name, description, area FROM tc_geofences WHERE id IN (?)', [idsSnooze]);
+      rowsSnooze = rs;
+    }
+    const todas = [...rows, ...rowsSnooze];
+    const out = todas.map((r) => {
       const sn = snooze[r.id];
       const snoozeAtivo = sn && sn > now;
       return { id: r.id, name: r.name, description: r.description, area: r.area, attributes: {}, linked: !snoozeAtivo, snoozeUntil: snoozeAtivo ? sn : null };
