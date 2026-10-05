@@ -222,6 +222,10 @@ async function handleGeofenceUnlink(req, res, deviceId, geofenceId, cookieHeader
       'UPDATE tc_devices SET attributes = ? WHERE id = ?',
       [JSON.stringify(attributes), deviceId]
     );
+    await pool.query(
+      'DELETE FROM tc_device_geofence WHERE deviceid = ? AND geofenceid = ?',
+      [deviceId, geofenceId]
+    );
     sendJson(res, 200, { success: true, snoozeUntil });
   } catch (error) {
     console.error('Erro ao desvincular geofence:', error);
