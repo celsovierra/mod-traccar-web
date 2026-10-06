@@ -26,8 +26,13 @@ const TelegramLinkModal = ({ onClose }) => {
       });
       const d = await r.json();
       if (d.deep_link) {
-        const m = d.deep_link.match(/t\.me\/(.+)/);
-        window.location.href = m ? '/t/' + m[1] : d.deep_link;
+        const m = d.deep_link.match(/t\.me\/([^?]+)\?start=(.+)/);
+        const isApp = /wv|WebView|Android.*Version/i.test(navigator.userAgent) || window.ReactNativeWebView;
+        if (m && isApp) {
+          window.location.href = 'tg://resolve?domain=' + m[1] + '&start=' + m[2];
+        } else if (m) {
+          window.location.href = 'https://t.me/' + m[1] + '?start=' + m[2];
+        }
       }
       setData({ ...data, ...d });
     } catch (e) {
