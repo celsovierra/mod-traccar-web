@@ -254,7 +254,7 @@ const DeviceRow = ({ devices, index, style }) => {
                   <ErrorIcon fontSize="small" className={classes.error} />
                 </IconButton>
               </Tooltip>
-            )}          {position?.attributes?.hasOwnProperty?.("power") || position?.attributes?.hasOwnProperty?.("adc1") && (
+            )}          {(position?.attributes?.hasOwnProperty?.("power") || position?.attributes?.hasOwnProperty?.("adc1")) && (
             <Tooltip title={`TensÃ£o da Bateria: ${(position.attributes.power || position.attributes.adc1)}V`}>
               <Box component="span" sx={{ display: "inline-flex", alignItems: "center", px: "5px", py: "1px", borderRadius: "4px", bgcolor: "rgba(56, 189, 248, 0.12)", border: "1px solid", borderColor: "rgba(56, 189, 248, 0.35)", fontSize: "0.65rem", fontWeight: 700, color: "#67e8f9", ml: 0.5, mr: 0, letterSpacing: "0px" }}>
                 {Number((position.attributes.power || position.attributes.adc1)).toFixed(1)}V
