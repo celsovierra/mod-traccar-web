@@ -24,7 +24,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useTranslation } from '../common/components/LocalizationProvider';
-import { useDeviceReadonly, useManager } from '../common/util/permissions';
+import { useDeviceReadonly, useManager, useAdministrator } from '../common/util/permissions';
 
 const useStyles = makeStyles()((theme) => ({
   container: {
@@ -104,8 +104,7 @@ const MainToolbar = ({
   const devicesLoaded = useSelector((state) => state.devices?.loaded);
 
   const toolbarRef = useRef();
-
-  const twoDaysAgo = dayjs().subtract(2, 'day').valueOf();
+  const admin = useAdministrator();
   const deviceList = Object.values(devices);
   const totalCount = deviceList.length;
   const onlineCount = deviceList.filter((d) => d.status === 'online').length;
@@ -163,17 +162,17 @@ const MainToolbar = ({
         ref={toolbarRef}
         className={classes.toolbar}
         disableGutters
-        sx={!devicesOpen ? { minHeight: 'unset', p: 0.5 } : {}}
+        sx={!devicesOpen ? { minHeight: 'unset', p: 0.5, pl: admin ? 0.5 : 2 } : { pl: admin ? 0 : 2 }}
       >
         <IconButton
           edge="start"
           onClick={() => setDevicesOpen(!devicesOpen)}
-          sx={!devicesOpen ? { bgcolor: 'background.paper', boxShadow: 2, m: 0.5 } : {}}
+          sx={!devicesOpen ? { bgcolor: 'background.paper', boxShadow: 2, m: 0.5, ml: admin ? 0.5 : 2 } : { ml: admin ? 0 : 2 }}
         >
           {devicesOpen ? <MapIcon /> : <DnsIcon />}
         </IconButton>
 
-        {devicesOpen && (
+        {devicesOpen && admin && (
           <>
             <OutlinedInput
               placeholder={t('sharedSearchDevices')}
@@ -203,7 +202,7 @@ const MainToolbar = ({
               }
             />
 
-            <IconButton
+            {admin && <IconButton
               edge="end"
               onClick={() => navigate('/device')}
               disabled={deviceReadonly}
@@ -226,7 +225,7 @@ const MainToolbar = ({
               >
                 <AddIcon fontSize="small" />
               </Tooltip>
-            </IconButton>
+            </IconButton>}
 
             {manager && (
               <IconButton

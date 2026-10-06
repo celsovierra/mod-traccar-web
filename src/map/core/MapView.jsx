@@ -1,4 +1,4 @@
-import 'maplibre-gl/dist/maplibre-gl.css';
+﻿import 'maplibre-gl/dist/maplibre-gl.css';
 import * as maplibregl from 'maplibre-gl';
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { googleProtocol } from 'maplibre-google-maps';
@@ -64,7 +64,7 @@ const initMap = async () => {
   }
 };
 
-const MapView = ({ children }) => {
+const MapView = ({ children, admin = true }) => {
   const theme = useTheme();
 
   const containerRef = useRef(null);
@@ -97,9 +97,11 @@ const MapView = ({ children }) => {
     const attribution = new maplibregl.AttributionControl({ compact: true });
     const navigation = new maplibregl.NavigationControl();
     map.addControl(attribution, theme.direction === 'rtl' ? 'bottom-left' : 'bottom-right');
-    map.addControl(navigation, theme.direction === 'rtl' ? 'top-left' : 'top-right');
+    if (admin) {
+      map.addControl(navigation, theme.direction === 'rtl' ? 'top-left' : 'top-right');
+    }
     return () => {
-      map.removeControl(navigation);
+      if (admin) map.removeControl(navigation);
       map.removeControl(attribution);
     };
   }, [theme.direction]);

@@ -19,6 +19,7 @@ import MapOverlay from '../map/overlay/MapOverlay';
 import MapGeocoder from '../map/control/MapGeocoder';
 import MapScale from '../map/MapScale';
 import MapRuler from '../map/control/MapRuler';
+import { useAdministrator } from '../common/util/permissions';
 import MapNotification from '../map/control/MapNotification';
 import MapClusterToggle from '../map/control/MapClusterToggle';
 import MapTelegramButton from '../map/control/MapTelegramButton';
@@ -29,6 +30,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   const dispatch = useDispatch();
 
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
+  const admin = useAdministrator();
 
   const [rulerActive, setRulerActive] = useState(false);
   const [mapCluster, setMapCluster] = usePersistedState('mapCluster', true);
@@ -43,7 +45,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
 
   return (
     <>
-      <MapView>
+      <MapView admin={admin}>
         <MapOverlay />
         <MapGeofence />
       <AnchorMapLayer />
@@ -59,14 +61,14 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
         <MapDefaultCamera filteredPositions={filteredPositions} />
         <MapSelectedDevice />
         <PoiMap />
-        <MapRuler positions={filteredPositions} onActiveChange={setRulerActive} />
-        <MapNotification enabled onClick={onEventsClick} />
+        {admin && <MapRuler positions={filteredPositions} onActiveChange={setRulerActive} />}
+        {admin && <MapNotification enabled onClick={onEventsClick} />}
         <MapTelegramButton />
         <MapClusterToggle enabled={mapCluster} onClick={() => setMapCluster(!mapCluster)} />
       </MapView>
       <MapScale />
-      <MapCurrentLocation />
-      <MapGeocoder />
+      {admin && <MapCurrentLocation />}
+      {admin && <MapGeocoder />}
       {desktop && (
         <MapPadding
           start={

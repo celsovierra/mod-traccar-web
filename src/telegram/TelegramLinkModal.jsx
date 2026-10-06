@@ -26,7 +26,7 @@ const TelegramLinkModal = ({ onClose }) => {
       });
       const d = await r.json();
       if (d.deep_link) {
-        window.open(d.deep_link, '_blank');
+        window.location.href = d.deep_link;
       }
       setData({ ...data, ...d });
     } catch (e) {
