@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Box, Paper, Typography, TextField, Button, Alert } from '@mui/material';
 import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
@@ -6,12 +6,17 @@ import { useSelector } from 'react-redux';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const TelegramSettingsPage = () => {
-  const userAttributes = useSelector((state) => state.session.user.attributes) || {};
+  const user = useSelector((state) => state.session.user);
+  const userAttributes = user?.attributes || {};
   const [token, setToken] = useState(userAttributes.fin_telegram_token || '');
   const [username, setUsername] = useState(userAttributes.fin_telegram_username || '');
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
-  const user = useSelector((state) => state.session.user);
+
+  useEffect(() => {
+    setToken(userAttributes.fin_telegram_token || '');
+    setUsername(userAttributes.fin_telegram_username || '');
+  }, [userAttributes.fin_telegram_token, userAttributes.fin_telegram_username]);
 
   const salvar = async () => {
     setSaving(true);
@@ -39,12 +44,12 @@ const TelegramSettingsPage = () => {
             Configurar Bot do Telegram
           </Typography>
           <Typography sx={{ fontSize: '0.85rem', color: '#64748b', mb: 2 }}>
-            Crie um bot no @BotFather e cole o token + username abaixo. Seus clientes vão clicar no botão "Vincular Telegram" e serão vinculados automaticamente.
+            Crie um bot no @BotFather e cole o token + username abaixo.
           </Typography>
           <TextField
             fullWidth
             size="small"
-            label="Token do Bot (ex: 123456:ABC-DEF...)"
+            label="Token do Bot"
             value={token}
             onChange={(e) => setToken(e.target.value)}
             sx={{ mb: 2 }}
@@ -52,7 +57,7 @@ const TelegramSettingsPage = () => {
           <TextField
             fullWidth
             size="small"
-            label="Username do Bot (ex: meubot)"
+            label="Username do Bot"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             sx={{ mb: 2 }}

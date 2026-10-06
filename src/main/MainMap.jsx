@@ -21,6 +21,7 @@ import MapScale from '../map/MapScale';
 import MapRuler from '../map/control/MapRuler';
 import MapNotification from '../map/control/MapNotification';
 import MapClusterToggle from '../map/control/MapClusterToggle';
+import MapTelegramButton from '../map/control/MapTelegramButton';
 import usePersistedState from '../common/util/usePersistedState';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
@@ -60,6 +61,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
         <PoiMap />
         <MapRuler positions={filteredPositions} onActiveChange={setRulerActive} />
         <MapNotification enabled onClick={onEventsClick} />
+        <MapTelegramButton />
         <MapClusterToggle enabled={mapCluster} onClick={() => setMapCluster(!mapCluster)} />
       </MapView>
       <MapScale />
