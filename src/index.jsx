@@ -1,4 +1,4 @@
-import './smsMarket/credentialSync';
+﻿import './smsMarket/credentialSync';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
@@ -14,6 +14,29 @@ import ErrorBoundary from './ErrorBoundary';
 import AppThemeProvider from './AppThemeProvider';
 
 preloadImages();
+
+if ('serviceWorker' in navigator) {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) { refreshing = true; window.location.reload(); }
+  });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      setInterval(() => reg.update(), 60 * 60 * 1000);
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            if (window.confirm('Nova versao disponivel. Atualizar agora?')) {
+              nw.postMessage({ type: 'SKIP_WAITING' });
+            }
+          }
+        });
+      });
+    });
+  });
+}
 
 const root = createRoot(document.getElementById('root'));
 root.render(
