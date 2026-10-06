@@ -27,14 +27,7 @@ const TelegramLinkModal = ({ onClose }) => {
       const d = await r.json();
       if (d.deep_link) {
         const m = d.deep_link.match(/t\.me\/(.+)/);
-        const url = m ? '/t/' + m[1] : d.deep_link;
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        window.location.href = m ? '/t/' + m[1] : d.deep_link;
       }
       setData({ ...data, ...d });
     } catch (e) {
