@@ -228,6 +228,12 @@ const SettingsMenu = () => {
               icon={<DrawIcon fontSize="small" />}
               selected={location.pathname === '/settings/login-editor'}
             />
+            <MenuItem
+              title="Notificações via Telegram"
+              link="/settings/telegram"
+              icon={<SendIcon fontSize="small" />}
+              selected={location.pathname === '/settings/telegram'}
+            />
 <Box
               onClick={handleVersionClick}
               sx={{

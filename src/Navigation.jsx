@@ -49,6 +49,7 @@ const GeofencePage = lazy(() => import('./settings/GeofencePage'));
 const EventPage = lazy(() => import('./other/EventPage'));
 const PreferencesPage = lazy(() => import('./settings/PreferencesPage'));
 const LoginEditorPage = lazy(() => import('./settings/LoginEditorPage'));
+const TelegramSettingsPage = lazy(() => import('./settings/TelegramSettingsPage'));
 const AccumulatorsPage = lazy(() => import('./settings/AccumulatorsPage'));
 const CommandDevicePage = lazy(() => import('./settings/CommandDevicePage'));
 const CommandGroupPage = lazy(() => import('./settings/CommandGroupPage'));
@@ -204,6 +205,7 @@ const Navigation = () => {
             <Route path="notification" element={<NotificationPage />} />
             <Route path="preferences" element={<PreferencesPage />} />
           <Route path="login-editor" element={<LoginEditorPage />} />
+          <Route path="telegram" element={<TelegramSettingsPage />} />
             <Route path="server" element={<ServerPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="user/:id/connections" element={<UserConnectionsPage />} />
