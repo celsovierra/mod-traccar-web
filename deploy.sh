@@ -339,3 +339,10 @@ mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "INSERT IGNORE INTO tc_dev
 
 echo ">> Aplicando icone padrao moto_vermlha nos devices sem customIcon..."
 mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "UPDATE tc_devices SET attributes = JSON_SET(attributes, '\$.customIcon', 'moto_vermlha') WHERE attributes IS NULL OR JSON_EXTRACT(attributes, '\$.customIcon') IS NULL OR JSON_EXTRACT(attributes, '\$.customIcon') = 'default';" 2>/dev/null || true
+
+echo ">> Instalando telegram-bot..."
+if [ -f ./deploy/telegram-bot/install.sh ]; then
+  bash ./deploy/telegram-bot/install.sh
+else
+  echo "   deploy/telegram-bot/install.sh nao encontrado."
+fi
