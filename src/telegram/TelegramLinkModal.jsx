@@ -32,6 +32,7 @@ const TelegramLinkModal = ({ onClose }) => {
         window.location.href = link;
       }
       setData({ ...data, ...d });
+      } catch (e) {
       setErro(e.message);
     } finally {
       setLoading(false);
