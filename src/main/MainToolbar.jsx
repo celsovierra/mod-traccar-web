@@ -106,6 +106,7 @@ const MainToolbar = ({
   const toolbarRef = useRef();
   const admin = useAdministrator();
   const deviceList = Object.values(devices);
+  const twoDaysAgo = dayjs().subtract(2, 'day').valueOf();
   const totalCount = deviceList.length;
   const onlineCount = deviceList.filter((d) => d.status === 'online').length;
   const offlineCount = deviceList.filter((d) => d.status === 'offline' || d.status === 'unknown').length;
