@@ -27,7 +27,7 @@ const TelegramLinkModal = ({ onClose }) => {
       const d = await r.json();
       if (d.deep_link) {
         const m = d.deep_link.match(/t\.me\/([^?]+)\?start=(.+)/);
-        const isApp = /Traccar|wv\)/i.test(navigator.userAgent);
+        const isApp = /wv\)|; wv|Traccar/i.test(navigator.userAgent);
         const link = (m && !isApp) ? 'tg://resolve?domain=' + m[1] + '&start=' + m[2] : d.deep_link;
         window.location.href = link;
       }
