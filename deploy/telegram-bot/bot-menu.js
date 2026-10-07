@@ -44,9 +44,57 @@ async function actionLocalizar(chatId, device) {
   const speed = Math.round((p.speed || 0) * 1.852);
   const when = p.fixtime ? new Date(p.fixtime).toLocaleString('pt-BR', { timeZone: 'America/Fortaleza' }) : '-';
   const link = 'https://www.google.com/maps?q=' + lat + ',' + lng;
-  await sendTelegramMessage(chatId, '\u{1F4CD} <b>' + esc(device.name) + '</b>\n<a href="' + link + '">Abrir no mapa</a>\n' + speed + ' km/h\n' + when);
-}
 
+  // Atributos do device (placa, bloqueio)
+  let placa = '-';
+  let bloqueado = 'Nao';
+  try {
+    const [devRows] = await pool.query('SELECT attributes FROM tc_devices WHERE id = ?', [device.id]);
+    if (devRows.length) {
+      const attrs = typeof devRows[0].attributes === 'string' ? JSON.parse(devRows[0].attributes) : devRows[0].attributes;
+      if (attrs && attrs.plate) placa = attrs.plate;
+      if (attrs && (attrs.blocked === true || attrs.blocked === 'true')) bloqueado = 'Sim';
+    }
+  } catch {}
+
+  // Bateria + ignicao (attributes da posicao)
+  let bateria = '-';
+  try {
+    const [posRows] = await pool.query('SELECT attributes FROM tc_positions WHERE deviceid = ? ORDER BY fixtime DESC LIMIT 1', [device.id]);
+    if (posRows.length) {
+      const attrs = typeof posRows[0].attributes === 'string' ? JSON.parse(posRows[0].attributes) : posRows[0].attributes;
+      if (attrs && attrs.power !== undefined) {
+        const v = Number(attrs.power);
+        bateria = v.toFixed(1) + 'V';
+      } else if (attrs && attrs.batteryLevel !== undefined) {
+        bateria = attrs.batteryLevel + '%';
+      }
+    }
+  } catch {}
+
+  // Endereco (Nominatim) - so rua e cidade
+  let endereco = 'Nao disponivel';
+  try {
+    const r = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json&addressdetails=1&accept-language=pt-BR', {
+      headers: { 'User-Agent': 'GPScellBot/1.0' },
+    });
+    const data = await r.json();
+    const a = data.address || {};
+    const partes = [a.road, a.city || a.town || a.village].filter(Boolean);
+    endereco = partes.join(', ') || (data.display_name || '').split(',').slice(0, 2).join(', ') || 'Nao disponivel';
+  } catch {}
+
+  const msg = '\u{1F4CD} <b>' + esc(device.name) + '</b>\n'
+    + '\u{1F3F7}\u{FE0F} Placa: ' + esc(placa) + '\n'
+    + '\u{1F512} Bloqueio: ' + esc(bloqueado) + '\n'
+    + '\u{1F50B} Bateria: ' + esc(bateria) + '\n'
+    + '\u{1F680} Velocidade: ' + speed + ' km/h\n'
+    + '\u{1F5FA}\u{FE0F} Endereco: ' + esc(endereco) + '\n'
+    + '\u{1F4C5} Data/Hora: ' + when + '\n\n'
+    + '\u{1F310} <a href="' + link + '">Abrir no mapa</a>';
+
+  await sendTelegramMessage(chatId, msg);
+}
 async function actionBloquear(chatId, device, mode) {
   const type = mode === 'block' ? 'engineStop' : 'engineResume';
   const label = mode === 'block' ? 'Bloqueio' : 'Desbloqueio';
