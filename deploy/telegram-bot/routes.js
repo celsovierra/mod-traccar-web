@@ -1,4 +1,4 @@
-﻿const crypto = require('crypto');
+const crypto = require('crypto');
 const { pool } = require('./db');
 const { sendTelegramMessage, getBotUsername, callTelegram, clearTokenCache, getBotToken } = require('./telegram');
 const { processBotInteraction } = require('./bot-menu');
@@ -82,13 +82,22 @@ async function handleSaveToken(req, res, body) {
     if (username) attrs.fin_telegram_username = username;
     await pool.query('UPDATE tc_users SET attributes = ? WHERE id = ?', [JSON.stringify(attrs), rows[0].id]);
     clearTokenCache();
-    sendJson(res, 200, { ok: true });
+    const host = (req.headers && req.headers.host) || 'gpscell.site';
+    const proto = (req.headers['x-forwarded-proto'] || 'https');
+    const webhookUrl = proto + '://' + host + '/api-telegram/webhook';
+    let webhookResult = null;
+    try {
+      webhookResult = await callTelegram('setWebhook', { url: webhookUrl, allowed_updates: ['message'] });
+    } catch (e) { webhookResult = { error: e.message }; }
+    sendJson(res, 200, { ok: true, webhook: webhookUrl, webhook_result: webhookResult });
   } catch (e) { sendJson(res, 500, { error: e.message }); }
 }
 
 async function handleSetupWebhook(req, res) {
   try {
-    const url = 'https://gpscell.site/api-telegram/webhook';
+    const host = (req.headers && req.headers.host) || 'gpscell.site';
+    const proto = (req.headers['x-forwarded-proto'] || 'https');
+    const url = proto + '://' + host + '/api-telegram/webhook';
     const out = await callTelegram('setWebhook', { url, allowed_updates: ['message'] });
     sendJson(res, 200, { url, result: out });
   } catch (e) { sendJson(res, 500, { error: e.message }); }
