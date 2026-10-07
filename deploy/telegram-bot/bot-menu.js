@@ -142,3 +142,5 @@ async function processBotInteraction(chatId, text, linked) {
     return true;
   }
 }
+
+module.exports = { processBotInteraction };
