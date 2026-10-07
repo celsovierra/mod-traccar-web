@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Route, Routes, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import MainPage from './main/MainPage';
@@ -15,6 +15,7 @@ const CombinedReportPage = lazy(() => import('./reports/CombinedReportPage'));
 const PositionsReportPage = lazy(() => import('./reports/PositionsReportPage'));
 const ServerPage = lazy(() => import('./settings/ServerPage'));
 const UsersPage = lazy(() => import('./settings/UsersPage'));
+const EstoquePage = lazy(() => import('./settings/EstoquePage'));
 const DevicePage = lazy(() => import('./settings/DevicePage'));
 const UserPage = lazy(() => import('./settings/UserPage'));
 const NotificationsPage = lazy(() => import('./settings/NotificationsPage'));
@@ -82,6 +83,7 @@ const prefetchPages = () => {
   import('./reports/SummaryReportPage');
   import('./settings/PreferencesPage');
   import('./settings/UsersPage');
+  import('./settings/EstoquePage');
 };
 
 const Navigation = () => {
@@ -170,6 +172,7 @@ const Navigation = () => {
           <Route path="stream" element={<StreamPage />} />
 
           <Route path="settings">
+            <Route path="estoque" element={<EstoquePage />} />
             <Route path=":type/:id/share" element={<SharePage />} />
             <Route path="accumulators/:deviceId" element={<AccumulatorsPage />} />
             <Route path="announcement" element={<AnnouncementPage />} />

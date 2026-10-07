@@ -1,4 +1,4 @@
-﻿
+
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -352,6 +352,17 @@ const DevicePage = () => {
                       />
                     }
                     label={<Typography sx={{ fontSize: "0.88rem", fontWeight: 700, color: "#475569" }}>{t("sharedDisabled")}</Typography>}
+                    disabled={!manager}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={item.attributes?.stock === true}
+                        onChange={(event) => setItem({ ...item, attributes: { ...item.attributes, stock: event.target.checked } })}
+                        sx={{ color: '#f59e0b', '&.Mui-checked': { color: '#d97706' } }}
+                      />
+                    }
+                    label={<Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#475569' }}>Em Estoque</Typography>}
                     disabled={!manager}
                   />
                   <Button

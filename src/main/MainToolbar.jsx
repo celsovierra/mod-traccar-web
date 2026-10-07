@@ -1,4 +1,4 @@
-﻿import { useRef } from 'react';
+import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -23,6 +23,7 @@ import NavigationIcon from '@mui/icons-material/Navigation';
 import HistoryIcon from '@mui/icons-material/History';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useDeviceReadonly, useManager, useAdministrator } from '../common/util/permissions';
 
@@ -228,6 +229,25 @@ const MainToolbar = ({
               </Tooltip>
             </IconButton>}
 
+            {admin && (
+              <IconButton
+                edge="end"
+                onClick={() => window.dispatchEvent(new CustomEvent('stockMapToggle', { detail: true }))}
+                sx={{
+                  color: '#ffffff',
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  ml: 1.5,
+                  transition: 'all 0.15s ease',
+                  width: 32,
+                  height: 32,
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 6px rgba(245, 158, 11, 0.35)',
+                  '&:hover': { background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', transform: 'scale(1.05)' },
+                }}
+              >
+                <Inventory2Icon fontSize="small" />
+              </IconButton>
+            )}
             {manager && (
               <IconButton
                 edge="end"

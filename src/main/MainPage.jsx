@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense, useState, useCallback, useEffect } from 'react';
+import { lazy, Suspense, useState, useCallback, useEffect, useMemo } from 'react';
 import { Paper } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { useTheme } from '@mui/material/styles';
@@ -118,6 +118,31 @@ const MainPage = () => {
   const [filterSort, setFilterSort] = usePersistedState('filterSort', '');
   const [filterMap, setFilterMap] = usePersistedState('filterMap', false);
 
+  const [stockMode, setStockMode] = useState(false);
+  const showStockMap = stockMode;
+  const devicesMap = useSelector((state) => state.devices.items);
+
+  useEffect(() => {
+    const h = (e) => setStockMode(!!e.detail);
+    window.addEventListener('stockMapToggle', h);
+    return () => window.removeEventListener('stockMapToggle', h);
+  }, []);
+
+  const visiblePositions = useMemo(() => {
+    return filteredPositions.filter((p) => {
+      const dev = devicesMap[p.deviceId];
+      const inStock = dev && dev.attributes && dev.attributes.stock === true;
+      return stockMode ? inStock : !inStock;
+    });
+  }, [filteredPositions, devicesMap, showStockMap]);
+
+  const visibleDevices = useMemo(() => {
+    return filteredDevices.filter((d) => {
+      const inStock = d.attributes && d.attributes.stock === true;
+      return stockMode ? inStock : !inStock;
+    });
+  }, [filteredDevices, showStockMap]);
+
   const [devicesOpen, setDevicesOpen] = useState(desktop);
   const [eventsOpen, setEventsOpen] = useState(false);
   const [cardVisible, setCardVisible] = useState(true);
@@ -159,10 +184,16 @@ const MainPage = () => {
 
   return (
     <div className={classes.root}>
+      {stockMode && (
+        <div style={{ position: 'absolute', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 1000, background: '#f59e0b', color: '#fff', padding: '6px 12px', borderRadius: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+          <span>Modo Estoque</span>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('stockMapToggle', { detail: false }))} style={{ background: '#fff', color: '#f59e0b', border: 'none', borderRadius: 12, padding: '3px 10px', fontWeight: 700, cursor: 'pointer', fontSize: '0.75rem' }}>Sair</button>
+        </div>
+      )}
       <div className={classes.contentMap}>
         <Suspense fallback={null}>
           <MainMap
-            filteredPositions={filteredPositions}
+            filteredPositions={visiblePositions}
             selectedPosition={selectedPosition}
             onEventsClick={onEventsClick}
           />
@@ -188,7 +219,7 @@ const MainPage = () => {
 
         <div className={classes.middle}>
           <Paper square className={classes.contentList}>
-            <DeviceList devices={filteredDevices} />
+            <DeviceList devices={visibleDevices} />
           </Paper>
         </div>
 
