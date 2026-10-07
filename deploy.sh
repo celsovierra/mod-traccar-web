@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Entra na pasta do projeto sempre
 cd "$(dirname "$(readlink -f "$0")")" || exit 1
@@ -340,6 +340,13 @@ mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "INSERT IGNORE INTO tc_dev
 echo ">> Aplicando icone padrao moto_vermlha nos devices sem customIcon..."
 mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "UPDATE tc_devices SET attributes = JSON_SET(attributes, '\$.customIcon', 'moto_vermlha') WHERE attributes IS NULL OR JSON_EXTRACT(attributes, '\$.customIcon') IS NULL OR JSON_EXTRACT(attributes, '\$.customIcon') = 'default';" 2>/dev/null || true
 
+echo ">> Configurando forward de eventos do Traccar para o bot..."
+if grep -q 'event.forward.url' /opt/traccar/conf/traccar.xml; then
+  sed -i "s|<entry key='event.forward.url'>.*</entry>|<entry key='event.forward.url'>http://127.0.0.1:8095/api-telegram/traccar-event</entry>|" /opt/traccar/conf/traccar.xml
+else
+  sed -i "/<\/properties>/i \    <entry key='event.forward.enable'>true</entry>\n    <entry key='event.forward.url'>http://127.0.0.1:8095/api-telegram/traccar-event</entry>\n    <entry key='event.forward.type'>json</entry>\n    <entry key='event.forward.header'>Content-Type: application/json</entry>" /opt/traccar/conf/traccar.xml
+fi
+systemctl restart traccar
 echo ">> Instalando telegram-bot..."
 if [ -f ./deploy/telegram-bot/install.sh ]; then
   bash ./deploy/telegram-bot/install.sh
