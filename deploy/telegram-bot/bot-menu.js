@@ -42,7 +42,7 @@ async function actionLocalizar(chatId, device) {
   const lat = Number(p.latitude).toFixed(6);
   const lng = Number(p.longitude).toFixed(6);
   const speed = Math.round((p.speed || 0) * 1.852);
-  const when = p.fixtime ? new Date(String(p.fixtime).replace(' ', 'T') + 'Z').toLocaleString('pt-BR', { timeZone: 'America/Fortaleza' }) : '-';
+  const when = p.fixtime ? new Date(p.fixtime).toLocaleString('pt-BR', { timeZone: 'America/Fortaleza' }) : '-';
   const link = 'https://www.google.com/maps?q=' + lat + ',' + lng;
   await sendTelegramMessage(chatId, '\u{1F4CD} <b>' + esc(device.name) + '</b>\n<a href="' + link + '">Abrir no mapa</a>\n' + speed + ' km/h\n' + when);
 }
