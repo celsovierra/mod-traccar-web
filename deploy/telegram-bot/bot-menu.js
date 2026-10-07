@@ -1,4 +1,4 @@
-﻿const { pool } = require('./db');
+const { pool } = require('./db');
 const { sendTelegramMessage } = require('./telegram');
 
 const sessions = new Map();
@@ -30,7 +30,7 @@ async function listUserDevices(userId) {
 function esc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 function mainMenuText() {
-  return '\u{1F916} <b>Menu</b>\n\u2501\u2501\u2501\u2501\u2501\u2501\n1 Localizar\n2 Comando\n3 Ancora\n\n<i>cancelar</i>';
+  return '\u{1F916} <b>Menu</b>\n\u2501\u2501\u2501\u2501\u2501\u2501\n1 Localizar\n2 Comando\n\n<i>cancelar</i>';
 }
 
 async function actionLocalizar(chatId, device) {
@@ -84,9 +84,9 @@ async function processBotInteraction(chatId, text, linked) {
   if (!session) return false;
 
   if (session.step === 'menu') {
-    const action = norm === '1' ? 'localizar' : norm === '2' ? 'bloquear' : norm === '3' ? 'ancora' : null;
+    const action = norm === '1' ? 'localizar' : norm === '2' ? 'bloquear' : null;
     if (!action) {
-      await sendTelegramMessage(chatId, 'Responda 1, 2 ou 3.');
+      await sendTelegramMessage(chatId, 'Responda 1 ou 2.');
       return true;
     }
     const vehicles = await listUserDevices(session.userId);
@@ -101,9 +101,6 @@ async function processBotInteraction(chatId, text, linked) {
       else if (action === 'bloquear') {
         setSession(chatId, { ...session, step: 'block_choice', vehicle: v });
         await sendTelegramMessage(chatId, esc(v.name) + '\n1 Bloquear\n2 Desbloquear');
-      } else {
-        clearSession(chatId);
-        await sendTelegramMessage(chatId, 'Ancora nao implementada.');
       }
       return true;
     }
@@ -114,6 +111,23 @@ async function processBotInteraction(chatId, text, linked) {
   }
 
   if (session.step === 'vehicle') {
+    const q = norm.trim().toLowerCase();
+    const busca = session.vehicles.filter((v) => (v.name || '').toLowerCase().includes(q));
+    if (busca.length > 0) {
+      if (busca.length === 1) {
+        const v = busca[0];
+        if (session.action === 'localizar') { clearSession(chatId); await actionLocalizar(chatId, v); }
+        else if (session.action === 'bloquear') {
+          setSession(chatId, { ...session, step: 'block_choice', vehicle: v });
+          await sendTelegramMessage(chatId, esc(v.name) + '\n1 Bloquear\n2 Desbloquear');
+        }
+        return true;
+      }
+      setSession(chatId, { ...session, step: 'vehicle', action: session.action, vehicles: busca });
+      const lines = busca.slice(0, 50).map((v, i) => String(i + 1) + '. ' + esc(v.name));
+      await sendTelegramMessage(chatId, 'Encontrados:\n' + lines.join('\n') + '\n\nDigite o numero:');
+      return true;
+    }
     const idx = parseInt(norm, 10) - 1;
     if (isNaN(idx) || idx < 0 || idx >= session.vehicles.length) {
       await sendTelegramMessage(chatId, 'Numero invalido.');
@@ -127,20 +141,4 @@ async function processBotInteraction(chatId, text, linked) {
     }
     return true;
   }
-
-  if (session.step === 'block_choice') {
-    const mode = norm === '1' ? 'block' : norm === '2' ? 'unblock' : null;
-    if (!mode) {
-      await sendTelegramMessage(chatId, 'Responda 1 ou 2.');
-      return true;
-    }
-    const v = session.vehicle;
-    clearSession(chatId);
-    await actionBloquear(chatId, v, mode);
-    return true;
-  }
-
-  return false;
 }
-
-module.exports = { processBotInteraction };
