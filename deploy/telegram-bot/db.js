@@ -1,4 +1,4 @@
-﻿const mysql = require('mysql2/promise');
+const mysql = require('mysql2/promise');
 const fs = require('fs');
 
 function lerTraccarXml() {
@@ -14,7 +14,7 @@ function lerTraccarXml() {
 }
 
 const cfg = lerTraccarXml();
-const pool = mysql.createPool({ host: '127.0.0.1', user: cfg.user, password: cfg.password, database: cfg.database, waitForConnections: true, connectionLimit: 5, charset: 'utf8mb4' });
+const pool = mysql.createPool({ host: '127.0.0.1', user: cfg.user, password: cfg.password, database: cfg.database, waitForConnections: true, connectionLimit: 5, charset: 'utf8mb4', timezone: 'Z' });
 
 async function initTables() {
   await pool.query("CREATE TABLE IF NOT EXISTS telegram_chats (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, chat_id VARCHAR(64) NOT NULL, username VARCHAR(255), first_name VARCHAR(255), linked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY uniq_user (user_id), KEY idx_chat (chat_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
