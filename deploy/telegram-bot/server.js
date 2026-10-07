@@ -1,6 +1,7 @@
 ﻿const http = require('http');
 const { initTables } = require('./db');
 const routes = require('./routes');
+const { handleTraccarEvent } = require('./traccar-event');
 
 const PORT = process.env.PORT || 8095;
 
@@ -23,6 +24,12 @@ const server = http.createServer(async (req, res) => {
     if (method === 'POST' && url === '/api-telegram/test') { const body = await readBody(req); return routes.handleTest(req, res, body); }
     if (method === 'POST' && url === '/api-telegram/save-token') { const body = await readBody(req); return routes.handleSaveToken(req, res, body); }
     if (method === 'POST' && url === '/api-telegram/webhook') { const body = await readBody(req); return routes.handleWebhook(req, res, body); }
+    if (method === 'POST' && url === '/api-telegram/traccar-event') {
+      const body = await readBody(req);
+      const r = await handleTraccarEvent(body);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify(r));
+    }
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Not found' }));
   } catch (e) {
