@@ -30,7 +30,7 @@ async function listUserDevices(userId) {
 function esc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 function mainMenuText() {
-  return '\u{1F916} <b>Menu</b>\n\u2501\u2501\u2501\u2501\u2501\u2501\n1 Localizar\n2 Comando\n\n<i>cancelar</i>';
+  return '\u{1F916} <b>Menu</b>\n\u2501\u2501\u2501\u2501\u2501\u2501\n1 Localizar\n\n<i>cancelar</i>';
 }
 
 async function actionLocalizar(chatId, device) {
@@ -84,9 +84,9 @@ async function processBotInteraction(chatId, text, linked) {
   if (!session) return false;
 
   if (session.step === 'menu') {
-    const action = norm === '1' ? 'localizar' : norm === '2' ? 'bloquear' : null;
+    const action = norm === '1' ? 'localizar' : null;
     if (!action) {
-      await sendTelegramMessage(chatId, 'Responda 1 ou 2.');
+      await sendTelegramMessage(chatId, 'Responda 1.');
       return true;
     }
     const vehicles = await listUserDevices(session.userId);
