@@ -11,6 +11,7 @@ cp "$SCRIPT_DIR/telegram.js" /opt/telegram-bot/telegram.js
 cp "$SCRIPT_DIR/bot-menu.js" /opt/telegram-bot/bot-menu.js
 cp "$SCRIPT_DIR/routes.js" /opt/telegram-bot/routes.js
 cp "$SCRIPT_DIR/package.json" /opt/telegram-bot/package.json
+cp "$SCRIPT_DIR/traccar-event.js" /opt/telegram-bot/traccar-event.js
 
 cd /opt/telegram-bot
 npm install --production
