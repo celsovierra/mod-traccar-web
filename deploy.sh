@@ -66,7 +66,7 @@ rm -rf /opt/traccar/web/*
 cp -r build/* /opt/traccar/web/
 
 echo ">> Reiniciando Traccar..."
-systemctl restart traccar
+mysql -u traccar -p"$DB_PASS" "$DB_NAME" -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true`nsystemctl restart traccar
 
 if true; then
 # sempre regrava atualizar
@@ -207,7 +207,7 @@ for key, val in updates.items():
 p.write_text(s)
 print("OK traccar.xml")
 PYTRACCAR
-  systemctl restart traccar
+  mysql -u traccar -p"$DB_PASS" "$DB_NAME" -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true`nsystemctl restart traccar
   sleep 15
   echo "   traccar.xml atualizado e traccar reiniciado."
 else
@@ -346,7 +346,7 @@ if grep -q 'event.forward.url' /opt/traccar/conf/traccar.xml; then
 else
   sed -i "/<\/properties>/i \    <entry key='event.forward.enable'>true</entry>\n    <entry key='event.forward.url'>http://127.0.0.1:8095/api-telegram/traccar-event</entry>\n    <entry key='event.forward.type'>json</entry>\n    <entry key='event.forward.header'>Content-Type: application/json</entry>" /opt/traccar/conf/traccar.xml
 fi
-systemctl restart traccar
+mysql -u traccar -p"$DB_PASS" "$DB_NAME" -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true`nsystemctl restart traccar
 echo ">> Instalando telegram-bot..."
 if [ -f ./deploy/telegram-bot/install.sh ]; then
   bash ./deploy/telegram-bot/install.sh
