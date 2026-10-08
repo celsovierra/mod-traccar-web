@@ -66,7 +66,7 @@ rm -rf /opt/traccar/web/*
 cp -r build/* /opt/traccar/web/
 
 echo ">> Reiniciando Traccar..."
-mysql -u traccar -p"$DB_PASS" "$DB_NAME" -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true`nsystemctl restart traccar
+mysql -u traccar -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true`nsystemctl restart traccar
 
 if true; then
 # sempre regrava atualizar
@@ -207,7 +207,7 @@ for key, val in updates.items():
 p.write_text(s)
 print("OK traccar.xml")
 PYTRACCAR
-  mysql -u traccar -p"$DB_PASS" "$DB_NAME" -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true`nsystemctl restart traccar
+  mysql -u traccar -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true`nsystemctl restart traccar
   sleep 15
   echo "   traccar.xml atualizado e traccar reiniciado."
 else
@@ -231,7 +231,7 @@ BACKUP_FILE="/tmp/backup_traccar.tar.gz"
   DB_PASS_ATUAL=$(grep -oP "database.password.>\K[^<]+" "$XML" | head -1 | sed "s/[\x27\x22]//g")
 DB_NAME=$(grep -oP "jdbc:mysql://[^/]+/\K[^?]+" /opt/traccar/conf/traccar.xml | head -1)
 
-mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "
+mysql -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" -e "
 DROP TABLE IF EXISTS tc_positions_filtrada;
 CREATE TABLE tc_positions_filtrada LIKE tc_positions;
 INSERT INTO tc_positions_filtrada
@@ -244,8 +244,8 @@ INNER JOIN (
 ) t ON t.id = p.id AND t.rn <= 6;
 "
 
-mysqldump -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" --ignore-table=$DB_NAME.tc_positions --no-tablespaces --complete-insert --skip-lock-tables > /tmp/backup_base.sql
-mysqldump -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" tc_positions_filtrada --no-tablespaces --complete-insert --skip-lock-tables | sed 's/tc_positions_filtrada/tc_positions/g' >> /tmp/backup_base.sql
+mysqldump -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" --ignore-table=$DB_NAME.tc_positions --no-tablespaces --complete-insert --skip-lock-tables > /tmp/backup_base.sql
+mysqldump -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" tc_positions_filtrada --no-tablespaces --complete-insert --skip-lock-tables | sed 's/tc_positions_filtrada/tc_positions/g' >> /tmp/backup_base.sql
 
 mkdir -p /opt/traccar/media /opt/traccar/conf
 tar -czf "$BACKUP_FILE" \
@@ -256,7 +256,7 @@ tar -czf "$BACKUP_FILE" \
 
 curl -s -F chat_id="$CHAT_ID" -F caption="Backup $DESCRICAO - $DATA_HORA" -F document=@"$BACKUP_FILE" https://api.telegram.org/bot$TOKEN/sendDocument
 
-mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "DROP TABLE IF EXISTS tc_positions_filtrada;"
+mysql -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" -e "DROP TABLE IF EXISTS tc_positions_filtrada;"
 rm -f /tmp/backup_base.sql "$BACKUP_FILE"
 BKPEOF
   chmod +x /opt/traccar/scripts/backup.sh
@@ -346,7 +346,7 @@ if grep -q 'event.forward.url' /opt/traccar/conf/traccar.xml; then
 else
   sed -i "/<\/properties>/i \    <entry key='event.forward.enable'>true</entry>\n    <entry key='event.forward.url'>http://127.0.0.1:8095/api-telegram/traccar-event</entry>\n    <entry key='event.forward.type'>json</entry>\n    <entry key='event.forward.header'>Content-Type: application/json</entry>" /opt/traccar/conf/traccar.xml
 fi
-mysql -u traccar -p"$DB_PASS" "$DB_NAME" -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true`nsystemctl restart traccar
+mysql -u traccar -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true`nsystemctl restart traccar
 echo ">> Instalando telegram-bot..."
 if [ -f ./deploy/telegram-bot/install.sh ]; then
   bash ./deploy/telegram-bot/install.sh
