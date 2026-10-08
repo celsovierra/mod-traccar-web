@@ -1,4 +1,4 @@
-﻿import { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch } from 'react-redux';
@@ -23,6 +23,7 @@ import { useAdministrator } from '../common/util/permissions';
 import MapNotification from '../map/control/MapNotification';
 import MapClusterToggle from '../map/control/MapClusterToggle';
 import MapTelegramButton from '../map/control/MapTelegramButton';
+import MapTrail from '../map/control/MapTrail';
 import usePersistedState from '../common/util/usePersistedState';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
@@ -64,6 +65,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
         {admin && <MapRuler positions={filteredPositions} onActiveChange={setRulerActive} />}
         {admin && <MapNotification enabled onClick={onEventsClick} />}
         <MapTelegramButton />
+        {admin && selectedPosition && <MapTrail selectedDeviceId={selectedPosition.deviceId} />}
         <MapClusterToggle enabled={mapCluster} onClick={() => setMapCluster(!mapCluster)} />
       </MapView>
       <MapScale />
