@@ -10,7 +10,7 @@ git pull origin main
 
 if [ -z "$DEPLOY_REEXEC" ]; then
   export DEPLOY_REEXEC=1
-  exec "$0" "$@"
+  exec bash "$0" "$@"
 fi
 set -e
 
