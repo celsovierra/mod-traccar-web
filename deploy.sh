@@ -344,10 +344,18 @@ echo ">> Aplicando icone padrao moto_vermlha nos devices sem customIcon..."
 mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "UPDATE tc_devices SET attributes = JSON_SET(attributes, '\$.customIcon', 'moto_vermlha') WHERE attributes IS NULL OR JSON_EXTRACT(attributes, '\$.customIcon') IS NULL OR JSON_EXTRACT(attributes, '\$.customIcon') = 'default';" 2>/dev/null || true
 
 echo ">> Configurando forward de eventos do Traccar para o bot..."
-if grep -q 'event.forward.url' /opt/traccar/conf/traccar.xml; then
-  sed -i "s|<entry key='event.forward.url'>.*</entry>|<entry key='event.forward.url'>http://127.0.0.1:8095/api-telegram/traccar-event</entry>|" /opt/traccar/conf/traccar.xml
+# Detecta o dominio da VPS pelo nginx
+DOMINIO=$(grep -h "server_name" /etc/nginx/sites-enabled/* 2>/dev/null | awk '{print $2}' | tr -d ";|" | grep -v "_" | grep -v "^www\." | head -1)
+if [ -z "$DOMINIO" ]; then
+  FORWARD_URL="http://127.0.0.1:8095/api-telegram/traccar-event"
 else
-  sed -i "/<\/properties>/i \    <entry key='event.forward.enable'>true</entry>\n    <entry key='event.forward.url'>http://127.0.0.1:8095/api-telegram/traccar-event</entry>\n    <entry key='event.forward.type'>json</entry>\n    <entry key='event.forward.header'>Content-Type: application/json</entry>" /opt/traccar/conf/traccar.xml
+  FORWARD_URL="https://$DOMINIO/api-telegram/traccar-event"
+fi
+echo "   Forward URL: $FORWARD_URL"
+if grep -q 'event.forward.url' /opt/traccar/conf/traccar.xml; then
+  sed -i "s|<entry key='event.forward.url'>.*</entry>|<entry key='event.forward.url'>$FORWARD_URL</entry>|" /opt/traccar/conf/traccar.xml
+else
+  sed -i "/<\/properties>/i \    <entry key='event.forward.enable'>true</entry>\n    <entry key='event.forward.url'>$FORWARD_URL</entry>\n    <entry key='event.forward.type'>json</entry>\n    <entry key='event.forward.header'>Content-Type: application/json</entry>" /opt/traccar/conf/traccar.xml
 fi
 mysql -u traccar -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true
 systemctl restart traccar
