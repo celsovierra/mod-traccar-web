@@ -1,7 +1,8 @@
-﻿const http = require('http');
+const http = require('http');
 const { initTables } = require('./db');
 const routes = require('./routes');
 const { handleTraccarEvent } = require('./traccar-event');
+const { initWatcher } = require('./event-watcher');
 
 const PORT = process.env.PORT || 8095;
 
@@ -40,6 +41,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 initTables().then(() => {
+  initWatcher();
   server.listen(PORT, '127.0.0.1', () => {
     console.log('telegram-bot rodando na porta ' + PORT);
   });

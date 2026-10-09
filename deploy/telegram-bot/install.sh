@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -12,6 +12,7 @@ cp "$SCRIPT_DIR/bot-menu.js" /opt/telegram-bot/bot-menu.js
 cp "$SCRIPT_DIR/routes.js" /opt/telegram-bot/routes.js
 cp "$SCRIPT_DIR/package.json" /opt/telegram-bot/package.json
 cp "$SCRIPT_DIR/traccar-event.js" /opt/telegram-bot/traccar-event.js
+cp "$SCRIPT_DIR/event-watcher.js" /opt/telegram-bot/event-watcher.js
 
 cd /opt/telegram-bot
 npm install --production
