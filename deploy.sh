@@ -360,10 +360,10 @@ fi
 mysql -u traccar -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true
 systemctl restart traccar
 echo ">> Configurando descricao das notificacoes..."
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "UPDATE tc_notifications SET description = 'Saiu da Cerca: ${geofenceName}' WHERE type = 'geofenceExit' AND (description IS NULL OR description = '');" 2>/dev/null || true
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "UPDATE tc_notifications SET description = 'Entrou na Cerca: ${geofenceName}' WHERE type = 'geofenceEnter' AND (description IS NULL OR description = '');" 2>/dev/null || true
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "UPDATE tc_notifications SET description = 'Ignicao Ligada: ${deviceName}' WHERE type = 'ignitionOn' AND (description IS NULL OR description = '');" 2>/dev/null || true
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "UPDATE tc_notifications SET description = 'Ignicao Desligada: ${deviceName}' WHERE type = 'ignitionOff' AND (description IS NULL OR description = '');" 2>/dev/null || true
+mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e 'UPDATE tc_notifications SET description = "Saiu da Cerca: $${geofenceName}" WHERE type = "geofenceExit" AND (description IS NULL OR description = "");' 2>/dev/null || true
+mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e 'UPDATE tc_notifications SET description = "Entrou na Cerca: $${geofenceName}" WHERE type = "geofenceEnter" AND (description IS NULL OR description = "");' 2>/dev/null || true
+mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e 'UPDATE tc_notifications SET description = "Ignicao Ligada: $${deviceName}" WHERE type = "ignitionOn" AND (description IS NULL OR description = "");' 2>/dev/null || true
+mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e 'UPDATE tc_notifications SET description = "Ignicao Desligada: $${deviceName}" WHERE type = "ignitionOff" AND (description IS NULL OR description = "");' 2>/dev/null || true
 
 echo ">> Instalando telegram-bot..."
 if [ -f ./deploy/telegram-bot/install.sh ]; then
