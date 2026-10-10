@@ -252,7 +252,7 @@ mysqldump -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" --ignore-table=$DB_NAME.tc
 mysqldump -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" tc_positions_filtrada --no-tablespaces --complete-insert --skip-lock-tables | sed 's/tc_positions_filtrada/tc_positions/g' >> /tmp/backup_base.sql
 
 # Dump extra das tabelas do financeiro (se existirem)
-FIN_TABLES=$(mysql -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" -sN -e "SHOW TABLES LIKE 'fin_%';" 2>/dev/null)
+FIN_TABLES="tc_fila_financeiro tc_invoices tc_invoice_items tc_payment_gateways tc_payment_transactions tc_payment_webhooks tc_revendas contract_invites contract_templates"
 if [ -n "$FIN_TABLES" ]; then
   mysqldump -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" $FIN_TABLES --no-tablespaces --complete-insert --skip-lock-tables > /tmp/backup_financeiro.sql 2>/dev/null || true
 fi
