@@ -250,17 +250,29 @@ INNER JOIN (
 mysqldump -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" --ignore-table=$DB_NAME.tc_positions --no-tablespaces --complete-insert --skip-lock-tables > /tmp/backup_base.sql
 mysqldump -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" tc_positions_filtrada --no-tablespaces --complete-insert --skip-lock-tables | sed 's/tc_positions_filtrada/tc_positions/g' >> /tmp/backup_base.sql
 
+# Dump extra das tabelas do financeiro (se existirem)
+FIN_TABLES=$(mysql -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" -sN -e "SHOW TABLES LIKE 'fin_%';" 2>/dev/null)
+if [ -n "$FIN_TABLES" ]; then
+  mysqldump -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" $FIN_TABLES --no-tablespaces --complete-insert --skip-lock-tables > /tmp/backup_financeiro.sql 2>/dev/null || true
+fi
+
 mkdir -p /opt/traccar/media /opt/traccar/conf
-tar -czf "$BACKUP_FILE" \
-  -C /tmp backup_base.sql \
-  -C /opt/traccar conf \
-  -C /opt/traccar media \
-  -C /opt/traccar scripts
+cp /opt/traccar/conf/traccar.xml /tmp/traccar.xml.backup 2>/dev/null || true
+
+if [ -f /tmp/backup_financeiro.sql ]; then
+  tar -czf "$BACKUP_FILE" \
+    -C /tmp backup_base.sql backup_financeiro.sql traccar.xml.backup \
+    -C /opt/traccar conf media scripts
+else
+  tar -czf "$BACKUP_FILE" \
+    -C /tmp backup_base.sql traccar.xml.backup \
+    -C /opt/traccar conf media scripts
+fi
 
 curl -s -F chat_id="$CHAT_ID" -F caption="Backup $DESCRICAO - $DATA_HORA" -F document=@"$BACKUP_FILE" https://api.telegram.org/bot$TOKEN/sendDocument
 
 mysql -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" -e "DROP TABLE IF EXISTS tc_positions_filtrada;"
-rm -f /tmp/backup_base.sql "$BACKUP_FILE"
+rm -f /tmp/backup_base.sql /tmp/backup_financeiro.sql /tmp/traccar.xml.backup "$BACKUP_FILE"
 BKPEOF
   chmod +x /opt/traccar/scripts/backup.sh
   echo "   Script de backup instalado."
