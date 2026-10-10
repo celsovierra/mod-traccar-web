@@ -382,6 +382,49 @@ mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e 'UPDATE tc_notifications S
 mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e 'UPDATE tc_notifications SET description = "Ignicao Ligada: $${deviceName}" WHERE type = "ignitionOn" AND (description IS NULL OR description = "");' 2>/dev/null || true
 mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e 'UPDATE tc_notifications SET description = "Ignicao Desligada: $${deviceName}" WHERE type = "ignitionOff" AND (description IS NULL OR description = "");' 2>/dev/null || true
 
+echo ">> Configurando firewall (ufw)..."
+if ! command -v ufw >/dev/null 2>&1; then
+  apt-get install -y ufw >/dev/null 2>&1 || true
+fi
+ufw allow 22/tcp >/dev/null 2>&1 || true
+ufw allow 80/tcp >/dev/null 2>&1 || true
+ufw allow 443/tcp >/dev/null 2>&1 || true
+ufw allow 5023/tcp >/dev/null 2>&1 || true
+ufw allow 5056/tcp >/dev/null 2>&1 || true
+ufw default deny incoming >/dev/null 2>&1 || true
+ufw default allow outgoing >/dev/null 2>&1 || true
+ufw --force enable >/dev/null 2>&1 || true
+echo "   UFW ativo."
+
+echo ">> Configurando fail2ban..."
+if ! command -v fail2ban-server >/dev/null 2>&1; then
+  apt-get install -y fail2ban >/dev/null 2>&1 || true
+fi
+cat > /etc/fail2ban/jail.local << 'F2BEOF'
+[DEFAULT]
+bantime = 1h
+findtime = 10m
+maxretry = 5
+
+[sshd]
+enabled = true
+port = 22
+logpath = /var/log/auth.log
+maxretry = 3
+
+[nginx-http-auth]
+enabled = true
+port = http,https
+
+[nginx-limit-req]
+enabled = true
+port = http,https
+logpath = /var/log/nginx/error.log
+maxretry = 10
+F2BEOF
+systemctl restart fail2ban >/dev/null 2>&1 || true
+echo "   Fail2ban ativo."
+
 echo ">> Instalando telegram-bot..."
 if [ -f ./deploy/telegram-bot/install.sh ]; then
   bash ./deploy/telegram-bot/install.sh
