@@ -248,7 +248,7 @@ INNER JOIN (
 ) t ON t.id = p.id AND t.rn <= 6;
 "
 
-mysqldump -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" --ignore-table=$DB_NAME.tc_positions --no-tablespaces --complete-insert --skip-lock-tables > /tmp/backup_base.sql
+mysqldump -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" --ignore-table=$DB_NAME.tc_positions --ignore-table=$DB_NAME.tc_events --ignore-table=$DB_NAME.tc_actions --no-tablespaces --complete-insert --skip-lock-tables > /tmp/backup_base.sql
 mysqldump -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" tc_positions_filtrada --no-tablespaces --complete-insert --skip-lock-tables | sed 's/tc_positions_filtrada/tc_positions/g' >> /tmp/backup_base.sql
 
 # Dump extra das tabelas do financeiro (se existirem)
@@ -276,7 +276,11 @@ mysql -u "$DB_USER" -p"$DB_PASS_ATUAL" "$DB_NAME" -e "DROP TABLE IF EXISTS tc_po
 rm -f /tmp/backup_base.sql /tmp/backup_financeiro.sql /tmp/traccar.xml.backup "$BACKUP_FILE"
 BKPEOF
   chmod +x /opt/traccar/scripts/backup.sh
-  echo "   Script de backup instalado."
+  # Limpa backups antigos do traccar.xml (mantem 5 mais recentes)
+cd /opt/traccar/conf
+ls -t traccar.xml.bak.* 2>/dev/null | tail -n +6 | xargs -r rm -f
+cd - > /dev/null
+echo "   Script de backup instalado."
 else
   echo "   Script de backup ja existia."
 fi
