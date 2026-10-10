@@ -349,16 +349,16 @@ else
 fi
 
 echo ">> Limpando configs de login invalidas..."
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "DELETE FROM login_config WHERE config LIKE '%""error""%';" 2>/dev/null || true
+mysql -u traccar -p"Traccar@2026#Sec" traccar -e "DELETE FROM login_config WHERE config LIKE '%""error""%';" 2>/dev/null || true
 
 echo ">> Removendo notificacoes duplicadas no Traccar..."
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "DELETE n1 FROM tc_notifications n1 INNER JOIN tc_notifications n2 WHERE n1.id > n2.id AND n1.type = n2.type;" 2>/dev/null || true
+mysql -u traccar -p"Traccar@2026#Sec" traccar -e "DELETE n1 FROM tc_notifications n1 INNER JOIN tc_notifications n2 WHERE n1.id > n2.id AND n1.type = n2.type;" 2>/dev/null || true
 
 echo ">> Vinculando notificacao 171 (ignicao ligada) aos mesmos devices da 161..."
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "INSERT IGNORE INTO tc_device_notification (deviceid, notificationid) SELECT dn.deviceid, n171.id FROM tc_device_notification dn JOIN tc_notifications n161 ON n161.id = dn.notificationid AND n161.type = 'ignitionOff' JOIN tc_notifications n171 ON n171.type = 'ignitionOn' WHERE dn.notificationid = n161.id;" 2>/dev/null || true
+mysql -u traccar -p"Traccar@2026#Sec" traccar -e "INSERT IGNORE INTO tc_device_notification (deviceid, notificationid) SELECT dn.deviceid, n171.id FROM tc_device_notification dn JOIN tc_notifications n161 ON n161.id = dn.notificationid AND n161.type = 'ignitionOff' JOIN tc_notifications n171 ON n171.type = 'ignitionOn' WHERE dn.notificationid = n161.id;" 2>/dev/null || true
 
 echo ">> Aplicando icone padrao moto_vermlha nos devices sem customIcon..."
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e "UPDATE tc_devices SET attributes = JSON_SET(attributes, '\$.customIcon', 'moto_vermlha') WHERE attributes IS NULL OR JSON_EXTRACT(attributes, '\$.customIcon') IS NULL OR JSON_EXTRACT(attributes, '\$.customIcon') = 'default';" 2>/dev/null || true
+mysql -u traccar -p"Traccar@2026#Sec" traccar -e "UPDATE tc_devices SET attributes = JSON_SET(attributes, '\$.customIcon', 'moto_vermlha') WHERE attributes IS NULL OR JSON_EXTRACT(attributes, '\$.customIcon') IS NULL OR JSON_EXTRACT(attributes, '\$.customIcon') = 'default';" 2>/dev/null || true
 
 echo ">> Configurando forward de eventos do Traccar para o bot..."
 # Detecta o dominio da VPS pelo nginx
@@ -377,10 +377,10 @@ fi
 mysql -u traccar -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true
 systemctl restart traccar
 echo ">> Configurando descricao das notificacoes..."
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e 'UPDATE tc_notifications SET description = "Saiu da Cerca: $${geofenceName}" WHERE type = "geofenceExit" AND (description IS NULL OR description = "");' 2>/dev/null || true
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e 'UPDATE tc_notifications SET description = "Entrou na Cerca: $${geofenceName}" WHERE type = "geofenceEnter" AND (description IS NULL OR description = "");' 2>/dev/null || true
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e 'UPDATE tc_notifications SET description = "Ignicao Ligada: $${deviceName}" WHERE type = "ignitionOn" AND (description IS NULL OR description = "");' 2>/dev/null || true
-mysql -u traccar_user -p'Traccar@2026#Sec' traccar -e 'UPDATE tc_notifications SET description = "Ignicao Desligada: $${deviceName}" WHERE type = "ignitionOff" AND (description IS NULL OR description = "");' 2>/dev/null || true
+mysql -u traccar -p"Traccar@2026#Sec" traccar -e 'UPDATE tc_notifications SET description = "Saiu da Cerca: $${geofenceName}" WHERE type = "geofenceExit" AND (description IS NULL OR description = "");' 2>/dev/null || true
+mysql -u traccar -p"Traccar@2026#Sec" traccar -e 'UPDATE tc_notifications SET description = "Entrou na Cerca: $${geofenceName}" WHERE type = "geofenceEnter" AND (description IS NULL OR description = "");' 2>/dev/null || true
+mysql -u traccar -p"Traccar@2026#Sec" traccar -e 'UPDATE tc_notifications SET description = "Ignicao Ligada: $${deviceName}" WHERE type = "ignitionOn" AND (description IS NULL OR description = "");' 2>/dev/null || true
+mysql -u traccar -p"Traccar@2026#Sec" traccar -e 'UPDATE tc_notifications SET description = "Ignicao Desligada: $${deviceName}" WHERE type = "ignitionOff" AND (description IS NULL OR description = "");' 2>/dev/null || true
 
 echo ">> Configurando firewall (ufw)..."
 if ! command -v ufw >/dev/null 2>&1; then
