@@ -386,13 +386,15 @@ echo ">> Configurando firewall (ufw)..."
 if ! command -v ufw >/dev/null 2>&1; then
   apt-get install -y ufw >/dev/null 2>&1 || true
 fi
+# Reseta pra remover regras antigas e garantir padrao
+ufw --force reset >/dev/null 2>&1 || true
+ufw default deny incoming >/dev/null 2>&1 || true
+ufw default allow outgoing >/dev/null 2>&1 || true
 ufw allow 22/tcp >/dev/null 2>&1 || true
 ufw allow 80/tcp >/dev/null 2>&1 || true
 ufw allow 443/tcp >/dev/null 2>&1 || true
 ufw allow 5023/tcp >/dev/null 2>&1 || true
 ufw allow 5056/tcp >/dev/null 2>&1 || true
-ufw default deny incoming >/dev/null 2>&1 || true
-ufw default allow outgoing >/dev/null 2>&1 || true
 ufw --force enable >/dev/null 2>&1 || true
 echo "   UFW ativo."
 
