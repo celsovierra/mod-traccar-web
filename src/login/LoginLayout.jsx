@@ -62,11 +62,11 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
-const LoginLayout = ({ header, children }) => {
+const LoginLayout = ({ header, children, bgImage, bgColor }) => {
   const { classes } = useStyles();
 
   return (
-    <main className={classes.root}>
+    <main className={classes.root} style={bgImage ? { background: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${bgImage}) center/cover no-repeat` } : (bgColor ? { background: bgColor } : {})}>
       <div className={classes.radarRing} style={{ width: 500, height: 500 }} />
       <div className={classes.radarRing} style={{ width: 350, height: 350 }} />
       <div className={classes.radarRing} style={{ width: 200, height: 200 }} />

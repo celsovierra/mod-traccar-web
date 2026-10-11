@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Select,
   MenuItem,
@@ -239,7 +239,7 @@ const LoginPage = () => {
   );
 
   return (
-    <LoginLayout header={header}>
+    <LoginLayout header={header} bgImage={loginCfg.imagem} bgColor={loginCfg.corFundo}>
       <div className={classes.options}>
         {nativeEnvironment && changeEnabled && (
           <IconButton className={classes.optionIcon} onClick={() => navigate('/change-server')}>
