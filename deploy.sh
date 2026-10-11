@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Entra na pasta do projeto sempre
 cd "$(dirname "$(readlink -f "$0")")" || exit 1
@@ -307,6 +307,9 @@ journalctl --vacuum-time=30d >/dev/null 2>&1
 find /var/log -type f -name "*.log" -mtime +30 -delete 2>/dev/null
 find /var/log -type f -name "*.gz" -mtime +30 -delete 2>/dev/null
 echo "Limpeza concluida." >> $LOG
+
+# Mantem so as ultimas 5 execucoes (10 linhas) do proprio log
+tail -n 10 $LOG > /tmp/mnt.tmp && mv /tmp/mnt.tmp $LOG
 MNTEOF
   chmod +x /opt/traccar/scripts/manutencao.sh
   echo "   Script de manutencao instalado."
