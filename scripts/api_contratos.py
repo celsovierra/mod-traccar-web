@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 import json
 import base64
 import uuid
@@ -319,7 +319,7 @@ def get_login_config():
         row = cur.fetchone()
         cur.close(); conn.close()
         if row:
-            return jsonify(json.loads(row[0]))
+            return jsonify(json.loads(row['config']))
         return jsonify({})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
