@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -238,8 +238,8 @@ const UsersPage = () => {
                     key={item.id}
                     elevation={0}
                     sx={{
-                      p: 1.2,
-                      borderRadius: '14px',
+                      p: 1.8,
+                      borderRadius: '18px',
                       border: '1px solid #f1f5f9',
                       backgroundColor: '#ffffff',
                       display: 'flex',
@@ -251,8 +251,10 @@ const UsersPage = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
                         <Avatar
                           sx={{
-                            width: 40,
-                            height: 40,
+                            width: 56,
+                            height: 56,
+                            fontSize: '1.2rem',
+                            fontWeight: 800,
                             backgroundColor: avatarStyle.bg,
                             color: avatarStyle.color,
                           }}
@@ -260,10 +262,10 @@ const UsersPage = () => {
                           {getAvatarIcon(item)}
                         </Avatar>
                         <Box sx={{ minWidth: 0 }}>
-                          <Typography noWrap sx={{ fontWeight: 800, fontSize: '0.94rem', color: '#1e293b' }}>
+                          <Typography noWrap sx={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a', mb: 0.3 }}>
                             {item.name}
                           </Typography>
-                          <Typography noWrap sx={{ fontSize: '0.8rem', color: '#64748b' }}>
+                          <Typography noWrap sx={{ fontSize: '0.85rem', color: '#64748b' }}>
                             {item.email}
                           </Typography>
                         </Box>

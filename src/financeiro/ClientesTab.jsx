@@ -340,7 +340,7 @@ const ClientesTab = () => {
     return (n * meses).toFixed(2).replace('.', ',');
   };
 
-﻿﻿﻿  const confirmarBaixa = async () => {
+ï»¿ï»¿ï»¿  const confirmarBaixa = async () => {
     if (!modalBaixa) return;
     setSalvandoBaixa(true);
     try {
@@ -551,14 +551,62 @@ const ClientesTab = () => {
               style={{ display: 'none' }}
               onChange={(e) => { uploadExcel(e.target.files[0]); e.target.value = ''; }}
             />
-            <Button variant='outlined' onClick={baixarModelo} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '8px', borderColor: '#e2e8f0', color: '#475569' }}>Baixar Modelo</Button>
+            <Button variant='outlined' onClick={baixarModelo} sx={{ display: { xs: 'none', md: 'inline-flex' }, textTransform: 'none', fontWeight: 700, borderRadius: '8px', borderColor: '#e2e8f0', color: '#475569' }}>Baixar Modelo</Button>
             <label htmlFor="upload-excel-input">
-              <Button component='span' variant='outlined' startIcon={<UploadFileIcon />} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '8px', borderColor: '#e2e8f0', color: '#475569' }}>Importar Excel</Button>
+              <Button component='span' variant='outlined' startIcon={<UploadFileIcon />} sx={{ display: { xs: 'none', md: 'inline-flex' }, textTransform: 'none', fontWeight: 700, borderRadius: '8px', borderColor: '#e2e8f0', color: '#475569' }}>Importar Excel</Button>
             </label>
           </Box>
         <Box sx={{ flexGrow: 1, overflowY: 'auto', pb: 8 }}>
-          <Paper elevation={0} sx={{ borderRadius: '24px', border: '1px solid #edf2f7', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.06)', overflow: 'hidden', backgroundColor: '#ffffff' }}>
-            <Box sx={{ overflowX: 'auto' }}>
+          {/* CARDS MOBILE */}
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5 }}>
+            {filteredItems.map((item) => {
+              const avatarStyle = getAvatarColor(item);
+              const st = contratosMap[item.id];
+              return (
+                <Paper key={item.id} elevation={0} sx={{ p: 1.8, borderRadius: '18px', border: '1px solid #f1f5f9', backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Avatar sx={{ width: 56, height: 56, fontSize: '1.2rem', fontWeight: 800, backgroundColor: avatarStyle.bg, color: avatarStyle.color }}>
+                      {getAvatarIcon(item)}
+                    </Avatar>
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography noWrap sx={{ fontWeight: 800, fontSize: '1rem', color: item.attributes?.fin_nao_cobrar === 'true' ? '#dc2626' : '#0f172a', mb: 0.3 }}>
+                        {item.name}
+                      </Typography>
+                      <Typography noWrap sx={{ fontSize: '0.85rem', color: '#64748b' }}>
+                        {item.attributes?.fin_telefone1 || 'Sem telefone'}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#475569', pt: 1, borderTop: '1px solid #f1f5f9' }}>
+                    <span><b>Valor:</b> {item.attributes?.fin_valor || '-'}</span>
+                    <span><b>Venc:</b> {item.attributes?.fin_vencimento ? formatarDataBR(item.attributes.fin_vencimento) : '-'}</span>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <input type='checkbox' checked={item.attributes?.fin_nao_cobrar === 'true'} onChange={(e) => marcarNaoCobrar(item, e.target.checked)} style={{ cursor: 'pointer', width: 16, height: 16 }} />
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Nao cobrar</span>
+                    </Box>
+                    {st === 'signed' && <span style={{ backgroundColor: '#dcfce7', color: '#16a34a', padding: '2px 10px', borderRadius: 12, fontWeight: 700, fontSize: '0.7rem' }}>Assinado</span>}
+                    {st === 'pending' && <span style={{ backgroundColor: '#fed7aa', color: '#ea580c', padding: '2px 10px', borderRadius: 12, fontWeight: 700, fontSize: '0.7rem' }}>Pendente</span>}
+                  </Box>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.8, pt: 1, borderTop: '1px solid #f1f5f9' }}>
+                    <IconButton size='small' onClick={() => enviarContrato(item)} title='Enviar Contrato'><DescriptionIcon fontSize='small' sx={{ color: '#f97316' }} /></IconButton>
+                    <IconButton size='small' onClick={() => abrirCobranca(item)} title='WhatsApp'><ChatBubbleIcon fontSize='small' sx={{ color: '#22c55e' }} /></IconButton>
+                    <IconButton size='small' onClick={() => abrirBaixa(item)} title='Confirmar Pagamento'><CheckCircleIcon fontSize='small' sx={{ color: '#3b82f6' }} /></IconButton>
+                    <IconButton size='small' onClick={() => iniciarEdicao(item)} title='Editar'><EditIcon fontSize='small' /></IconButton>
+                    <IconButton size='small' onClick={() => setConfirmarExclusao(item)} title='Excluir'><DeleteIcon fontSize='small' sx={{ color: '#dc2626' }} /></IconButton>
+                  </Box>
+                </Paper>
+              );
+            })}
+            {hasMore && <TableShimmer ref={items.length > 0 ? sentinelRef : null} columns={1} />}
+          </Box>
+
+          <Paper elevation={0} sx={{ borderRadius: '24px', border: '1px solid #edf2f7', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.06)', overflow: 'hidden', backgroundColor: '#ffffff', display: { xs: 'none', md: 'block' } }}>
+            <Box sx={{ display: { xs: 'none', md: 'block' }, overflowX: 'auto' }}>
               <Table>
                 <TableHead sx={{ backgroundColor: '#f8fafc', position: 'sticky', top: 0, zIndex: 5 }}>
                   <TableRow>
@@ -586,7 +634,7 @@ const ClientesTab = () => {
                             </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto', gap: 0.5 }}>
                               <input type='checkbox' checked={item.attributes?.fin_nao_cobrar === 'true'} onChange={(e) => marcarNaoCobrar(item, e.target.checked)} style={{ cursor: 'pointer', width: 16, height: 16 }} />
-                              <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>Não cobrar</span>
+                              <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>NÃ£o cobrar</span>
                             </Box>
                             </Box>
                         </TableCell>
@@ -657,12 +705,12 @@ const ClientesTab = () => {
           <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mt: 2, mb: 0.5 }}>Quantos meses dar baixa?</Typography>
           <TextField select fullWidth size='small' value={mesesBaixa} onChange={(e) => setMesesBaixa(Number(e.target.value))}>
             {[...Array(12)].map((_, i) => (
-              <MenuItem key={i+1} value={i+1}>{i+1} {i+1 === 1 ? 'mês' : 'meses'}</MenuItem>
+              <MenuItem key={i+1} value={i+1}>{i+1} {i+1 === 1 ? 'mÃªs' : 'meses'}</MenuItem>
             ))}
           </TextField>
           <Typography sx={{ fontSize: '0.85rem', color: '#64748b', mt: 2 }}>Novo vencimento: <strong>{formatarDataBR(calcNovoVencimento(modalBaixa?.attributes?.fin_vencimento, mesesBaixa))}</strong></Typography>
           <Typography sx={{ fontSize: '0.85rem', color: '#64748b', mt: 1 }}>Valor total da baixa: <strong>R$ {valorTotal(modalBaixa || {}, mesesBaixa)}</strong></Typography>
-          <Typography sx={{ fontSize: '0.78rem', color: '#94a3b8', mt: 2 }}>Após confirmar, um recibo será enviado via WhatsApp.</Typography>
+          <Typography sx={{ fontSize: '0.78rem', color: '#94a3b8', mt: 2 }}>ApÃ³s confirmar, um recibo serÃ¡ enviado via WhatsApp.</Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setModalBaixa(null)} sx={{ textTransform: 'none', color: '#475569' }}>Cancelar</Button>
