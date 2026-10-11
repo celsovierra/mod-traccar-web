@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Entra na pasta do projeto sempre
 cd "$(dirname "$(readlink -f "$0")")" || exit 1
@@ -295,7 +295,8 @@ else
 fi
 
 # ===== MANUTENCAO AUTOMATICA =====
-if [ ! -f /opt/traccar/scripts/manutencao.sh ]; then
+# Cria/atualiza script de manutencao (sempre sobrescreve)
+if true; then
   cat > /opt/traccar/scripts/manutencao.sh << 'MNTEOF'
 #!/bin/bash
 LOG=/var/log/traccar-manutencao.log
@@ -313,8 +314,6 @@ tail -n 10 $LOG > /tmp/mnt.tmp && mv /tmp/mnt.tmp $LOG
 MNTEOF
   chmod +x /opt/traccar/scripts/manutencao.sh
   echo "   Script de manutencao instalado."
-else
-  echo "   Script de manutencao ja existia."
 fi
 
 if [ ! -f /etc/logrotate.d/traccar ]; then
