@@ -1,4 +1,4 @@
-﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
+import { AnchorButton } from "../../features/anchor/AnchorButton";
 import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
