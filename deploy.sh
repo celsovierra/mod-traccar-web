@@ -294,6 +294,50 @@ else
   echo "   Cron ja existia."
 fi
 
+# ===== MANUTENCAO AUTOMATICA =====
+if [ ! -f /opt/traccar/scripts/manutencao.sh ]; then
+  cat > /opt/traccar/scripts/manutencao.sh << 'MNTEOF'
+#!/bin/bash
+LOG=/var/log/traccar-manutencao.log
+echo "=== $(date) ===" >> $LOG
+find /opt/traccar/logs/ -type f -mtime +5 -delete 2>/dev/null
+apt-get clean >/dev/null 2>&1
+apt-get autoclean >/dev/null 2>&1
+journalctl --vacuum-time=30d >/dev/null 2>&1
+find /var/log -type f -name "*.log" -mtime +30 -delete 2>/dev/null
+find /var/log -type f -name "*.gz" -mtime +30 -delete 2>/dev/null
+echo "Limpeza concluida." >> $LOG
+MNTEOF
+  chmod +x /opt/traccar/scripts/manutencao.sh
+  echo "   Script de manutencao instalado."
+else
+  echo "   Script de manutencao ja existia."
+fi
+
+if [ ! -f /etc/logrotate.d/traccar ]; then
+  cat > /etc/logrotate.d/traccar << 'LREOF'
+/opt/traccar/logs/tracker-server.log {
+    rotate 52
+    size 1G
+    weekly
+    compress
+    notifempty
+    copytruncate
+}
+LREOF
+  echo "   Logrotate do Traccar instalado."
+else
+  echo "   Logrotate do Traccar ja existia."
+fi
+
+if ! crontab -l 2>/dev/null | grep -q "manutencao.sh"; then
+  (crontab -l 2>/dev/null; echo "0 3 * * * /bin/bash /opt/traccar/scripts/manutencao.sh") | crontab -
+  echo "   Cron de manutencao instalado (3h)."
+else
+  echo "   Cron de manutencao ja existia."
+fi
+fi
+
 
 
 

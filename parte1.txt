@@ -1,0 +1,19 @@
+﻿# Cria script de manutencao (se nao existir)
+if [ ! -f /opt/traccar/scripts/manutencao.sh ]; then
+  cat > /opt/traccar/scripts/manutencao.sh << 'MNTEOF'
+#!/bin/bash
+LOG=/var/log/traccar-manutencao.log
+echo "=== $(date) ===" >> $LOG
+find /opt/traccar/logs/ -type f -mtime +5 -delete 2>/dev/null
+apt-get clean >/dev/null 2>&1
+apt-get autoclean >/dev/null 2>&1
+journalctl --vacuum-time=30d >/dev/null 2>&1
+find /var/log -type f -name "*.log" -mtime +30 -delete 2>/dev/null
+find /var/log -type f -name "*.gz" -mtime +30 -delete 2>/dev/null
+echo "Limpeza concluida." >> $LOG
+MNTEOF
+  chmod +x /opt/traccar/scripts/manutencao.sh
+  echo "   Script de manutencao instalado."
+else
+  echo "   Script de manutencao ja existia."
+fi
