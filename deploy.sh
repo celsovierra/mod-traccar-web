@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Entra na pasta do projeto sempre
 cd "$(dirname "$(readlink -f "$0")")" || exit 1
@@ -335,7 +335,6 @@ if ! crontab -l 2>/dev/null | grep -q "manutencao.sh"; then
   echo "   Cron de manutencao instalado (3h)."
 else
   echo "   Cron de manutencao ja existia."
-fi
 fi
 
 
