@@ -87,6 +87,10 @@ const BottomMenu = () => {
     }
 
     await fetch('/api/session', { method: 'DELETE' });
+    window.localStorage.removeItem('loginSavedPassword');
+    window.localStorage.removeItem('loginRememberPassword');
+    window.localStorage.removeItem('loginEmail');
+    window.sessionStorage.removeItem('autoLoginTried');
     nativePostMessage('logout');
     navigate('/login');
     dispatch(sessionActions.updateUser(null));
