@@ -66,7 +66,7 @@ import { mapIconKey, mapIcons } from '../../map/core/preloadImages';
 import { formatStatus, formatSpeed } from '../util/formatter';
 import { getStoppedTimeStatus, StoppedTimeDisplay } from '../../features/stoppedTime';
 
-// ÃƒÂcone SVG Cerca
+// Icone SVG Cerca
 const FenceIcon = ({ sx = {}, className = '' }) => (
   <svg
     viewBox="0 0 24 24"
@@ -95,7 +95,7 @@ const FenceIcon = ({ sx = {}, className = '' }) => (
 const formatDateTimeBr = (date) => {
   const d = new Date(date);
   const pad = (n) => String(n).padStart(2, '0');
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} Ã s ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} as ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
 const useStyles = makeStyles()((theme) => ({
@@ -824,7 +824,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const handleToggleBlock = () => {
     if (isUnlockPending) {
       setToast({
-        message: 'Aguardando veÃƒÂ­culo ficar online para concluir o desbloqueio.',
+        message: 'Aguardando veiculo ficar online para concluir o desbloqueio.',
         severity: 'warning',
       });
       return;
@@ -835,7 +835,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     } else {
       if (!isOnline) {
         setToast({
-          message: 'VeÃ­culo OFFLINE! NÃ£o ÃƒÂ© possÃ­velel enviar comando de bloqueio.',
+          message: 'Veiculo OFFLINE! Nao e possivel enviar comando de bloqueio.',
           severity: 'error',
         });
         return;
@@ -1138,7 +1138,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   };
 
   const handleShareWhatsapp = async () => {
-    const statusEmoji = isOnline ? 'ðŸŸ¢' : 'ðŸ”´';
+    const statusEmoji = isOnline ? '🟢' : '🔴';
     const statusText = isOnline ? 'Online' : 'Offline';
     const ignitionText = isIgnitionOn ? 'Ligada' : 'Desligada';
     const lockText = isBlocked ? 'Bloqueado' : 'Desbloqueado';
@@ -1162,22 +1162,22 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       : 'Nao disponivel';
 
     const message = [
-      '📍 *RELATORIO DE MONITORAMENTO*',
+      'ðŸ“ *RELATORIO DE MONITORAMENTO*',
       '',
-      `👤 ${device.name}`,
+      `ðŸ‘¤ ${device.name}`,
       `${statusEmoji} ${isOnline ? 'Conectado / Online' : 'Desconectado / Offline'}`,
-      `🔑 ${ignitionText}`,
-      `${isBlocked ? '🔒 Bloqueado' : '🔓 Desbloqueado'}`,
+      `ðŸ”‘ ${ignitionText}`,
+      `${isBlocked ? 'ðŸ”’ Bloqueado' : 'ðŸ”“ Desbloqueado'}`,
       '',
-      `🚵 ${modelText}`,
-      `🔢 ${plateText}`,
-      `⚡ ${speedKmh} km/h`,
-      `🛑 ${stoppedText}`,
-      '───────────────',
+      `ðŸšµ ${modelText}`,
+      `ðŸ”¢ ${plateText}`,
+      `âš¡ ${speedKmh} km/h`,
+      `ðŸ›‘ ${stoppedText}`,
+      'â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€',
       '',
-      `📍 ${addressText}`,
+      `ðŸ“ ${addressText}`,
       '',
-      `🗺️ *Localizacao no Mapa:*`,
+      `ðŸ—ºï¸ *Localizacao no Mapa:*`,
       mapsLink,
     ].join('\n');
     const isApp = /wv|WebView|Android.*Version/i.test(navigator.userAgent) || window.ReactNativeWebView;
@@ -1349,7 +1349,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                               color: ignitionColor,
                             }}
                           >
-                            {isIgnitionOn ? 'Ignição ligada' : 'Ignição desligada'}</Typography>
+                            {isIgnitionOn ? 'Ignicao ligada' : 'Ignicao desligada'}</Typography>
                         </Box>
                         {stoppedStatus && (
                           <Box sx={{ mt: '2px' }}>
@@ -1526,7 +1526,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   )}
                 </ButtonBase>
 
-                {/* BotÃƒÂ£o de Ãƒâ€šncora do MÃƒÂ³dulo Isolado */}
+                {/* Botao de Ancora do Modulo Isolado */}
                 <AnchorButton
                   isAnchorActive={isAnchorActive}
                   onClick={toggleAnchor}
@@ -1694,7 +1694,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
               }}
             >
               <Typography sx={{ fontSize: '0.84rem', color: '#94a3b8', fontWeight: 600 }}>
-                Nenhuma cerca virtual vinculada a este veÃƒÂ­culo.
+                Nenhuma cerca virtual vinculada a este veiculo.
               </Typography>
             </Box>
           ) : (
@@ -1758,7 +1758,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                             {geofence.name}
                           </Typography>
                           <Typography sx={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, mt: 0.3 }}>
-                            {geofence.description || 'PolÃ­gono'}
+                            {geofence.description || 'Poligono'}
                           </Typography>
                         </Box>
                       </Box>
@@ -1816,7 +1816,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       >
                         <QueryBuilderIcon sx={{ color: '#facc15', fontSize: 20, flexShrink: 0 }} />
                         <Typography sx={{ fontSize: { xs: '0.74rem', sm: '0.78rem' }, color: '#fef08a', fontWeight: 600, lineHeight: 1.3 }}>
-                          Cerca desvinculada! FicarÃ¡ ativa novamente em{' '}
+                          Cerca desvinculada! Ficara ativa novamente em{' '}
                           <strong style={{ color: '#ffffff', fontWeight: 800 }}>{formatDateTimeBr(geofence.snoozeUntil)}</strong>
                         </Typography>
                       </Box>
@@ -1841,13 +1841,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
             <LockPersonIcon sx={{ fontSize: 28, color: '#ffffff' }} />
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Bloquear VeÃ­culo
+            Bloquear Veiculo
           </Typography>
         </Box>
 
         <DialogContent className={classes.dialogContent}>
           <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.5 }}>
-            Tem certeza que deseja enviar o comando de <strong>BLOQUEIO</strong> para o veÃƒÂ­culo?
+            Tem certeza que deseja enviar o comando de <strong>BLOQUEIO</strong> para o veiculo?
           </Typography>
           <Box
             sx={{
