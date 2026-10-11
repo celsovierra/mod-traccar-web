@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -30,6 +30,8 @@ import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
 import CollectionFab from './components/CollectionFab';
 import CollectionActions from './components/CollectionActions';
+import ShareIcon from '@mui/icons-material/Share';
+import ShareUserDialog from './components/ShareUserDialog';
 import TableShimmer from '../common/components/TableShimmer';
 import { useManager } from '../common/util/permissions';
 import SearchHeader from './components/SearchHeader';
@@ -51,6 +53,8 @@ const UsersPage = () => {
     await fetchOrThrow(`/api/session/${userId}`);
     window.location.replace('/');
   });
+
+  const [shareUser, setShareUser] = useState(null);
 
   const actionLogin = {
     key: 'login',
@@ -292,6 +296,21 @@ const UsersPage = () => {
                       }}
                     >
                       {manager && (
+                        <Tooltip title="Compartilhar acesso">
+                          <IconButton
+                            size="small"
+                            onClick={() => setShareUser(item)}
+                            sx={{
+                              color: '#16a34a',
+                              backgroundColor: '#dcfce7',
+                              '&:hover': { backgroundColor: '#bbf7d0' },
+                            }}
+                          >
+                            <ShareIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {manager && (
                         <Tooltip title={t('loginLogin')}>
                           <IconButton
                             size="small"
@@ -469,6 +488,14 @@ const UsersPage = () => {
 
         <CollectionFab editPath="/settings/user" />
       </Box>
+
+      {shareUser && (
+        <ShareUserDialog
+          open={!!shareUser}
+          onClose={() => setShareUser(null)}
+          user={shareUser}
+        />
+      )}
     </PageLayout>
   );
 };
