@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 from flask import Flask, jsonify, request
 import subprocess
 import pymysql
@@ -6,6 +6,9 @@ import json
 import urllib.request
 import datetime
 import calendar
+import sys
+sys.path.insert(0, '/opt/traccar/scripts')
+from fila_financeiro import criar_pix_mercadopago, get_admin_attrs, detectar_dominio
 
 def ler_traccar_xml():
     path = "/opt/traccar/conf/traccar.xml"
@@ -222,5 +225,34 @@ def webhook_mercadopago():
     except Exception as e:
         return jsonify({"ok": True, "error": str(e)})
 
+@app.route("/gerar-pix", methods=["POST"])
+def gerar_pix():
+    try:
+        data = request.get_json() or {}
+        user_id = data.get("user_id")
+        nome = data.get("nome") or ""
+        valor = data.get("valor") or 0
+        if not user_id:
+            return jsonify({"ok": False, "error": "user_id obrigatorio"})
+        attrs = get_admin_attrs()
+        if (attrs.get("fin_gw_ativo") or "") != "mercadopago" or not attrs.get("fin_gw_token"):
+            return jsonify({"ok": False, "error": "Mercado Pago nao configurado"})
+        item = {"id": user_id, "user_id": user_id, "nome": nome}
+        pix_copia, _ticket, payment_id = criar_pix_mercadopago(attrs, item, valor)
+        if not payment_id:
+            return jsonify({"ok": False, "error": "Falha ao criar PIX"})
+        import secrets
+        token_pag = secrets.token_urlsafe(24)[:32]
+        dominio = attrs.get("fin_dominio") or detectar_dominio()
+        link_pag = dominio.rstrip("/") + "/pagar/" + token_pag
+        conn = conectar()
+        with conn.cursor() as cur:
+            cur.execute("INSERT INTO tc_fila_financeiro (user_id, nome, telefone, tipo, valor, vencimento, dias_atraso, status, pix_id, token_pag) VALUES (%s,%s,%s,%s,%s,CURDATE(),0,%s,%s,%s)",
+                (user_id, nome, "", "Manual", str(valor), "Pendente", str(payment_id), token_pag))
+            conn.commit()
+        conn.close()
+        return jsonify({"ok": True, "link_pagamento": link_pag, "pix_copia_cola": pix_copia or "", "payment_id": str(payment_id)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8092)
