@@ -42,7 +42,7 @@ const ConexoesTab = () => {
     setGwAtivo(userAttributes.fin_gw_ativo || 'mercadopago');
     setGwToken(userAttributes.fin_gw_token || '');
     const savedWebhook = userAttributes.fin_gw_webhook || '';
-    const autoWebhook = 'https://' + window.location.hostname + '/api/webhook/mercadopago';
+    const autoWebhook = 'https://' + window.location.hostname + '/api-financeiro/webhook/mercadopago';
     setGwUrlWebhook(savedWebhook && !savedWebhook.includes('localhost') ? savedWebhook : autoWebhook);
     setGdClientId(userAttributes.fin_gd_client_id || '');
     setGdClientSecret(userAttributes.fin_gd_client_secret || '');
@@ -154,7 +154,7 @@ const ConexoesTab = () => {
     setGwAtivo(userAttributes.fin_gw_ativo || 'mercadopago');
     setGwToken(userAttributes.fin_gw_token || '');
     const savedWebhook = userAttributes.fin_gw_webhook || '';
-    const autoWebhook = 'https://' + window.location.hostname + '/api/webhook/mercadopago';
+    const autoWebhook = 'https://' + window.location.hostname + '/api-financeiro/webhook/mercadopago';
     setGwUrlWebhook(savedWebhook && !savedWebhook.includes('localhost') ? savedWebhook : autoWebhook);
     setGdClientId(userAttributes.fin_gd_client_id || '');
     setGdClientSecret(userAttributes.fin_gd_client_secret || '');
