@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { Table, TableRow, TableCell, TableHead, TableBody, Box, Paper, Typography, Avatar, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, MenuItem } from '@mui/material';
 import { useSelector } from 'react-redux';
 import PersonIcon from '@mui/icons-material/Person';
@@ -101,8 +101,20 @@ const ClientesTab = () => {
     texto = texto.split('{valor_atualizado}').join(fmt(total));
     texto = texto.split('{data_hoje}').join(new Date().toLocaleDateString('pt-BR'));
     texto = texto.split('{desconto}').join('0,00');
-    texto = texto.split('{link_pagamento}').join('');
-    texto = texto.split('{pix_copia_cola}').join('');
+    try {
+      const rp = await fetch('/api-financeiro/gerar-pix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: item.id, nome: item.name || '', valor: total }) });
+      const jp = await rp.json();
+      if (jp.ok) {
+        texto = texto.split('{link_pagamento}').join(jp.link_pagamento || '');
+        texto = texto.split('{pix_copia_cola}').join(jp.pix_copia_cola || '');
+      } else {
+        texto = texto.split('{link_pagamento}').join('');
+        texto = texto.split('{pix_copia_cola}').join('');
+      }
+    } catch (e) {
+      texto = texto.split('{link_pagamento}').join('');
+      texto = texto.split('{pix_copia_cola}').join('');
+    }
     const evoUrl = adm.fin_evo_url, evoKey = adm.fin_evo_key, evoInst = adm.fin_evo_instance;
     if (!evoUrl || !evoKey || !evoInst) { alert('Evolution API nao configurada'); return; }
     const nums = [tel1, tel2].filter(Boolean);
