@@ -1,0 +1,1 @@
+import{K as e,V as t}from"./CircularProgress-CqZms1FQ.js";import{t as n}from"./getThemeProps-DKsLImZV.js";var r=t();function i(t){let{props:r,name:i,defaultTheme:a,themeId:o}=t,s=e(a);return o&&(s=s[o]||s),n({theme:s,name:i,props:r})}export{r as n,i as t};

@@ -119,3 +119,5 @@ const PagamentoPage = () => {
     </Box>
   );
 };
+
+export default PagamentoPage;
