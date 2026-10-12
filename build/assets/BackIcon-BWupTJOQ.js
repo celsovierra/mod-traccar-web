@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-BpzPEenQ.js";import{D as t}from"./CircularProgress-BrVmxUAe.js";import{t as n}from"./ArrowBack-Cvh2aLCv.js";import{t as r}from"./ArrowForward-B9tf1HXb.js";var i=e(),a=()=>t().direction===`rtl`?(0,i.jsx)(r,{}):(0,i.jsx)(n,{});export{a as t};

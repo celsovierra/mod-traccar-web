@@ -60,72 +60,62 @@ const PagamentoPage = () => {
   );
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#0f172a', display: 'flex', justifyContent: 'center', p: 2 }}>
-      <Box sx={{ width: '100%', maxWidth: 480 }}>
-        <Box sx={{ textAlign: 'center', color: '#fff', pt: 2, pb: 3 }}>
-          <Typography sx={{ fontSize: '0.85rem', color: '#94a3b8' }}>Pagamento Seguro via PIX</Typography>
-        </Box>
+    <Box sx={{ height: '100vh', maxHeight: '100vh', backgroundColor: '#0f172a', display: 'flex', flexDirection: 'column', alignItems: 'center', p: 1.5, overflow: 'hidden' }}>
+      <Box sx={{ width: '100%', maxWidth: 440, display: 'flex', flexDirection: 'column', height: '100%', gap: 1 }}>
+        <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center' }}>Pagamento Seguro via PIX</Typography>
 
-        <Paper sx={{ p: 3, borderRadius: 3, mb: 2, backgroundColor: '#1e293b', color: '#fff' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-            <Box sx={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+        <Paper sx={{ p: 1.5, borderRadius: 2, backgroundColor: '#1e293b', color: '#fff' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <Box sx={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem' }}>
               {(data.nome || 'C').charAt(0).toUpperCase()}
             </Box>
-            <Box>
-              <Typography sx={{ fontWeight: 700 }}>{data.nome || 'Cliente'}</Typography>
-              <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8' }}>Vencimento: {data.vencimento || '-'}</Typography>
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography sx={{ fontWeight: 700, fontSize: '0.9rem' }}>{data.nome || 'Cliente'}</Typography>
+              <Typography sx={{ fontSize: '0.68rem', color: '#94a3b8' }}>Venc: {data.vencimento || '-'}</Typography>
             </Box>
           </Box>
 
-          <Divider sx={{ borderColor: '#334155', mb: 2 }} />
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography sx={{ color: '#94a3b8', fontSize: '0.85rem' }}>Valor original</Typography>
-            <Typography>R$ {fmtBR(data.valor_num)}</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', mb: 0.3 }}>
+            <Typography sx={{ color: '#94a3b8', fontSize: '0.78rem' }}>Valor original</Typography>
+            <Typography sx={{ fontSize: '0.78rem' }}>R$ {fmtBR(data.valor_num)}</Typography>
           </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography sx={{ color: '#ef4444', fontSize: '0.85rem' }}>Multa</Typography>
-            <Typography sx={{ color: '#ef4444' }}>+ R$ {fmtBR(data.multa)}</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
+            <Typography sx={{ color: '#ef4444', fontSize: '0.78rem' }}>Multa</Typography>
+            <Typography sx={{ color: '#ef4444', fontSize: '0.78rem' }}>+ R$ {fmtBR(data.multa)}</Typography>
           </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography sx={{ color: '#ef4444', fontSize: '0.85rem' }}>Juros</Typography>
-            <Typography sx={{ color: '#ef4444' }}>+ R$ {fmtBR(data.juros)}</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+            <Typography sx={{ color: '#ef4444', fontSize: '0.78rem' }}>Juros</Typography>
+            <Typography sx={{ color: '#ef4444', fontSize: '0.78rem' }}>+ R$ {fmtBR(data.juros)}</Typography>
           </Box>
 
-          <Divider sx={{ borderColor: '#334155', my: 2 }} />
+          <Divider sx={{ borderColor: '#334155', mb: 0.5 }} />
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>Total</Typography>
-            <Typography sx={{ fontWeight: 700, fontSize: '1.4rem', color: '#22c55e' }}>R$ {fmtBR(data.total)}</Typography>
+            <Typography sx={{ fontWeight: 700, fontSize: '0.9rem' }}>Total</Typography>
+            <Typography sx={{ fontWeight: 700, fontSize: '1.3rem', color: '#22c55e' }}>R$ {fmtBR(data.total)}</Typography>
           </Box>
         </Paper>
 
         {data.qr_code_base64 && (
-          <Paper sx={{ p: 2, borderRadius: 3, mb: 2, backgroundColor: '#fff', textAlign: 'center' }}>
-            <img src={'data:image/png;base64,' + data.qr_code_base64} alt='QR Code PIX' style={{ width: '100%', maxWidth: 280 }} />
+          <Paper sx={{ p: 1, borderRadius: 2, backgroundColor: '#fff', textAlign: 'center', flexShrink: 0 }}>
+            <img src={'data:image/png;base64,' + data.qr_code_base64} alt='QR Code PIX' style={{ width: '100%', maxHeight: '32vh', objectFit: 'contain' }} />
           </Paper>
         )}
 
-        <Paper sx={{ p: 3, borderRadius: 3, mb: 2, backgroundColor: '#1e293b', color: '#fff' }}>
-          <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', mb: 1, textAlign: 'center' }}>COMO PAGAR: 1. Abra o banco  2. PIX Copia e Cola  3. Confirme</Typography>
-          <Divider sx={{ borderColor: '#334155', mb: 2 }} />
-          <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', mb: 1 }}>PIX Copia e Cola:</Typography>
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            <Box sx={{ flexGrow: 1, p: 1.5, backgroundColor: '#0f172a', borderRadius: 2, fontSize: '0.7rem', wordBreak: 'break-all', maxHeight: 80, overflow: 'auto' }}>
-              {data.pix_copia_cola || 'Aguardando...'}
-            </Box>
-            <Button onClick={copiar} variant='contained' startIcon={<ContentCopyIcon />} sx={{ textTransform: 'none', fontWeight: 700, backgroundColor: copiado ? '#22c55e' : '#2563eb', minWidth: 100 }}>
-              {copiado ? 'Copiado!' : 'Copiar'}
-            </Button>
+        <Paper sx={{ p: 1.5, borderRadius: 2, backgroundColor: '#1e293b', color: '#fff', display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 }}>
+          <Typography sx={{ fontSize: '0.68rem', color: '#94a3b8', mb: 0.8, textAlign: 'center' }}>PIX Copia e Cola</Typography>
+          <Box sx={{ flexGrow: 1, p: 1, backgroundColor: '#0f172a', borderRadius: 1.5, fontSize: '0.65rem', wordBreak: 'break-all', overflow: 'auto', mb: 1, minHeight: 40 }}>
+            {data.pix_copia_cola || 'Aguardando...'}
           </Box>
+          <Button onClick={copiar} variant='contained' fullWidth startIcon={<ContentCopyIcon />} sx={{ textTransform: 'none', fontWeight: 800, fontSize: '1rem', py: 1.5, backgroundColor: copiado ? '#22c55e' : '#2563eb', borderRadius: 2 }}>
+            {copiado ? 'COPIADO!' : 'COPIAR PIX'}
+          </Button>
         </Paper>
 
-        <Typography sx={{ textAlign: 'center', color: '#64748b', fontSize: '0.7rem', pb: 3 }}>
-          Esta pagina atualiza automaticamente a cada 5 segundos.
+        <Typography sx={{ textAlign: 'center', color: '#64748b', fontSize: '0.65rem' }}>
+          Atualiza a cada 5s
         </Typography>
       </Box>
     </Box>
   );
 };
-
-export default PagamentoPage;
