@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 import sys
 import os
 import time
@@ -273,8 +273,6 @@ def montar_texto(texto, item):
     t = t.replace("{multa}", fmt_moeda(multa))
     t = t.replace("{juros}", fmt_moeda(juros))
     t = t.replace("{desconto}", "")
-    t = t.replace("{link_pagamento}", "")
-    t = t.replace("{pix_copia_cola}", "")
     return t
 
 def hora_agora():
