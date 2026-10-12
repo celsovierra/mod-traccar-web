@@ -102,7 +102,7 @@ const ClientesTab = () => {
     texto = texto.split('{data_hoje}').join(new Date().toLocaleDateString('pt-BR'));
     texto = texto.split('{desconto}').join('0,00');
     try {
-      const rp = await fetch('/api-financeiro/gerar-pix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: item.id, nome: item.name || '', valor: total }) });
+      const rp = await fetch('/api-financeiro/gerar-pix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: item.id, nome: item.name || '', valor: valorBaseTotal }) });
       const jp = await rp.json();
       if (jp.ok) {
         texto = texto.split('{link_pagamento}').join(jp.link_pagamento || '');
