@@ -240,6 +240,27 @@ def webhook_mercadopago():
                 hoje = datetime.datetime.now()
                 data_hoje = hoje.strftime("%d/%m/%Y")
                 valor_rec = float(str(item.get("valor") or "0").replace(",", "."))
+                multa_rec = 0.0
+                juros_rec = 0.0
+                try:
+                    vd = datetime.datetime.strptime(venc_atual[:10], "%Y-%m-%d")
+                    hj = datetime.datetime.now()
+                    dias_atraso_rec = max(0, (hj - vd).days)
+                    if dias_atraso_rec > 0:
+                        ativo_rec = str(adm.get("fin_multa_ativo") or "true").lower()
+                        if ativo_rec == "true":
+                            try:
+                                multa_rec = float((adm.get("fin_multa_valor") or "0").replace(",", "."))
+                            except Exception:
+                                multa_rec = 0.0
+                            try:
+                                juros_dia_rec = float((adm.get("fin_juros_valor") or "0").replace(",", "."))
+                            except Exception:
+                                juros_dia_rec = 0.0
+                            juros_rec = juros_dia_rec * dias_atraso_rec
+                except Exception:
+                    pass
+                total_rec = valor_rec + multa_rec + juros_rec
                 venc_antigo = venc_atual
                 try:
                     vp = venc_antigo.split("-")
@@ -256,10 +277,10 @@ def webhook_mercadopago():
                 texto = texto.replace("{nome}", item.get("nome") or "")
                 texto = texto.replace("{vencimento}", venc_br)
                 texto = texto.replace("{valor}", fmt(valor_rec))
-                texto = texto.replace("{valor_atualizado}", fmt(valor_rec))
+                texto = texto.replace("{valor_atualizado}", fmt(total_rec))
                 texto = texto.replace("{data_hoje}", data_hoje)
-                texto = texto.replace("{multa}", "0,00")
-                texto = texto.replace("{juros}", "0,00")
+                texto = texto.replace("{multa}", fmt(multa_rec))
+                texto = texto.replace("{juros}", fmt(juros_rec))
                 texto = texto.replace("{desconto}", "")
                 texto = texto.replace("{prox_vencimento}", novo_venc_br)
                 texto = texto.replace("{link_pagamento}", "")
@@ -289,6 +310,33 @@ def gerar_pix():
         attrs = get_admin_attrs()
         if (attrs.get("fin_gw_ativo") or "") != "mercadopago" or not attrs.get("fin_gw_token"):
             return jsonify({"ok": False, "error": "Mercado Pago nao configurado"})
+        # Determina tipo com base no vencimento
+        conn0 = conectar()
+        with conn0.cursor() as cur0:
+            cur0.execute("SELECT attributes FROM tc_users WHERE id = %s LIMIT 1", (user_id,))
+            ur0 = cur0.fetchone()
+        conn0.close()
+        venc_str = ""
+        if ur0 and ur0.get("attributes"):
+            try:
+                ua0 = json.loads(ur0["attributes"])
+                venc_str = ua0.get("fin_vencimento") or ""
+            except Exception:
+                pass
+        tipo_msg = "Manual"
+        dias_atraso_tipo = 0
+        try:
+            vd0 = datetime.datetime.strptime(venc_str[:10], "%Y-%m-%d")
+            hj0 = datetime.datetime.now()
+            dias_atraso_tipo = (hj0 - vd0).days
+            if dias_atraso_tipo > 0:
+                tipo_msg = "Atraso"
+            elif dias_atraso_tipo == 0:
+                tipo_msg = "Vencimento"
+            else:
+                tipo_msg = "Lembrete"
+        except Exception:
+            pass
         item = {"id": user_id, "user_id": user_id, "nome": nome}
         pix_copia, _ticket, payment_id = criar_pix_mercadopago(attrs, item, valor)
         if not payment_id:
@@ -300,7 +348,7 @@ def gerar_pix():
         conn = conectar()
         with conn.cursor() as cur:
             cur.execute("INSERT INTO tc_fila_financeiro (user_id, nome, telefone, tipo, valor, vencimento, dias_atraso, status, pix_id, token_pag) VALUES (%s,%s,%s,%s,%s,CURDATE(),0,%s,%s,%s)",
-                (user_id, nome, "", "Manual", str(valor), "Pendente", str(payment_id), token_pag))
+                (user_id, nome, "", tipo_msg, str(valor), "Pendente", str(payment_id), token_pag))
             conn.commit()
         conn.close()
         return jsonify({"ok": True, "link_pagamento": link_pag, "pix_copia_cola": pix_copia or "", "payment_id": str(payment_id)})
