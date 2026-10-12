@@ -221,6 +221,58 @@ def webhook_mercadopago():
             cur.execute("UPDATE tc_fila_financeiro SET status='Pago', pago_em=NOW() WHERE id=%s", (item["id"],))
         conn.commit()
         conn.close()
+        # Envia recibo via WhatsApp
+        try:
+            adm = attrs
+            evo_url = adm.get("fin_evo_url") or ""
+            evo_key = adm.get("fin_evo_key") or ""
+            evo_inst = adm.get("fin_evo_instance") or ""
+            recibo = adm.get("fin_msg_recibo") or ""
+            if evo_url and evo_key and evo_inst and recibo:
+                telefones = []
+                if urow and urow.get("attributes"):
+                    try:
+                        ua = json.loads(urow["attributes"])
+                        if ua.get("fin_telefone1"): telefones.append(ua["fin_telefone1"])
+                        if ua.get("fin_telefone2"): telefones.append(ua["fin_telefone2"])
+                    except Exception:
+                        pass
+                hoje = datetime.datetime.now()
+                data_hoje = hoje.strftime("%d/%m/%Y")
+                valor_rec = float(str(item.get("valor") or "0").replace(",", "."))
+                venc_antigo = venc_atual
+                try:
+                    vp = venc_antigo.split("-")
+                    venc_br = vp[2] + "/" + vp[1] + "/" + vp[0]
+                except Exception:
+                    venc_br = venc_antigo
+                try:
+                    vn = novo_venc.split("-")
+                    novo_venc_br = vn[2] + "/" + vn[1] + "/" + vn[0]
+                except Exception:
+                    novo_venc_br = novo_venc
+                fmt = lambda n: ("%.2f" % n).replace(".", ",")
+                texto = recibo
+                texto = texto.replace("{nome}", item.get("nome") or "")
+                texto = texto.replace("{vencimento}", venc_br)
+                texto = texto.replace("{valor}", fmt(valor_rec))
+                texto = texto.replace("{valor_atualizado}", fmt(valor_rec))
+                texto = texto.replace("{data_hoje}", data_hoje)
+                texto = texto.replace("{multa}", "0,00")
+                texto = texto.replace("{juros}", "0,00")
+                texto = texto.replace("{desconto}", "")
+                texto = texto.replace("{prox_vencimento}", novo_venc_br)
+                texto = texto.replace("{link_pagamento}", "")
+                texto = texto.replace("{pix_copia_cola}", "")
+                for tel in telefones:
+                    try:
+                        body = json.dumps({"number": tel, "text": texto}).encode("utf-8")
+                        req = urllib.request.Request(evo_url.rstrip("/") + "/message/sendText/" + evo_inst, data=body, headers={"apikey": evo_key, "Content-Type": "application/json"}, method="POST")
+                        urllib.request.urlopen(req, timeout=15)
+                    except Exception as ee:
+                        print("Erro recibo:", ee)
+        except Exception as ee:
+            print("Erro bloco recibo:", ee)
         return jsonify({"ok": True, "pago": True})
     except Exception as e:
         return jsonify({"ok": True, "error": str(e)})
