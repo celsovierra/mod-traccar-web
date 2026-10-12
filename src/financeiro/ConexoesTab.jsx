@@ -1,4 +1,4 @@
-﻿import { Box, Paper, Typography, Chip, IconButton, Collapse, TextField, MenuItem, Button, CircularProgress } from '@mui/material';
+import { Box, Paper, Typography, Chip, IconButton, Collapse, TextField, MenuItem, Button, CircularProgress } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import WifiIcon from '@mui/icons-material/Wifi';
@@ -41,7 +41,9 @@ const ConexoesTab = () => {
     setEvoInst(userAttributes.fin_evo_instance || window.location.hostname);
     setGwAtivo(userAttributes.fin_gw_ativo || 'mercadopago');
     setGwToken(userAttributes.fin_gw_token || '');
-    setGwUrlWebhook(userAttributes.fin_gw_webhook || ('https://' + window.location.hostname + '/api/webhook/mercadopago'));
+    const savedWebhook = userAttributes.fin_gw_webhook || '';
+    const autoWebhook = 'https://' + window.location.hostname + '/api/webhook/mercadopago';
+    setGwUrlWebhook(savedWebhook && !savedWebhook.includes('localhost') ? savedWebhook : autoWebhook);
     setGdClientId(userAttributes.fin_gd_client_id || '');
     setGdClientSecret(userAttributes.fin_gd_client_secret || '');
     setGdRefreshToken(userAttributes.fin_gd_refresh_token || '');
@@ -151,7 +153,9 @@ const ConexoesTab = () => {
     setEvoInst(userAttributes.fin_evo_instance || window.location.hostname);
     setGwAtivo(userAttributes.fin_gw_ativo || 'mercadopago');
     setGwToken(userAttributes.fin_gw_token || '');
-    setGwUrlWebhook(userAttributes.fin_gw_webhook || ('https://' + window.location.hostname + '/api/webhook/mercadopago'));
+    const savedWebhook = userAttributes.fin_gw_webhook || '';
+    const autoWebhook = 'https://' + window.location.hostname + '/api/webhook/mercadopago';
+    setGwUrlWebhook(savedWebhook && !savedWebhook.includes('localhost') ? savedWebhook : autoWebhook);
     setGdClientId(userAttributes.fin_gd_client_id || '');
     setGdClientSecret(userAttributes.fin_gd_client_secret || '');
     setGdRefreshToken(userAttributes.fin_gd_refresh_token || '');

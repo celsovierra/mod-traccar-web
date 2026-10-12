@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 import sys
 import os
 import time
@@ -9,6 +9,32 @@ import urllib.request
 
 LOCKFILE = '/tmp/fila_financeiro.lock'
 
+def detectar_dominio():
+    """Detecta o dominio da VPS automaticamente (do nginx ou do hostname)."""
+    import os
+    import glob
+    import re
+    try:
+        for f in glob.glob("/etc/nginx/sites-enabled/*"):
+            try:
+                with open(f, "r") as fh:
+                    conteudo = fh.read()
+                m = re.findall(r"server_name\s+([^\s;]+)", conteudo)
+                for nome in m:
+                    nome = nome.strip()
+                    if nome and "_" not in nome and not nome.startswith("www."):
+                        return "https://" + nome
+            except Exception:
+                pass
+    except Exception:
+        pass
+    try:
+        host = os.uname().nodename
+        if host:
+            return "https://" + host
+    except Exception:
+        pass
+    return "https://localhost"
 def ja_rodando():
     if os.path.exists(LOCKFILE):
         try:
@@ -349,7 +375,7 @@ def processar(forcar=False):
                     token_pag = secrets.token_urlsafe(24)[:32]
                     cur.execute("UPDATE tc_fila_financeiro SET pix_id=%s, token_pag=%s WHERE id=%s", (str(payment_id), token_pag, item["id"]))
                     conn.commit()
-                    dominio = attrs_admin.get("fin_dominio") or "https://gpscell.site"
+                    dominio = attrs_admin.get("fin_dominio") or detectar_dominio()
                     link_pag = dominio.rstrip("/") + "/pagar/" + token_pag
             texto = montar_texto(tpl, item)
             texto = texto.replace("{pix_copia_cola}", pix_copia or "")
