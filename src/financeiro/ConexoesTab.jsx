@@ -38,7 +38,9 @@ const ConexoesTab = () => {
   useEffect(() => {
     setEvoUrl(userAttributes.fin_evo_url || 'https://evolution.gpscell.site');
     setEvoKey(userAttributes.fin_evo_key || '');
-    setEvoInst(userAttributes.fin_evo_instance || window.location.hostname);
+    const hostAtual = window.location.hostname;
+    const instSalva = userAttributes.fin_evo_instance || '';
+    setEvoInst((!instSalva || instSalva === 'localhost') ? hostAtual : instSalva);
     setGwAtivo(userAttributes.fin_gw_ativo || 'mercadopago');
     setGwToken(userAttributes.fin_gw_token || '');
     const savedWebhook = userAttributes.fin_gw_webhook || '';
@@ -86,6 +88,20 @@ const ConexoesTab = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: userId, name: user.name || '-', email: user.email || 'sem@local', attributes: attrs , administrator: user.administrator, masteruser: user.masteruser }),
       });
+      // garante que a instancia existe no Evolution
+      if (evoUrl && evoKey && evoInst) {
+        const base = evoUrl.replace(/\/$/, '');
+        try {
+          const chk = await fetch(base + '/instance/connectionState/' + evoInst, { headers: { apikey: evoKey } });
+          if (!chk.ok) {
+            await fetch(base + '/instance/create', {
+              method: 'POST',
+              headers: { apikey: evoKey, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ instanceName: evoInst, qrcode: true, integration: 'WHATSAPP-BAILEYS' }),
+            });
+          }
+        } catch (e) { console.warn('create inst:', e); }
+      }
       await testarConexao(evoUrl, evoKey, evoInst);
     } catch (e) {
       console.error(e);
@@ -150,7 +166,9 @@ const ConexoesTab = () => {
   useEffect(() => {
     setEvoUrl(userAttributes.fin_evo_url || 'https://evolution.gpscell.site');
     setEvoKey(userAttributes.fin_evo_key || '');
-    setEvoInst(userAttributes.fin_evo_instance || window.location.hostname);
+    const hostAtual = window.location.hostname;
+    const instSalva = userAttributes.fin_evo_instance || '';
+    setEvoInst((!instSalva || instSalva === 'localhost') ? hostAtual : instSalva);
     setGwAtivo(userAttributes.fin_gw_ativo || 'mercadopago');
     setGwToken(userAttributes.fin_gw_token || '');
     const savedWebhook = userAttributes.fin_gw_webhook || '';
