@@ -338,7 +338,24 @@ def gerar_pix():
         except Exception:
             pass
         item = {"id": user_id, "user_id": user_id, "nome": nome}
-        pix_copia, _ticket, payment_id = criar_pix_mercadopago(attrs, item, valor)
+        # Calcula total (valor base + multa + juros) para gerar o PIX correto
+        valor_base_num = float(str(valor).replace(",", ".")) if valor else 0.0
+        multa_pix = 0.0
+        juros_pix = 0.0
+        if dias_atraso_tipo > 0:
+            ativo_pix = str(attrs.get("fin_multa_ativo") or "true").lower()
+            if ativo_pix == "true":
+                try:
+                    multa_pix = float((attrs.get("fin_multa_valor") or "0").replace(",", "."))
+                except Exception:
+                    multa_pix = 0.0
+                try:
+                    juros_dia_pix = float((attrs.get("fin_juros_valor") or "0").replace(",", "."))
+                except Exception:
+                    juros_dia_pix = 0.0
+                juros_pix = juros_dia_pix * dias_atraso_tipo
+        valor_total_pix = valor_base_num + multa_pix + juros_pix
+        pix_copia, _ticket, payment_id = criar_pix_mercadopago(attrs, item, valor_total_pix)
         if not payment_id:
             return jsonify({"ok": False, "error": "Falha ao criar PIX"})
         import secrets

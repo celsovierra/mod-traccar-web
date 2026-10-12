@@ -98,13 +98,13 @@ const PagamentoPage = () => {
 
         {data.qr_code_base64 && (
           <Paper sx={{ p: 1, borderRadius: 2, backgroundColor: '#fff', textAlign: 'center', flexShrink: 0 }}>
-            <img src={'data:image/png;base64,' + data.qr_code_base64} alt='QR Code PIX' style={{ width: '100%', maxHeight: '32vh', objectFit: 'contain' }} />
+            <img src={'data:image/png;base64,' + data.qr_code_base64} alt='QR Code PIX' style={{ width: '100%', maxHeight: '22vh', objectFit: 'contain' }} />
           </Paper>
         )}
 
-        <Paper sx={{ p: 1.5, borderRadius: 2, backgroundColor: '#1e293b', color: '#fff', display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 }}>
+        <Paper sx={{ p: 1.5, borderRadius: 2, backgroundColor: '#1e293b', color: '#fff', display: 'flex', flexDirection: 'column' }}>
           <Typography sx={{ fontSize: '0.68rem', color: '#94a3b8', mb: 0.8, textAlign: 'center' }}>PIX Copia e Cola</Typography>
-          <Box sx={{ flexGrow: 1, p: 1, backgroundColor: '#0f172a', borderRadius: 1.5, fontSize: '0.65rem', wordBreak: 'break-all', overflow: 'auto', mb: 1, minHeight: 40 }}>
+          <Box sx={{ p: 1, backgroundColor: '#0f172a', borderRadius: 1.5, fontSize: '0.65rem', wordBreak: 'break-all', overflow: 'hidden', mb: 1, maxHeight: 60 }}>
             {data.pix_copia_cola || 'Aguardando...'}
           </Box>
           <Button onClick={copiar} variant='contained' fullWidth startIcon={<ContentCopyIcon />} sx={{ textTransform: 'none', fontWeight: 800, fontSize: '1rem', py: 1.5, backgroundColor: copiado ? '#22c55e' : '#2563eb', borderRadius: 2 }}>
