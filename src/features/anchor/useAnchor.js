@@ -11,6 +11,8 @@ export const useAnchor = (deviceId) => {
   const [loadingAnchor, setLoadingAnchor] = useState(false);
   const [isAnchorActive, setIsAnchorActive] = useState(false);
   const toggleAnchorRef = useRef(null);
+  const geofencesRef = useRef({});
+  const positionRef = useRef(null);
 
   const device = useSelector((state) => state.devices.items[deviceId]);
   const user = useSelector((state) => state.session.user);
@@ -18,6 +20,9 @@ export const useAnchor = (deviceId) => {
   const position = useSelector((state) => Object.values(state.session.positions || {}).find((p) => p.deviceId === Number(deviceId)));
 
   const isAdmin = user?.administrator || user?.admin;
+
+  geofencesRef.current = geofences;
+  positionRef.current = position;
 
   useEffect(() => {
     if (!loadingAnchor) setIsAnchorActive(Object.values(geofences || {}).some((g) => isAnchorOf(g, deviceId)));
@@ -45,6 +50,36 @@ export const useAnchor = (deviceId) => {
       toggleAnchorRef.current && toggleAnchorRef.current();
     }
   }, [position, isAnchorActive, geofences, deviceId]);
+
+  // fallback: checa a cada 10s enquanto a ancora estiver ativa
+  useEffect(() => {
+    if (!isAnchorActive || !deviceId) return;
+    const check = () => {
+      const gs = Object.values(geofencesRef.current || {});
+      const anchors = gs.filter((g) => isAnchorOf(g, deviceId));
+      if (!anchors.length) return;
+      let center = null;
+      for (const a of anchors) {
+        const m = String(a.area || '').match(/CIRCLE\s*\(\s*(-?[\d.]+)\s+(-?[\d.]+)/i);
+        if (m) { center = { lat: parseFloat(m[1]), lon: parseFloat(m[2]) }; break; }
+      }
+      if (!center) return;
+      const pos = positionRef.current;
+      if (!pos) return;
+      const R = 6371000;
+      const toRad = (x) => x * Math.PI / 180;
+      const dLat = toRad(pos.latitude - center.lat);
+      const dLon = toRad(pos.longitude - center.lon);
+      const a1 = Math.sin(dLat/2)**2 + Math.cos(toRad(center.lat)) * Math.cos(toRad(pos.latitude)) * Math.sin(dLon/2)**2;
+      const dist = 2 * R * Math.asin(Math.sqrt(a1));
+      if (dist > 100) {
+        console.log('[anchor] fallback afastou ' + Math.round(dist) + 'm, desativando');
+        toggleAnchorRef.current && toggleAnchorRef.current();
+      }
+    };
+    const t = setInterval(check, 10000);
+    return () => clearInterval(t);
+  }, [isAnchorActive, deviceId]);
 
   const reload = useCallback(async () => {
     const res = await fetch(isAdmin ? '/api/geofences?all=true' : '/api/geofences');
