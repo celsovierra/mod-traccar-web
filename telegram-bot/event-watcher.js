@@ -57,6 +57,13 @@ async function processarNovos() {
           if (evt.type === 'geofenceExit') {
             try {
               await pool.query('INSERT INTO tc_commands_queue (deviceid, type, textchannel, attributes) VALUES (?, ?, b\'0\', ?)', [evt.deviceid, 'engineStop', '{}']);
+              const [dv] = await pool.query('SELECT attributes FROM tc_devices WHERE id = ?', [evt.deviceid]);
+              if (dv.length) {
+                let at = {};
+                try { at = JSON.parse(dv[0].attributes || '{}'); } catch (e) {}
+                at.blocked = true;
+                await pool.query('UPDATE tc_devices SET attributes = ? WHERE id = ?', [JSON.stringify(at), evt.deviceid]);
+              }
               console.log('[watcher] BLOQUEIO enviado device=' + evt.deviceid + ' ancora=' + gfName);
             } catch (e) { console.error('[watcher] erro bloqueio:', e.message); }
           }
