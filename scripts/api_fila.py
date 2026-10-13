@@ -120,7 +120,23 @@ def get_pagamento(token):
                     juros_dia = 0.0
                 dias = int(row.get("dias_atraso") or 0)
                 juros = juros_dia * dias
-        total = valor_num + multa + juros
+        # MESMA REGRA DO fila_financeiro.py: meses em atraso
+        meses = 1
+        if row.get("tipo") == "Atraso" and row.get("vencimento"):
+            try:
+                venc = datetime.datetime.strptime(str(row["vencimento"])[:10], "%Y-%m-%d")
+                hj = datetime.datetime.now()
+                meses = (hj.year - venc.year) * 12 + (hj.month - venc.month) + 1
+                if hj.day < venc.day:
+                    meses -= 1
+                if meses < 1:
+                    meses = 1
+            except Exception:
+                meses = 1
+        valor_base = valor_num * meses
+        total = valor_base + multa + juros
+        row["valor_base"] = valor_base
+        row["meses"] = meses
         row["valor_num"] = valor_num
         row["multa"] = multa
         row["juros"] = juros
@@ -205,10 +221,19 @@ def webhook_mercadopago():
                 venc_atual = uattrs.get("fin_vencimento") or ""
                 try:
                     dt = datetime.datetime.strptime(venc_atual[:10], "%Y-%m-%d")
-                    novo_mes = dt.month + 1
+                    hj = datetime.datetime.now()
+                    # meses em atraso desde venc_atual
+                    meses_atraso = (hj.year - dt.year) * 12 + (hj.month - dt.month)
+                    if hj.day < dt.day:
+                        meses_atraso -= 1
+                    if meses_atraso < 0:
+                        meses_atraso = 0
+                    # proximo vencimento = venc_atual + (meses_atraso + 1)
+                    add_meses = meses_atraso + 1
+                    novo_mes = dt.month + add_meses
                     novo_ano = dt.year
-                    if novo_mes > 12:
-                        novo_mes = 1
+                    while novo_mes > 12:
+                        novo_mes -= 12
                         novo_ano += 1
                     import calendar
                     ultimo_dia = calendar.monthrange(novo_ano, novo_mes)[1]
