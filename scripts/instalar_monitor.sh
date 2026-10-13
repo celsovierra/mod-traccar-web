@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Instala monitor_traccar.sh e cron a cada 1 min (so se nao existir)
 SRC=/root/mod-traccar-web/scripts/monitor_traccar.sh
 DST=/opt/traccar/scripts/monitor_traccar.sh

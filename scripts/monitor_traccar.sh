@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Monitor Traccar: reinicia se cair ou travar no changelog lock
 LOG=/var/log/monitor_traccar.log
 DB_USER="traccar"
