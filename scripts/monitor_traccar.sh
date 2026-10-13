@@ -12,7 +12,7 @@ if [ "$status" != "active" ]; then
   exit 0
 fi
 
-if journalctl -u traccar --since "2 minutes ago" --no-pager | grep -q "Waiting for changelog lock"; then
+if journalctl -u traccar --since "10 minutes ago" --no-pager | grep -q "Waiting for changelog lock"; then
   echo "$(date) - travado no changelog lock - limpando" >> $LOG
   mysql -u $DB_USER -p"$DB_PASS" $DB_NAME -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null
   systemctl restart traccar
