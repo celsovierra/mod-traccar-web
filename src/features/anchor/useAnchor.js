@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { geofencesActions } from '../../store';
 
@@ -10,6 +10,7 @@ export const useAnchor = (deviceId) => {
   const dispatch = useDispatch();
   const [loadingAnchor, setLoadingAnchor] = useState(false);
   const [isAnchorActive, setIsAnchorActive] = useState(false);
+  const toggleAnchorRef = useRef(null);
 
   const device = useSelector((state) => state.devices.items[deviceId]);
   const user = useSelector((state) => state.session.user);
@@ -21,6 +22,29 @@ export const useAnchor = (deviceId) => {
   useEffect(() => {
     if (!loadingAnchor) setIsAnchorActive(Object.values(geofences || {}).some((g) => isAnchorOf(g, deviceId)));
   }, [geofences, deviceId, loadingAnchor]);
+
+  // desativa sozinho se afastar +200m da ancora
+  useEffect(() => {
+    if (!isAnchorActive || !position || !deviceId) return;
+    const anchors = Object.values(geofences || {}).filter((g) => isAnchorOf(g, deviceId));
+    if (!anchors.length) return;
+    let center = null;
+    for (const a of anchors) {
+      const m = String(a.area || '').match(/CIRCLE\s*\(\s*(-?[\d.]+)\s+(-?[\d.]+)/i);
+      if (m) { center = { lat: parseFloat(m[1]), lon: parseFloat(m[2]) }; break; }
+    }
+    if (!center) return;
+    const R = 6371000;
+    const toRad = (x) => x * Math.PI / 180;
+    const dLat = toRad(position.latitude - center.lat);
+    const dLon = toRad(position.longitude - center.lon);
+    const a1 = Math.sin(dLat/2)**2 + Math.cos(toRad(center.lat)) * Math.cos(toRad(position.latitude)) * Math.sin(dLon/2)**2;
+    const dist = 2 * R * Math.asin(Math.sqrt(a1));
+    if (dist > 100) {
+      console.log('[anchor] afastou ' + Math.round(dist) + 'm, desativando');
+      toggleAnchorRef.current && toggleAnchorRef.current();
+    }
+  }, [position, isAnchorActive, geofences, deviceId]);
 
   const reload = useCallback(async () => {
     const res = await fetch(isAdmin ? '/api/geofences?all=true' : '/api/geofences');
@@ -98,6 +122,8 @@ export const useAnchor = (deviceId) => {
       setLoadingAnchor(false);
     }
   }, [deviceId, device, position, user, reload, isAnchorActive, isAdmin]);
+
+  toggleAnchorRef.current = toggleAnchor;
 
   return { isAnchorActive, toggleAnchor, loadingAnchor };
 };
