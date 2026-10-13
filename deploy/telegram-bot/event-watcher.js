@@ -20,6 +20,17 @@ function fmtHora(iso) {
   catch { return iso; }
 }
 
+async function bloquearVeiculo(deviceId) {
+  try {
+    const [pos] = await pool.query('SELECT servertime FROM tc_positions WHERE deviceid = ? ORDER BY id DESC LIMIT 1', [deviceId]);
+    if (pos.length === 0) return;
+    const diff = (Date.now() - new Date(pos[0].servertime).getTime()) / 1000;
+    if (diff > 300) { console.log('[watcher] device ' + deviceId + ' offline'); return; }
+    const r = await fetch('http://127.0.0.1:8082/api/commands/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: Number(deviceId), type: 'engineStop' }) });
+    console.log('[watcher] engineStop ' + deviceId + ' -> ' + r.status);
+  } catch (e) { console.error('[watcher] erro:', e.message); }
+}
+
 async function processarNovos() {
   try {
     const [rows] = await pool.query(
@@ -54,6 +65,12 @@ async function processarNovos() {
           info = evt.type === 'geofenceExit'
             ? { emoji: '\u{1F6A8}', texto: 'SAIU DA ANCORA' }
             : { emoji: '\u{2693}', texto: 'ENTROU NA ANCORA' };
+          if (evt.type === 'geofenceExit') {
+            const exp = 'ANCORA_' + Number(evt.deviceid);
+            if (new RegExp('^' + exp + '($|[^0-9])').test(gfName)) {
+              await bloquearVeiculo(evt.deviceid);
+            }
+          }
         }
       }
 
