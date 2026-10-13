@@ -325,7 +325,7 @@ const LoginPage = () => {
                 value={email}
                 autoComplete="email"
                 autoFocus={!email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.replace(/\s/g, ''))}
                 helperText={failed && 'Usuario ou senha invalidos'}
                 className={classes.inputField}
                 slotProps={{
