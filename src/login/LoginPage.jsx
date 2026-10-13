@@ -346,7 +346,7 @@ const LoginPage = () => {
                 value={password}
                 autoComplete="current-password"
                 autoFocus={!!email}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value.replace(/\s/g, ''))}
                 className={classes.inputField}
                 slotProps={{
                   input: {
