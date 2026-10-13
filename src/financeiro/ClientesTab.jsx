@@ -728,6 +728,10 @@ const ClientesTab = () => {
           mx: 'auto',
           px: { xs: 1.5, sm: 3 },
           boxSizing: 'border-box',
+          minHeight: 0,
+          overflow: 'hidden',
+          minHeight: 0,
+          overflow: 'hidden',
         }}
       >
         <Box
@@ -757,6 +761,7 @@ const ClientesTab = () => {
               variant="outlined"
               onClick={baixarModelo}
               sx={{
+                display: { xs: 'none', md: 'inline-flex' },
                 textTransform: 'none',
                 fontWeight: 700,
                 borderRadius: '8px',
@@ -772,6 +777,7 @@ const ClientesTab = () => {
                 variant="outlined"
                 startIcon={<UploadFileIcon />}
                 sx={{
+                  display: { xs: 'none', md: 'inline-flex' },
                   textTransform: 'none',
                   fontWeight: 700,
                   borderRadius: '8px',
@@ -783,7 +789,7 @@ const ClientesTab = () => {
               </Button>
             </label>
           </Box>
-          <Box sx={{ flexGrow: 1, overflowY: 'auto', pb: 8 }}>
+          <Box sx={{ flexGrow: 1, overflowY: 'auto', pb: 8, WebkitOverflowScrolling: 'touch' }}>
             <Paper
               elevation={0}
               sx={{
@@ -1061,28 +1067,29 @@ const ClientesTab = () => {
             </Paper>
 
             {/* ===== CARDS MOBILE ===== */}
-            <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5, minHeight: 0 }}>
               {filteredItems.map((item) => {
                 const avatarStyle = getAvatarColor(item);
+                const btnBase = { width: 42, height: 42, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
                 return (
                   <Paper
                     key={item.id}
                     elevation={0}
                     sx={{
-                      p: 1.5,
+                      p: 1.4,
                       borderRadius: '16px',
-                      border: '1px solid #edf2f7',
-                      boxShadow: '0 4px 12px rgba(15,23,42,0.05)',
+                      border: '1px solid #f1f5f9',
+                      boxShadow: '0 1px 4px rgba(15,23,42,0.03)',
                     }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 1.2 }}>
                       <Avatar
                         sx={{
-                          width: 36,
-                          height: 36,
-                          backgroundColor: avatarStyle.bg,
-                          color: avatarStyle.color,
-                          fontSize: '0.9rem',
+                          width: 38,
+                          height: 38,
+                          backgroundColor: '#ede9fe',
+                          color: '#7c3aed',
+                          fontSize: '0.95rem',
                         }}
                       >
                         {getAvatarIcon(item)}
@@ -1090,44 +1097,41 @@ const ClientesTab = () => {
                       <Typography
                         sx={{
                           fontWeight: 700,
-                          fontSize: '0.9rem',
+                          fontSize: '0.98rem',
                           flex: 1,
-                          color: item.attributes?.fin_nao_cobrar === 'true' ? '#dc2626' : '#1e293b',
+                          color: item.attributes?.fin_nao_cobrar === 'true' ? '#dc2626' : '#0f172a',
                         }}
                       >
                         {item.name}
                       </Typography>
+                      {item.attributes?.fin_vencimento && (() => {
+                        const d = new Date(item.attributes.fin_vencimento);
+                        const hoje = new Date(); hoje.setHours(0,0,0,0);
+                        const atrasado = d < hoje;
+                        const txt = String(item.attributes.fin_vencimento).split('-').reverse().join('/');
+                        return (
+                          <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: atrasado ? '#dc2626' : '#16a34a', whiteSpace: 'nowrap' }}>
+                            {txt}
+                          </Typography>
+                        );
+                      })()}
                     </Box>
-                    <Box
-                      sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.2, gap: 0.5 }}
-                    >
-                      <IconButton
-                        size="small"
-                        onClick={() => enviarContrato(item)}
-                        title="Enviar Contrato"
-                      >
-                        <DescriptionIcon fontSize="small" sx={{ color: '#f97316' }} />
-                      </IconButton>
-                      <IconButton size="small" onClick={() => abrirCobranca(item)} title="WhatsApp">
-                        <ChatBubbleIcon fontSize="small" sx={{ color: '#22c55e' }} />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => abrirBaixa(item)}
-                        title="Confirmar Pagamento"
-                      >
-                        <CheckCircleIcon fontSize="small" sx={{ color: '#3b82f6' }} />
-                      </IconButton>
-                      <IconButton size="small" onClick={() => setEditMobile(item)} title="Editar">
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => setConfirmarExclusao(item)}
-                        title="Excluir"
-                      >
-                        <DeleteIcon fontSize="small" sx={{ color: '#dc2626' }} />
-                      </IconButton>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ ...btnBase, backgroundColor: '#fff7ed' }} onClick={() => enviarContrato(item)}>
+                        <DescriptionIcon sx={{ color: '#f97316', fontSize: 26 }} />
+                      </Box>
+                      <Box sx={{ ...btnBase, backgroundColor: '#dcfce7' }} onClick={() => abrirCobranca(item)}>
+                        <ChatBubbleIcon sx={{ color: '#22c55e', fontSize: 26 }} />
+                      </Box>
+                      <Box sx={{ ...btnBase, backgroundColor: '#dbeafe' }} onClick={() => abrirBaixa(item)}>
+                        <CheckCircleIcon sx={{ color: '#3b82f6', fontSize: 26 }} />
+                      </Box>
+                      <Box sx={{ ...btnBase, backgroundColor: '#f1f5f9' }} onClick={() => setEditMobile(item)}>
+                        <EditIcon sx={{ color: '#475569', fontSize: 24 }} />
+                      </Box>
+                      <Box sx={{ ...btnBase, backgroundColor: '#fee2e2' }} onClick={() => setConfirmarExclusao(item)}>
+                        <DeleteIcon sx={{ color: '#dc2626', fontSize: 24 }} />
+                      </Box>
                     </Box>
                   </Paper>
                 );

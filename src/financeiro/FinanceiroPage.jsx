@@ -1,5 +1,6 @@
 ﻿import { useState } from 'react';
 import { Box, Tabs, Tab, Button } from '@mui/material';
+import PageLayout from '../common/components/PageLayout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ClientesTab from './ClientesTab';
 import FilaTab from './FilaTab';
@@ -13,7 +14,8 @@ const FinanceiroPage = () => {
   const [showDashboard, setShowDashboard] = useState(false);
 
   return (
-    <Box sx={{ p: 2 }}>
+    <PageLayout>
+    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, gap: 1 }}>
         <Button variant='contained' onClick={() => setShowDashboard(true)} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '8px', backgroundColor: '#7c3aed', display: showDashboard ? 'none' : 'inline-flex' }}>Dashboard</Button>
         <Box sx={{ flex: 1 }} />
@@ -29,7 +31,7 @@ const FinanceiroPage = () => {
 
       {showDashboard && <DashboardTab onClose={() => setShowDashboard(false)} />}
 
-      <Box sx={{ mt: 2, display: showDashboard ? 'none' : 'block' }}>
+      <Box sx={{ mt: 2, display: showDashboard ? 'none' : 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 }}>
         {tab === 0 && <ClientesTab />}
         {tab === 1 && <FilaTab />}
         {tab === 2 && <MensagensTab />}
@@ -37,6 +39,7 @@ const FinanceiroPage = () => {
         {tab === 4 && <ContratosTab />}
       </Box>
     </Box>
+    </PageLayout>
   );
 };
 
