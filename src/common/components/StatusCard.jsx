@@ -816,6 +816,16 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   };
 
 
+  useEffect(() => {
+    const handler = (e) => {
+      if (Number(e.detail?.deviceId) !== Number(deviceId)) return;
+      if (isBlocked) return;
+      sendSendCommand('engineStop');
+    };
+    window.addEventListener('anchor-exit', handler);
+    return () => window.removeEventListener('anchor-exit', handler);
+  }, [deviceId, isBlocked, isOnline]);
+
   const handleConfirmLock = () => {
     setConfirmLock(false);
     sendSendCommand('engineStop');

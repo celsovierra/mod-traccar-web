@@ -47,6 +47,7 @@ export const useAnchor = (deviceId) => {
     const dist = 2 * R * Math.asin(Math.sqrt(a1));
     if (dist > 100) {
       console.log('[anchor] afastou ' + Math.round(dist) + 'm, desativando');
+      window.dispatchEvent(new CustomEvent('anchor-exit', { detail: { deviceId: Number(deviceId) } }));
       toggleAnchorRef.current && toggleAnchorRef.current();
     }
   }, [position, isAnchorActive, geofences, deviceId]);
@@ -74,6 +75,7 @@ export const useAnchor = (deviceId) => {
       const dist = 2 * R * Math.asin(Math.sqrt(a1));
       if (dist > 100) {
         console.log('[anchor] fallback afastou ' + Math.round(dist) + 'm, desativando');
+        window.dispatchEvent(new CustomEvent('anchor-exit', { detail: { deviceId: Number(deviceId) } }));
         toggleAnchorRef.current && toggleAnchorRef.current();
       }
     };
