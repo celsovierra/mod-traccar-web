@@ -48,6 +48,11 @@ export const useAnchor = (deviceId) => {
     if (dist > 100) {
       console.log('[anchor] afastou ' + Math.round(dist) + 'm, desativando');
       window.dispatchEvent(new CustomEvent('anchor-exit', { detail: { deviceId: Number(deviceId) } }));
+      fetch('/api/devices/' + Number(deviceId)).then(r => r.ok ? r.json() : null).then(dev => {
+        if (!dev) return;
+        dev.attributes = { ...(dev.attributes || {}), blocked: true };
+        return fetch('/api/devices/' + Number(deviceId), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dev) });
+      }).catch(() => {});
       toggleAnchorRef.current && toggleAnchorRef.current();
     }
   }, [position, isAnchorActive, geofences, deviceId]);
@@ -75,7 +80,19 @@ export const useAnchor = (deviceId) => {
       const dist = 2 * R * Math.asin(Math.sqrt(a1));
       if (dist > 100) {
         console.log('[anchor] fallback afastou ' + Math.round(dist) + 'm, desativando');
+
         window.dispatchEvent(new CustomEvent('anchor-exit', { detail: { deviceId: Number(deviceId) } }));
+
+        fetch('/api/devices/' + Number(deviceId)).then(r => r.ok ? r.json() : null).then(dev => {
+
+          if (!dev) return;
+
+          dev.attributes = { ...(dev.attributes || {}), blocked: true };
+
+          return fetch('/api/devices/' + Number(deviceId), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dev) });
+
+        }).catch(() => {});
+
         toggleAnchorRef.current && toggleAnchorRef.current();
       }
     };
