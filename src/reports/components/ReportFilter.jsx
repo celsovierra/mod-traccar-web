@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   FormControl,
@@ -27,7 +27,7 @@ export const updateReportParams = (searchParams, setSearchParams, key, values) =
   setSearchParams(newParams, { replace: true });
 };
 
-const ReportFilter = ({ children, onShow, onExport, onSchedule, deviceType, loading, formats }) => {
+const ReportFilter = ({ hideGroups = false, children, onShow, onExport, onSchedule, deviceType, loading, formats }) => {
   const { classes } = useReportStyles();
   const t = useTranslation();
 
@@ -210,7 +210,7 @@ const ReportFilter = ({ children, onShow, onExport, onSchedule, deviceType, load
           />
         </div>
       )}
-      {deviceType === 'multiple' && (
+      {deviceType === 'multiple' && !hideGroups && (
         <div className={classes.filterItem}>
           <SelectField
             label={t('settingsGroups')}

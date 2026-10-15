@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import ReportFilter from './components/ReportFilter';
@@ -81,7 +81,7 @@ const CombinedReportPage = () => {
         )}
         <div className={classes.containerMain}>
           <div className={classes.header}>
-            <ReportFilter onShow={onShow} deviceType="multiple" loading={loading} />
+            <ReportFilter onShow={onShow} deviceType="multiple" loading={loading} hideGroups />
           </div>
           <Table>
             <TableHead>
