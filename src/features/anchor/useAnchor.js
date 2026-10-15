@@ -63,7 +63,6 @@ export const useAnchor = (deviceId) => {
     const t = setInterval(() => { if (!stopped) check(); }, 5000);
     return () => clearInterval(t);
   }, [isAnchorActive, deviceId]);
-  }, [isAnchorActive, deviceId]);
 
   const reload = useCallback(async () => {
     const res = await fetch(isAdmin ? '/api/geofences?all=true' : '/api/geofences');
