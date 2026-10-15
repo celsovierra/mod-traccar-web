@@ -385,6 +385,26 @@ else
   echo "   deploy/deploy_all.sh nao encontrado, ignorando."
 fi
 
+
+# === Garantir tabela tc_events ===
+echo ">> Verificando tabela tc_events..."
+TBL_EXISTS=$(mysql -u root traccar -sN -e "SHOW TABLES LIKE 'tc_events';" 2>/dev/null)
+if [ -z "$TBL_EXISTS" ]; then
+  echo "   tc_events NAO existe. Corrigindo DATABASECHANGELOG e reiniciando Traccar..."
+  mysql -u root traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL;" 2>/dev/null
+  mysql -u root traccar -e "DELETE FROM DATABASECHANGELOG WHERE ID LIKE '%events%';" 2>/dev/null
+  systemctl restart traccar
+  sleep 45
+  TBL_EXISTS=$(mysql -u root traccar -sN -e "SHOW TABLES LIKE 'tc_events';" 2>/dev/null)
+  if [ -z "$TBL_EXISTS" ]; then
+    echo "   AVISO: tc_events ainda nao criada. Verifique o log do Traccar."
+  else
+    echo "   tc_events criada com sucesso!"
+  fi
+else
+  echo "   tc_events ja existe. Nada a fazer."
+fi
+
 echo ">> Configurando client_max_body_size no nginx..."
 if [ -f ./scripts/fix_nginx_body_size.py ]; then
   python3 ./scripts/fix_nginx_body_size.py
