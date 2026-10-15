@@ -405,6 +405,16 @@ else
   echo "   tc_events ja existe. Nada a fazer."
 fi
 
+echo ">> Verificando nginx config..."
+if [ ! -f /etc/nginx/sites-enabled/gpscell.site ]; then
+  if [ -f ./deploy/nginx-gpscell.site.conf ]; then
+    cp ./deploy/nginx-gpscell.site.conf /etc/nginx/sites-enabled/gpscell.site
+    rm -f /etc/nginx/sites-enabled/default
+    nginx -t && systemctl reload nginx || echo "   AVISO: nginx falhou."
+  fi
+else
+  echo "   Config nginx ja existe."
+fi
 echo ">> Configurando client_max_body_size no nginx..."
 if [ -f ./scripts/fix_nginx_body_size.py ]; then
   python3 ./scripts/fix_nginx_body_size.py
