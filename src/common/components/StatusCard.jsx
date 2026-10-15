@@ -1,4 +1,4 @@
-import { AnchorButton } from "../../features/anchor/AnchorButton";
+﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
 import { useAnchor } from "../../features/anchor/useAnchor";
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -739,10 +739,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     return () => clearInterval(interval);
   }, [deviceId, pendingAction]);
 
-  const sendSendCommand = async (type) => {
+  const sendSendCommand = async (type, force = false) => {
     const isStop = type === 'engineStop';
 
-    if (isStop && !isOnline) {
+    if (isStop && !isOnline && !force) {
       setToast({
         message: 'Veiculo OFFLINE! Nao e possivel enviar comando de bloqueio.',
         severity: 'error',
@@ -819,12 +819,11 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   useEffect(() => {
     const handler = (e) => {
       if (Number(e.detail?.deviceId) !== Number(deviceId)) return;
-      if (isBlocked) return;
-      sendSendCommand('engineStop');
+      sendSendCommand("engineStop", true);
     };
-    window.addEventListener('anchor-exit', handler);
-    return () => window.removeEventListener('anchor-exit', handler);
-  }, [deviceId, isBlocked, isOnline]);
+    window.addEventListener("anchor-exit", handler);
+    return () => window.removeEventListener("anchor-exit", handler);
+  }, [deviceId]);
 
   const handleConfirmLock = () => {
     setConfirmLock(false);
@@ -1148,7 +1147,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   };
 
   const handleShareWhatsapp = async () => {
-    const statusEmoji = isOnline ? '🟢' : '🔴';
+    const statusEmoji = isOnline ? 'ðŸŸ¢' : 'ðŸ”´';
     const statusText = isOnline ? 'Online' : 'Offline';
     const ignitionText = isIgnitionOn ? 'Ligada' : 'Desligada';
     const lockText = isBlocked ? 'Bloqueado' : 'Desbloqueado';
@@ -1172,22 +1171,22 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       : 'Nao disponivel';
 
     const message = [
-      'ðŸ“ *RELATORIO DE MONITORAMENTO*',
+      'Ã°Å¸â€œÂ *RELATORIO DE MONITORAMENTO*',
       '',
-      `ðŸ‘¤ ${device.name}`,
+      `Ã°Å¸â€˜Â¤ ${device.name}`,
       `${statusEmoji} ${isOnline ? 'Conectado / Online' : 'Desconectado / Offline'}`,
-      `ðŸ”‘ ${ignitionText}`,
-      `${isBlocked ? 'ðŸ”’ Bloqueado' : 'ðŸ”“ Desbloqueado'}`,
+      `Ã°Å¸â€â€˜ ${ignitionText}`,
+      `${isBlocked ? 'Ã°Å¸â€â€™ Bloqueado' : 'Ã°Å¸â€â€œ Desbloqueado'}`,
       '',
-      `ðŸšµ ${modelText}`,
-      `ðŸ”¢ ${plateText}`,
-      `âš¡ ${speedKmh} km/h`,
-      `ðŸ›‘ ${stoppedText}`,
-      'â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€',
+      `Ã°Å¸Å¡Âµ ${modelText}`,
+      `Ã°Å¸â€Â¢ ${plateText}`,
+      `Ã¢Å¡Â¡ ${speedKmh} km/h`,
+      `Ã°Å¸â€ºâ€˜ ${stoppedText}`,
+      'Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬',
       '',
-      `ðŸ“ ${addressText}`,
+      `Ã°Å¸â€œÂ ${addressText}`,
       '',
-      `ðŸ—ºï¸ *Localizacao no Mapa:*`,
+      `Ã°Å¸â€”ÂºÃ¯Â¸Â *Localizacao no Mapa:*`,
       mapsLink,
     ].join('\n');
     const isApp = /wv|WebView|Android.*Version/i.test(navigator.userAgent) || window.ReactNativeWebView;
