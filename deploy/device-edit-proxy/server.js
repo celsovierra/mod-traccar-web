@@ -266,6 +266,42 @@ async function handleGeofenceList(req, res, deviceId, cookieHeader) {
     sendJson(res, 500, { error: 'Erro interno' });
   }
 }
+async function handleEventCreate(req, res, deviceId, cookieHeader) {
+  const body = await readBody(req);
+  try {
+    const { type, eventtime } = JSON.parse(body || '{}');
+    if (!type) { sendJson(res, 400, { error: 'type obrigatorio' }); return; }
+    const authorized = await checkDeviceAccess(deviceId, cookieHeader);
+    if (!authorized) { sendJson(res, 403, { error: 'Sem permissao' }); return; }
+    const [posRows] = await pool.query('SELECT id FROM tc_positions WHERE deviceid = ? ORDER BY id DESC LIMIT 1', [deviceId]);
+    const positionId = posRows.length ? posRows[0].id : 0;
+    const when = eventtime ? new Date(eventtime) : new Date();
+    await pool.query('INSERT INTO tc_events (type, eventtime, deviceid, positionid, attributes) VALUES (?, ?, ?, ?, ?)', [type, when, deviceId, positionId, '{}']);
+    sendJson(res, 200, { success: true });
+  } catch (error) {
+    console.error('Erro ao criar evento:', error);
+    sendJson(res, 500, { error: 'Erro interno' });
+  }
+}
+
+async function handleEventList(req, res, deviceId, cookieHeader, urlParams) {
+  try {
+    const authorized = await checkDeviceAccess(deviceId, cookieHeader);
+    if (!authorized) { sendJson(res, 403, { error: 'Sem permissao' }); return; }
+    const from = urlParams.get('from');
+    const to = urlParams.get('to');
+    let sql = "SELECT id, type, eventtime FROM tc_events WHERE deviceid = ? AND type IN ('anchorActivated','anchorDeactivated','anchorExited','deviceBlocked','deviceUnblocked')";
+    const args = [deviceId];
+    if (from) { sql += ' AND eventtime >= ?'; args.push(new Date(from)); }
+    if (to) { sql += ' AND eventtime <= ?'; args.push(new Date(to)); }
+    sql += ' ORDER BY eventtime DESC';
+    const [rows] = await pool.query(sql, args);
+    sendJson(res, 200, rows);
+  } catch (error) {
+    console.error('Erro ao listar eventos:', error);
+    sendJson(res, 500, { error: 'Erro interno' });
+  }
+}
 const server = http.createServer(async (req, res) => {
   const cookieHeader = req.headers.cookie;
 
@@ -308,6 +344,13 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && relayStatusMatch) {
     await handleRelayStatus(req, res, parseInt(relayStatusMatch[1], 10), cookieHeader);
     return;
+  }
+
+  const eventMatch = req.url.match(/^\/api-device-event\/(\d+)/);
+  if (eventMatch) {
+    const urlParams = new URL(req.url, 'http://localhost').searchParams;
+    if (req.method === 'POST') { await handleEventCreate(req, res, parseInt(eventMatch[1], 10), cookieHeader); return; }
+    if (req.method === 'GET') { await handleEventList(req, res, parseInt(eventMatch[1], 10), cookieHeader, urlParams); return; }
   }
 
   sendJson(res, 404, { error: 'Not found' });

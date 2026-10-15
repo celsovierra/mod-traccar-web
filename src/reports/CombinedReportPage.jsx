@@ -29,6 +29,14 @@ const CombinedReportPage = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const customEventLabels = {
+    anchorActivated: 'Ancora Ativada',
+    anchorDeactivated: 'Ancora Desativada',
+    anchorExited: 'Saiu da Ancora',
+    deviceBlocked: 'Bloqueado',
+    deviceUnblocked: 'Desbloqueado',
+  };
+
   const itemsCoordinates = useMemo(() => items.flatMap((item) => item.route), [items]);
 
   const createMarkers = () =>
@@ -49,7 +57,18 @@ const CombinedReportPage = () => {
     setLoading(true);
     try {
       const response = await fetchOrThrow(`/api/reports/combined?${query.toString()}`);
-      setItems(await response.json());
+      const reportItems = await response.json();
+      for (const it of reportItems) {
+        try {
+          const evRes = await fetch(`/api-device-event/${it.deviceId}?from=${from}&to=${to}`);
+          if (evRes.ok) {
+            const customEvents = await evRes.json();
+            const mapped = customEvents.map((e) => ({ id: e.id, type: e.type, eventTime: new Date(e.eventtime).getTime(), positionId: 0 }));
+            it.events = [...(it.events || []), ...mapped];
+          }
+        } catch (err) {}
+      }
+      setItems(reportItems);
     } finally {
       setLoading(false);
     }
@@ -58,7 +77,7 @@ const CombinedReportPage = () => {
   return (
     <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'reportCombined']}>
       <div className={classes.container}>
-        {Boolean(items.length) && (
+        {false && Boolean(items.length) && (
           <>
             <div className={classes.containerMap}>
               <MapView>
@@ -94,11 +113,11 @@ const CombinedReportPage = () => {
             <TableBody>
               {!loading ? (
                 items.flatMap((item) =>
-                  item.events.map((event, index) => (
+                  [...item.events].reverse().map((event, index) => (
                     <TableRow key={event.id}>
                       <TableCell>{index ? '' : devices[item.deviceId].name}</TableCell>
                       <TableCell>{formatTime(event.eventTime, 'seconds')}</TableCell>
-                      <TableCell>{t(prefixString('event', event.type))}</TableCell>
+                      <TableCell>{customEventLabels[event.type] || t(prefixString('event', event.type))}</TableCell>
                     </TableRow>
                   )),
                 )

@@ -42,6 +42,7 @@ if [ -f "$NGINX_CONF" ]; then
   add_route "/api-device-edit/"
   add_route "/api-device-geofence/"
   add_route "/api-anchor/"
+  add_route "/api-device-event/"
   add_route "/api-relay-status/"
   if [ "$NGINX_CHANGED" = "1" ]; then
     nginx -t && systemctl reload nginx
