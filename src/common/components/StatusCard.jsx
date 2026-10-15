@@ -785,6 +785,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
       fetch('/api-device-event/' + Number(deviceId), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: isStop ? 'deviceBlocked' : 'deviceUnblocked', user: user?.name || user?.email || '' }) }).catch(() => {});
 
+      setIsBlocked(isStop);
+      setIsUnlockPending(!isStop && !isOnline);
+
       if (isStop) {
         setToast({
           message: 'Comando de bloqueio enviado. Aguardando confirmacao do rastreador...',
