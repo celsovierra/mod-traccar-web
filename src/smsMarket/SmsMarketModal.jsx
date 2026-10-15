@@ -378,7 +378,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         const response = await fetch('/api/commands/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify((() => { const m = savedCommands.find((c) => (c.attributes?.text || '').trim() === message.trim()); return m ? { deviceId: device.id, id: m.id } : { deviceId: device.id, type: 'custom', attributes: { text: message.trim() } }; })()),
+          body: JSON.stringify((() => { const m = savedCommands.find((c) => (c.attributes?.text || '').trim() === message.trim()); return m ? { deviceId: device.id, id: m.id } : { deviceId: device.id, type: 'custom', attributes: { data: message.trim() } }; })()),
         });
 
         if (!response.ok) {
