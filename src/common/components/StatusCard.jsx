@@ -674,7 +674,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       prevDeviceIdRef.current = deviceId;
       autoLockTriggered.current = false;
       setPendingAction(null);
-      setIsBlocked(getIsBlockedReal());
+      if (!pendingAction) setIsBlocked(getIsBlockedReal());
       setIsUnlockPending(localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true');
     }
   }, [deviceId, device]);
@@ -787,6 +787,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
       setIsBlocked(isStop);
       setIsUnlockPending(!isStop && !isOnline);
+      setTimeout(() => setPendingAction(null), 3000);
 
       if (isStop) {
         setToast({
