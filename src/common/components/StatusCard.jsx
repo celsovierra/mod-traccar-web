@@ -643,6 +643,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     if (posAttr.output1 === false) return false;
     if (posAttr.relay === true) return true;
     if (posAttr.relay === false) return false;
+    if (posAttr.blocked === true) return true;
+    if (posAttr.blocked === false) return false;
+    if (devAttr.blocked === true) return true;
+    if (devAttr.blocked === false) return false;
     return undefined;
   };
 
