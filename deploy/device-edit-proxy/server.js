@@ -269,14 +269,14 @@ async function handleGeofenceList(req, res, deviceId, cookieHeader) {
 async function handleEventCreate(req, res, deviceId, cookieHeader) {
   const body = await readBody(req);
   try {
-    const { type, eventtime } = JSON.parse(body || '{}');
+    const { type, eventtime, user } = JSON.parse(body || '{}');
     if (!type) { sendJson(res, 400, { error: 'type obrigatorio' }); return; }
     const authorized = await checkDeviceAccess(deviceId, cookieHeader);
     if (!authorized) { sendJson(res, 403, { error: 'Sem permissao' }); return; }
     const [posRows] = await pool.query('SELECT id FROM tc_positions WHERE deviceid = ? ORDER BY id DESC LIMIT 1', [deviceId]);
     const positionId = posRows.length ? posRows[0].id : 0;
     const when = eventtime ? new Date(eventtime) : new Date();
-    await pool.query('INSERT INTO tc_events (type, eventtime, deviceid, positionid, attributes) VALUES (?, ?, ?, ?, ?)', [type, when, deviceId, positionId, '{}']);
+    await pool.query('INSERT INTO tc_events (type, eventtime, deviceid, positionid, attributes) VALUES (?, ?, ?, ?, ?)', [type, when, deviceId, positionId, JSON.stringify({ user: user || '' })]);
     sendJson(res, 200, { success: true });
   } catch (error) {
     console.error('Erro ao criar evento:', error);
@@ -290,7 +290,7 @@ async function handleEventList(req, res, deviceId, cookieHeader, urlParams) {
     if (!authorized) { sendJson(res, 403, { error: 'Sem permissao' }); return; }
     const from = urlParams.get('from');
     const to = urlParams.get('to');
-    let sql = "SELECT id, type, eventtime FROM tc_events WHERE deviceid = ? AND type IN ('anchorActivated','anchorDeactivated','anchorExited','deviceBlocked','deviceUnblocked')";
+    let sql = "SELECT id, type, eventtime, attributes FROM tc_events WHERE deviceid = ? AND type IN ('anchorActivated','anchorDeactivated','anchorExited','deviceBlocked','deviceUnblocked')";
     const args = [deviceId];
     if (from) { sql += ' AND eventtime >= ?'; args.push(new Date(from)); }
     if (to) { sql += ' AND eventtime <= ?'; args.push(new Date(to)); }

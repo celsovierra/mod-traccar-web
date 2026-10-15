@@ -63,7 +63,7 @@ const CombinedReportPage = () => {
           const evRes = await fetch(`/api-device-event/${it.deviceId}?from=${from}&to=${to}`);
           if (evRes.ok) {
             const customEvents = await evRes.json();
-            const mapped = customEvents.map((e) => ({ id: e.id, type: e.type, eventTime: new Date(e.eventtime).getTime(), positionId: 0 }));
+            const mapped = customEvents.map((e) => ({ id: e.id, type: e.type, eventTime: new Date(e.eventtime).getTime(), positionId: 0, user: (() => { try { return JSON.parse(e.attributes || '{}').user || ''; } catch { return ''; } })() }));
             it.events = [...(it.events || []), ...mapped];
           }
         } catch (err) {}
@@ -108,6 +108,7 @@ const CombinedReportPage = () => {
                 <TableCell>{t('sharedDevice')}</TableCell>
                 <TableCell>{t('positionFixTime')}</TableCell>
                 <TableCell>{t('sharedType')}</TableCell>
+                <TableCell>Usuario</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -118,11 +119,12 @@ const CombinedReportPage = () => {
                       <TableCell>{index ? '' : devices[item.deviceId].name}</TableCell>
                       <TableCell>{formatTime(event.eventTime, 'seconds')}</TableCell>
                       <TableCell>{customEventLabels[event.type] || t(prefixString('event', event.type))}</TableCell>
+                      <TableCell>{event.user || ''}</TableCell>
                     </TableRow>
                   )),
                 )
               ) : (
-                <TableShimmer columns={3} />
+                <TableShimmer columns={4} />
               )}
             </TableBody>
           </Table>

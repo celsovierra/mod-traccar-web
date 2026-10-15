@@ -779,7 +779,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         throw new Error(`Falha ao enviar comando de ${isStop ? 'bloqueio' : 'desbloqueio'} ao rastreador.`);
       }
 
-      fetch('/api-device-event/' + Number(deviceId), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: isStop ? 'deviceBlocked' : 'deviceUnblocked' }) }).catch(() => {});
+      fetch('/api-device-event/' + Number(deviceId), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: isStop ? 'deviceBlocked' : 'deviceUnblocked', user: user?.name || user?.email || '' }) }).catch(() => {});
 
       if (isStop) {
         setToast({

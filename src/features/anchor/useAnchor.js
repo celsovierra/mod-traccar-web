@@ -54,7 +54,7 @@ export const useAnchor = (deviceId) => {
         if (dist > 100) {
           console.log("[anchor] saiu " + Math.round(dist) + "m, desativando");
           window.dispatchEvent(new CustomEvent("anchor-exit", { detail: { deviceId: Number(deviceId) } }));
-          fetch('/api-device-event/' + Number(deviceId), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'anchorExited' }) }).catch(() => {});
+          fetch('/api-device-event/' + Number(deviceId), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'anchorExited', user: user?.name || user?.email || '' }) }).catch(() => {});
           if (toggleAnchorRef.current) toggleAnchorRef.current();
           stopped = true;
         }
@@ -79,7 +79,7 @@ export const useAnchor = (deviceId) => {
     const willActivate = !isAnchorActive;
     const emit = (active) => window.dispatchEvent(new CustomEvent('anchor-local', { detail: { deviceId: Number(deviceId), active, latitude: position?.latitude, longitude: position?.longitude, radius: ANCHOR_RADIUS } }));
     emit(willActivate); setIsAnchorActive(willActivate);
-    fetch('/api-device-event/' + Number(deviceId), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: willActivate ? 'anchorActivated' : 'anchorDeactivated' }) }).catch(() => {});
+    fetch('/api-device-event/' + Number(deviceId), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: willActivate ? 'anchorActivated' : 'anchorDeactivated', user: user?.name || user?.email || '' }) }).catch(() => {});
 
     try {
       if (!isAdmin) {
