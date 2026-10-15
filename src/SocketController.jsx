@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Snackbar } from '@mui/material';
@@ -197,6 +197,10 @@ const SocketController = () => {
           // test connection
         }
       }
+      fetch('/api/positions')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => data && dispatch(sessionActions.updatePositions(data)))
+        .catch(() => {});
     };
     const onVisibility = () => {
       if (!document.hidden) {
