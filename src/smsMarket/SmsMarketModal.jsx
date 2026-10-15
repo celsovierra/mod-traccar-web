@@ -307,7 +307,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 body: JSON.stringify({
                   deviceId: device.id,
                   type: 'custom',
-                  text: commandText.trim(),
+                  attributes: { text: commandText.trim() },
                 }),
               });
 
@@ -382,7 +382,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           body: JSON.stringify({
             deviceId: device.id,
             type: 'custom',
-            text: message.trim(),
+            attributes: { text: message.trim() },
           }),
         });
 
