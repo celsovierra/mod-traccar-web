@@ -406,14 +406,10 @@ else
 fi
 
 echo ">> Verificando nginx config..."
-if [ ! -f /etc/nginx/sites-enabled/gpscell.site ]; then
-  if [ -f ./deploy/nginx-gpscell.site.conf ]; then
-    cp ./deploy/nginx-gpscell.site.conf /etc/nginx/sites-enabled/gpscell.site
-    rm -f /etc/nginx/sites-enabled/default
-    nginx -t && systemctl reload nginx || echo "   AVISO: nginx falhou."
-  fi
-else
-  echo "   Config nginx ja existe."
+if [ -f ./deploy/nginx-gpscell.site.conf ]; then
+  cp ./deploy/nginx-gpscell.site.conf /etc/nginx/sites-enabled/gpscell.site
+  rm -f /etc/nginx/sites-enabled/default
+  nginx -t && systemctl reload nginx || echo "   AVISO: nginx falhou."
 fi
 echo ">> Configurando client_max_body_size no nginx..."
 if [ -f ./scripts/fix_nginx_body_size.py ]; then
