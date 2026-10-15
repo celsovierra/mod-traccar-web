@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { geofencesActions } from '../../store';
 
@@ -27,77 +27,42 @@ export const useAnchor = (deviceId) => {
   useEffect(() => {
     if (!loadingAnchor) setIsAnchorActive(Object.values(geofences || {}).some((g) => isAnchorOf(g, deviceId)));
   }, [geofences, deviceId, loadingAnchor]);
-
-  // desativa sozinho se afastar +200m da ancora
-  useEffect(() => {
-    if (!isAnchorActive || !position || !deviceId) return;
-    const anchors = Object.values(geofences || {}).filter((g) => isAnchorOf(g, deviceId));
-    if (!anchors.length) return;
-    let center = null;
-    for (const a of anchors) {
-      const m = String(a.area || '').match(/CIRCLE\s*\(\s*(-?[\d.]+)\s+(-?[\d.]+)/i);
-      if (m) { center = { lat: parseFloat(m[1]), lon: parseFloat(m[2]) }; break; }
-    }
-    if (!center) return;
-    const R = 6371000;
-    const toRad = (x) => x * Math.PI / 180;
-    const dLat = toRad(position.latitude - center.lat);
-    const dLon = toRad(position.longitude - center.lon);
-    const a1 = Math.sin(dLat/2)**2 + Math.cos(toRad(center.lat)) * Math.cos(toRad(position.latitude)) * Math.sin(dLon/2)**2;
-    const dist = 2 * R * Math.asin(Math.sqrt(a1));
-    if (dist > 100) {
-      console.log('[anchor] afastou ' + Math.round(dist) + 'm, desativando');
-      window.dispatchEvent(new CustomEvent('anchor-exit', { detail: { deviceId: Number(deviceId) } }));
-      fetch('/api/devices/' + Number(deviceId)).then(r => r.ok ? r.json() : null).then(dev => {
-        if (!dev) return;
-        dev.attributes = { ...(dev.attributes || {}), blocked: true };
-        return fetch('/api/devices/' + Number(deviceId), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dev) });
-      }).catch(() => {});
-      toggleAnchorRef.current && toggleAnchorRef.current();
-    }
-  }, [position, isAnchorActive, geofences, deviceId]);
-
-  // fallback: checa a cada 10s enquanto a ancora estiver ativa
   useEffect(() => {
     if (!isAnchorActive || !deviceId) return;
-    const check = () => {
-      const gs = Object.values(geofencesRef.current || {});
-      const anchors = gs.filter((g) => isAnchorOf(g, deviceId));
-      if (!anchors.length) return;
-      let center = null;
-      for (const a of anchors) {
-        const m = String(a.area || '').match(/CIRCLE\s*\(\s*(-?[\d.]+)\s+(-?[\d.]+)/i);
-        if (m) { center = { lat: parseFloat(m[1]), lon: parseFloat(m[2]) }; break; }
-      }
-      if (!center) return;
-      const pos = positionRef.current;
-      if (!pos) return;
-      const R = 6371000;
-      const toRad = (x) => x * Math.PI / 180;
-      const dLat = toRad(pos.latitude - center.lat);
-      const dLon = toRad(pos.longitude - center.lon);
-      const a1 = Math.sin(dLat/2)**2 + Math.cos(toRad(center.lat)) * Math.cos(toRad(pos.latitude)) * Math.sin(dLon/2)**2;
-      const dist = 2 * R * Math.asin(Math.sqrt(a1));
-      if (dist > 100) {
-        console.log('[anchor] fallback afastou ' + Math.round(dist) + 'm, desativando');
-
-        window.dispatchEvent(new CustomEvent('anchor-exit', { detail: { deviceId: Number(deviceId) } }));
-
-        fetch('/api/devices/' + Number(deviceId)).then(r => r.ok ? r.json() : null).then(dev => {
-
-          if (!dev) return;
-
-          dev.attributes = { ...(dev.attributes || {}), blocked: true };
-
-          return fetch('/api/devices/' + Number(deviceId), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dev) });
-
-        }).catch(() => {});
-
-        toggleAnchorRef.current && toggleAnchorRef.current();
-      }
+    let stopped = false;
+    const check = async () => {
+      try {
+        const pos = positionRef.current;
+        if (!pos) return;
+        const res = await fetch("/api/geofences?all=true");
+        if (!res.ok) return;
+        const list = await res.json();
+        const anchors = list.filter((g) => isAnchorOf(g, deviceId));
+        if (!anchors.length) return;
+        let center = null;
+        for (const a of anchors) {
+          const m = String(a.area || "").match(/CIRCLE\s*\(\s*(-?[\d.]+)\s+(-?[\d.]+)/i);
+          if (m) { center = { lat: parseFloat(m[1]), lon: parseFloat(m[2]) }; break; }
+        }
+        if (!center) return;
+        const R = 6371000;
+        const toRad = (x) => x * Math.PI / 180;
+        const dLat = toRad(pos.latitude - center.lat);
+        const dLon = toRad(pos.longitude - center.lon);
+        const a1 = Math.sin(dLat/2)**2 + Math.cos(toRad(center.lat)) * Math.cos(toRad(pos.latitude)) * Math.sin(dLon/2)**2;
+        const dist = 2 * R * Math.asin(Math.sqrt(a1));
+        if (dist > 100) {
+          console.log("[anchor] saiu " + Math.round(dist) + "m, desativando");
+          window.dispatchEvent(new CustomEvent("anchor-exit", { detail: { deviceId: Number(deviceId) } }));
+          if (toggleAnchorRef.current) toggleAnchorRef.current();
+          stopped = true;
+        }
+      } catch (e) {}
     };
-    const t = setInterval(check, 10000);
+    check();
+    const t = setInterval(() => { if (!stopped) check(); }, 5000);
     return () => clearInterval(t);
+  }, [isAnchorActive, deviceId]);
   }, [isAnchorActive, deviceId]);
 
   const reload = useCallback(async () => {
