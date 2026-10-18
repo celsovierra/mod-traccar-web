@@ -95,15 +95,19 @@ function saveIconPlugin() {
 }
 
 export default defineConfig(() => ({
-  server: {
-                proxy: {
+    server: {
+    port: 5173,
+    hmr: { overlay: false },
+    proxy: {
       '/api-anchor': {
         target: 'https://gpscell.site',
         changeOrigin: true,
+        cookieDomainRewrite: { '*': '' },
       },
       '/api-device-event': {
         target: 'https://gpscell.site',
         changeOrigin: true,
+        cookieDomainRewrite: { '*': '' },
       },
       '/api-relay-status': {
         target: 'https://gpscell.site',
@@ -121,9 +125,7 @@ export default defineConfig(() => ({
         target: 'https://gpscell.site',
         changeOrigin: true,
       }
-    },
-    hmr: { overlay: false },
-    port: 5173,
+    }
   },
   build: {
     outDir: 'build',
@@ -174,5 +176,7 @@ export default defineConfig(() => ({
     }),
   ],
 }));
+
+
 
 
