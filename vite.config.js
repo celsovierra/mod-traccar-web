@@ -96,30 +96,12 @@ function saveIconPlugin() {
 
 export default defineConfig(() => ({
   server: {
-    proxy: {
-      '/api-smsmarket': {
-        target: 'https://api.smsmarket.com.br/webservice-rest',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api-smsmarket/, ''),
-      },
-      '/api/socket': {
-        target: 'wss://gpscell.site',
-        ws: true,
-        changeOrigin: true,
-      },
-      '/api': {
-        target: 'https://gpscell.site',
-        changeOrigin: true,
-      },
-      '/api-device-geofence': {
-        target: 'https://gpscell.site',
-        changeOrigin: true,
-      },
-      '/api-device-edit': {
-        target: 'https://gpscell.site',
-        changeOrigin: true,
-      },
+                proxy: {
       '/api-anchor': {
+        target: 'https://gpscell.site',
+        changeOrigin: true,
+      },
+      '/api-device-event': {
         target: 'https://gpscell.site',
         changeOrigin: true,
       },
@@ -127,17 +109,21 @@ export default defineConfig(() => ({
         target: 'https://gpscell.site',
         changeOrigin: true,
       },
-      '/api-contratos': {
+      '/api-device-geofence': {
         target: 'https://gpscell.site',
         changeOrigin: true,
       },
-      '/api-financeiro': {
+      '/api': {
         target: 'https://gpscell.site',
         changeOrigin: true,
       },
+      '/media': {
+        target: 'https://gpscell.site',
+        changeOrigin: true,
+      }
     },
     hmr: { overlay: false },
-    port: 3000,
+    port: 5173,
   },
   build: {
     outDir: 'build',
@@ -188,3 +174,5 @@ export default defineConfig(() => ({
     }),
   ],
 }));
+
+
