@@ -7,4 +7,6 @@ cp -r /etc/letsencrypt/renewal $BACKUP_DIR/ 2>/dev/null
 cp /etc/fail2ban/jail.local $BACKUP_DIR/ 2>/dev/null
 cp /var/spool/cron/crontabs/root $BACKUP_DIR/ 2>/dev/null
 cp /opt/telegram-bot/.env $BACKUP_DIR/ 2>/dev/null
+mkdir -p $BACKUP_DIR/nginx
+cp /etc/nginx/sites-enabled/* $BACKUP_DIR/nginx/ 2>/dev/null
 tar -czf /tmp/backup_extras.tar.gz -C /tmp backup_extras 2>/dev/null || true
