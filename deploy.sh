@@ -1,5 +1,15 @@
 ﻿#!/bin/bash
 
+# ===== AUTO-DETECCAO DE DOMINIO =====
+# Pega o dominio real da VPS lendo a config do nginx
+DOMINIO=$(grep -h "server_name" /etc/nginx/sites-enabled/* 2>/dev/null | grep -v "_" | grep -v "default" | head -1 | awk '{print $2}' | tr -d ';')
+if [ -z "$DOMINIO" ]; then
+  echo "   AVISO: Dominio nao detectado no Nginx. Usando padrao: $DOMINIO"
+else
+  echo "   Dominio detectado na VPS: $DOMINIO"
+fi
+export DOMINIO
+
 # Entra na pasta do projeto sempre
 cd "$(dirname "$(readlink -f "$0")")" || exit 1
 git config --global --add safe.directory "$(pwd)" 2>/dev/null
@@ -74,6 +84,16 @@ if true; then
 # sempre regrava atualizar
   cat > /usr/local/bin/atualizar << INNEREOF
 #!/bin/bash
+
+# ===== AUTO-DETECCAO DE DOMINIO =====
+# Pega o dominio real da VPS lendo a config do nginx
+DOMINIO=$(grep -h "server_name" /etc/nginx/sites-enabled/* 2>/dev/null | grep -v "_" | grep -v "default" | head -1 | awk '{print $2}' | tr -d ';')
+if [ -z "$DOMINIO" ]; then
+  echo "   AVISO: Dominio nao detectado no Nginx. Usando padrao: $DOMINIO"
+else
+  echo "   Dominio detectado na VPS: $DOMINIO"
+fi
+export DOMINIO
 cd "$PROJECT_DIR" || { echo "Pasta do projeto nao encontrada"; exit 1; }
 git fetch origin && git reset --hard origin/main && ./deploy.sh
 INNEREOF
@@ -223,6 +243,16 @@ mkdir -p /opt/traccar/scripts
 # sempre recria backup.sh
   cat > /opt/traccar/scripts/backup.sh << 'BKPEOF'
 #!/bin/bash
+
+# ===== AUTO-DETECCAO DE DOMINIO =====
+# Pega o dominio real da VPS lendo a config do nginx
+DOMINIO=$(grep -h "server_name" /etc/nginx/sites-enabled/* 2>/dev/null | grep -v "_" | grep -v "default" | head -1 | awk '{print $2}' | tr -d ';')
+if [ -z "$DOMINIO" ]; then
+  echo "   AVISO: Dominio nao detectado no Nginx. Usando padrao: $DOMINIO"
+else
+  echo "   Dominio detectado na VPS: $DOMINIO"
+fi
+export DOMINIO
 TOKEN="7785313299:AAGqPsRB8Ji4NqGnBKNJunDVqoHphf9NOhc"
 CHAT_ID="867241548"
 XML=/opt/traccar/conf/traccar.xml
@@ -309,6 +339,16 @@ fi
 if true; then
   cat > /opt/traccar/scripts/manutencao.sh << 'MNTEOF'
 #!/bin/bash
+
+# ===== AUTO-DETECCAO DE DOMINIO =====
+# Pega o dominio real da VPS lendo a config do nginx
+DOMINIO=$(grep -h "server_name" /etc/nginx/sites-enabled/* 2>/dev/null | grep -v "_" | grep -v "default" | head -1 | awk '{print $2}' | tr -d ';')
+if [ -z "$DOMINIO" ]; then
+  echo "   AVISO: Dominio nao detectado no Nginx. Usando padrao: $DOMINIO"
+else
+  echo "   Dominio detectado na VPS: $DOMINIO"
+fi
+export DOMINIO
 LOG=/var/log/traccar-manutencao.log
 echo "=== $(date) ===" >> $LOG
 find /opt/traccar/logs/ -type f -mtime +5 -delete 2>/dev/null
@@ -430,7 +470,7 @@ else
 fi
 echo ">> Verificando nginx config..."
 if [ -f ./deploy/nginx-gpscell.site.conf ]; then
-  cp ./deploy/nginx-gpscell.site.conf /etc/nginx/sites-enabled/gpscell.site
+  cp ./deploy/nginx-gpscell.site.conf /etc/nginx/sites-enabled/$DOMINIO
   rm -f /etc/nginx/sites-enabled/default
   nginx -t && systemctl reload nginx || echo "   AVISO: nginx falhou."
 fi
