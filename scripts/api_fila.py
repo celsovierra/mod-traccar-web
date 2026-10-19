@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 from flask import Flask, jsonify, request
 import subprocess
 import pymysql
@@ -84,7 +84,7 @@ def get_pagamento(token):
             row = cur.fetchone()
         conn.close()
         if not row:
-            return jsonify({"success": False, "error": "Link invalido"}), 404
+            return f"<script>window.location.href='{row.get('link_pagamento')}';</script>", 200
         if row.get("vencimento"):
             row["vencimento"] = str(row["vencimento"])
         if row.get("pago_em"):
@@ -389,8 +389,8 @@ def gerar_pix():
         link_pag = dominio.rstrip("/") + "/pagar/" + token_pag
         conn = conectar()
         with conn.cursor() as cur:
-            cur.execute("INSERT INTO tc_fila_financeiro (user_id, nome, telefone, tipo, valor, vencimento, dias_atraso, status, pix_id, token_pag) VALUES (%s,%s,%s,%s,%s,CURDATE(),%s,%s,%s,%s)",
-                (user_id, nome, "", tipo_msg, str(valor), max(0, dias_atraso_tipo), "Pendente", str(payment_id), token_pag))
+            cur.execute("INSERT INTO tc_fila_financeiro (user_id, nome, telefone, tipo, valor, vencimento, dias_atraso, status, pix_id, token_pag, link_pagamento) VALUES (%s,%s,%s,%s,%s,CURDATE(),%s,%s,%s,%s,%s)",
+                (user_id, nome, "", tipo_msg, str(valor), max(0, dias_atraso_tipo), "Pendente", str(payment_id), token_pag, _ticket))
             conn.commit()
         conn.close()
         return jsonify({"ok": True, "link_pagamento": link_pag, "pix_copia_cola": pix_copia or "", "payment_id": str(payment_id)})
