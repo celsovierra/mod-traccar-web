@@ -420,6 +420,10 @@ if [ -f "$XML" ]; then
   fi
 fi
 
+# ===== GARANTINDO COLUNAS DA FILA FINANCEIRA =====
+echo ">> Verificando coluna link_pagamento na tc_fila_financeiro..."
+mysql traccar -e "ALTER TABLE tc_fila_financeiro ADD COLUMN link_pagamento TEXT;" 2>/dev/null || true
+
 echo ">> Configurando sistema de fila financeira..."
 if [ -f ./scripts/setup_fila.sh ]; then
   bash ./scripts/setup_fila.sh
