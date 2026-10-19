@@ -4,8 +4,8 @@ const mysql = require('mysql2/promise');
 const PORT = process.env.PORT || 8090;
 const TRACCAR_URL = process.env.TRACCAR_URL || 'http://127.0.0.1:8082';
 const DB_HOST = process.env.DB_HOST || 'localhost';
-const DB_USER = process.env.DB_USER || 'traccar_user';
-const DB_PASS = process.env.DB_PASS || '';
+const DB_USER = process.env.DB_USER || 'traccar';
+const DB_PASS = process.env.DB_PASS || 'Traccar@2026#Sec';
 const DB_NAME = process.env.DB_NAME || 'traccar';
 
 const pool = mysql.createPool({
@@ -359,3 +359,4 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`device-edit-proxy rodando na porta ${PORT}`);
 });
+
