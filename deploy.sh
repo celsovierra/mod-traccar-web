@@ -302,7 +302,7 @@ mkdir -p /opt/traccar/media /opt/traccar/conf
 cp /opt/traccar/conf/traccar.xml /tmp/traccar.xml.backup 2>/dev/null || true
 
 TAR_LIST=(
-  "-C /tmp backup_base.sql traccar.xml.backup"
+  "-C /tmp backup_base.sql traccar.xml.backup backup_extras.tar.gz"
   "-C /opt/traccar conf media" "-C /opt/traccar/scripts --exclude=node_modules --exclude=__pycache__ ."
   "-C /opt device-edit-proxy/server.js device-edit-proxy/package.json"
   "-C /opt telegram-bot/bot-menu.js telegram-bot/db.js telegram-bot/event-watcher.js telegram-bot/package.json telegram-bot/routes.js telegram-bot/server.js telegram-bot/telegram.js telegram-bot/traccar-event.js"
