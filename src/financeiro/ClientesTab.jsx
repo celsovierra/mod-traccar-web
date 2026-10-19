@@ -117,12 +117,8 @@ const ClientesTab = () => {
       tipo = 'Atraso';
       tpl = adm.fin_msg_atraso;
     } else {
-      alert(
-        'Cliente ainda nao esta no periodo de cobranca (faltam ' +
-          diff +
-          ' dias para o vencimento)',
-      );
-      return;
+      tipo = 'Lembrete';
+      tpl = adm.fin_msg_lembrete;
     }
     if (!tpl) {
       alert('Template de mensagem nao configurado para ' + tipo);
