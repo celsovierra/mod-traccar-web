@@ -651,6 +651,18 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   };
 
   const [isBlocked, setIsBlocked] = useState(() => getIsBlockedReal());
+
+  useEffect(() => {
+    if (!deviceId) return;
+    fetch('/api/devices/' + deviceId)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.attributes && typeof data.attributes.blocked !== 'undefined') {
+          setIsBlocked(data.attributes.blocked === true);
+        }
+      })
+      .catch(err => console.error('Erro ao buscar status do banco', err));
+  }, [deviceId]);
   const [isUnlockPending, setIsUnlockPending] = useState(() => {
     return localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true';
   });
