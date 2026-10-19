@@ -307,7 +307,7 @@ TAR_LIST=(
   "-C /opt device-edit-proxy/server.js device-edit-proxy/package.json"
   "-C /opt telegram-bot/bot-menu.js telegram-bot/db.js telegram-bot/event-watcher.js telegram-bot/package.json telegram-bot/routes.js telegram-bot/server.js telegram-bot/telegram.js telegram-bot/traccar-event.js"
   "-C /root/mod-traccar-web src public templates simple deploy scripts telegram-bot VERSION package.json package-lock.json vite.config.js deploy.sh index.html .env .gitattributes .gitignore .npmrc"
-  "-C /etc/nginx/sites-enabled gpscell.site"
+  "-C /etc/nginx/sites-enabled ."
 )
 
 if [ -f /tmp/backup_financeiro.sql ]; then
