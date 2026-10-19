@@ -798,6 +798,16 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       fetch('/api-device-event/' + Number(deviceId), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: isStop ? 'deviceBlocked' : 'deviceUnblocked', user: user?.name || user?.email || '' }) }).catch(() => {});
 
       setIsBlocked(isStop);
+      
+      // Salva no banco para manter ao atualizar a pagina
+      try {
+        const attrs = { ...(device.attributes || {}), blocked: isStop };
+        await fetch('/api/devices/' + device.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: device.id, name: device.name, attributes: attrs })
+        });
+      } catch (e) { console.error('Erro ao salvar bloqueio', e); }
       setIsUnlockPending(!isStop && !isOnline);
       setTimeout(() => setPendingAction(null), 3000);
 
