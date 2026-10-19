@@ -1,4 +1,5 @@
 ﻿#!/bin/bash
+cd /root/mod-traccar-web && bash ./deploy/fix_media.sh
 
 # ===== AUTO-DETECCAO DE DOMINIO =====
 # Pega o dominio real da VPS lendo a config do nginx
@@ -84,6 +85,7 @@ if true; then
 # sempre regrava atualizar
   cat > /usr/local/bin/atualizar << INNEREOF
 #!/bin/bash
+cd /root/mod-traccar-web && bash ./deploy/fix_media.sh
 
 # ===== AUTO-DETECCAO DE DOMINIO =====
 # Pega o dominio real da VPS lendo a config do nginx
@@ -243,6 +245,7 @@ mkdir -p /opt/traccar/scripts
 # sempre recria backup.sh
   cat > /opt/traccar/scripts/backup.sh << 'BKPEOF'
 #!/bin/bash
+cd /root/mod-traccar-web && bash ./deploy/fix_media.sh
 
 # ===== AUTO-DETECCAO DE DOMINIO =====
 # Pega o dominio real da VPS lendo a config do nginx
@@ -339,6 +342,7 @@ fi
 if true; then
   cat > /opt/traccar/scripts/manutencao.sh << 'MNTEOF'
 #!/bin/bash
+cd /root/mod-traccar-web && bash ./deploy/fix_media.sh
 
 # ===== AUTO-DETECCAO DE DOMINIO =====
 # Pega o dominio real da VPS lendo a config do nginx
