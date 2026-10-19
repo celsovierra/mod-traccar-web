@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import {
   Table,
   TableRow,
@@ -625,7 +625,7 @@ const ClientesTab = () => {
 
   const loadItems = useCallback(async (offset, signal) => {
     const limit = offset === 0 ? 30 : pageSize;
-    const query = new URLSearchParams({ excludeAttributes: true, limit, offset });
+    const query = new URLSearchParams({ limit, offset });
     const response = await fetchOrThrow('/api/users?' + query.toString(), { signal });
     const data = await response.json();
     setItems((previous) => {
@@ -644,7 +644,7 @@ const ClientesTab = () => {
       const keyword = searchKeyword.trim();
       if (keyword) {
         try {
-          const q = new URLSearchParams({ excludeAttributes: true, limit: 5000, offset: 0 });
+          const q = new URLSearchParams({ limit: 5000, offset: 0 });
           const r = await fetchOrThrow('/api/users?' + q.toString());
           const d = await r.json();
           setItems(d);
@@ -860,7 +860,7 @@ const ClientesTab = () => {
                                   style={{ cursor: 'pointer', width: 16, height: 16 }}
                                 />
                                 <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>
-                                  Não cobrar
+                                  NÃ£o cobrar
                                 </span>
                               </Box>
                             </Box>
@@ -1269,7 +1269,7 @@ const ClientesTab = () => {
               >
                 {[...Array(12)].map((_, i) => (
                   <MenuItem key={i + 1} value={i + 1}>
-                    {i + 1} {i + 1 === 1 ? 'mês' : 'meses'}
+                    {i + 1} {i + 1 === 1 ? 'mÃªs' : 'meses'}
                   </MenuItem>
                 ))}
               </TextField>
@@ -1285,7 +1285,7 @@ const ClientesTab = () => {
                 Valor total da baixa: <strong>R$ {valorTotal(modalBaixa || {}, mesesBaixa)}</strong>
               </Typography>
               <Typography sx={{ fontSize: '0.78rem', color: '#94a3b8', mt: 2 }}>
-                Após confirmar, um recibo será enviado via WhatsApp.
+                ApÃ³s confirmar, um recibo serÃ¡ enviado via WhatsApp.
               </Typography>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2 }}>
