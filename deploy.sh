@@ -517,3 +517,19 @@ if [ -f ./deploy/telegram-bot/install.sh ]; then
 else
   echo "   deploy/telegram-bot/install.sh nao encontrado."
 fi
+
+# --- Instalacao do Proxy da Ancora (8090) ---
+if [ ! -d "/opt/traccar/scripts" ]; then
+  mkdir -p /opt/traccar/scripts
+fi
+cp /root/mod-traccar-web/deploy/device-edit-proxy/server.js /opt/traccar/scripts/
+cd /opt/traccar/scripts
+npm init -y >/dev/null 2>&1
+npm install express >/dev/null 2>&1
+npm install -g pm2 >/dev/null 2>&1
+pm2 delete device-edit-proxy >/dev/null 2>&1
+pm2 start server.js --name device-edit-proxy
+pm2 save
+pm2 startup >/dev/null 2>&1
+systemctl enable pm2-root >/dev/null 2>&1
+echo ">> Proxy da Ancora (8090) instalado e rodando via PM2."
