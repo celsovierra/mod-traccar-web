@@ -172,7 +172,7 @@ s = p.read_text()
 updates = {
     "geocoder.enable": "true",
     "geocoder.type": "nominatim",
-    "geocoder.url": "https://geocode.gpscell.site/reverse?format=json",
+    "geocoder.url": "https://geocode.gpscell.site/reverse",
     "geocoder.format": "%f",
     "geocoder.ignorePositions": "true",
     "geocoder.onRequest": "false",
