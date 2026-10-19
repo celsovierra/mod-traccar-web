@@ -267,7 +267,7 @@ cp /opt/traccar/conf/traccar.xml /tmp/traccar.xml.backup 2>/dev/null || true
 
 TAR_LIST=(
   "-C /tmp backup_base.sql traccar.xml.backup"
-  "-C /opt/traccar conf media scripts"
+  "-C /opt/traccar conf media" "-C /opt/traccar/scripts --exclude=node_modules --exclude=__pycache__ ."
   "-C /opt device-edit-proxy/server.js device-edit-proxy/package.json"
   "-C /opt telegram-bot/bot-menu.js telegram-bot/db.js telegram-bot/event-watcher.js telegram-bot/package.json telegram-bot/routes.js telegram-bot/server.js telegram-bot/telegram.js telegram-bot/traccar-event.js"
   "-C /root/mod-traccar-web src public templates simple deploy scripts telegram-bot VERSION package.json package-lock.json vite.config.js deploy.sh index.html .env .gitattributes .gitignore .npmrc"
