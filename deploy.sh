@@ -470,7 +470,12 @@ else
 fi
 echo ">> Verificando nginx config..."
 if [ -f ./deploy/nginx-gpscell.site.conf ]; then
-  sed "s/gpscell.site/$DOMINIO/g" ./deploy/nginx-gpscell.site.conf > /etc/nginx/sites-enabled/$DOMINIO
+  if [ ! -f /etc/nginx/sites-enabled/$DOMINIO ]; then
+    sed "s/gpscell.site/$DOMINIO/g" ./deploy/nginx-gpscell.site.conf > /etc/nginx/sites-enabled/$DOMINIO
+    echo "   Nginx criado para $DOMINIO"
+  else
+    echo "   Nginx de $DOMINIO ja existe. Preservando configuracao atual."
+  fi
   rm -f /etc/nginx/sites-enabled/default
   nginx -t && systemctl reload nginx || echo "   AVISO: nginx falhou."
 fi
