@@ -383,6 +383,19 @@ def gerar_pix():
         pix_copia, _ticket, payment_id = criar_pix_mercadopago(attrs, item, valor_total_pix)
         if not payment_id:
             return jsonify({"ok": False, "error": "Falha ao criar PIX"})
+        
+        # Salva o registro na fila para o Webhook conseguir achar
+        try:
+            import secrets
+            token_pag = secrets.token_urlsafe(24)[:32]
+            conn = conectar()
+            with conn.cursor() as cur:
+                cur.execute("INSERT INTO tc_fila_financeiro (user_id, nome, telefone, tipo, valor, vencimento, dias_atraso, status, pix_id, token_pag, link_pagamento) VALUES (%s,%s,%s,%s,%s,CURDATE(),%s,%s,%s,%s,%s)",
+                    (user_id, nome, "", "Manual", str(valor), 0, "Pendente", str(payment_id), token_pag, _ticket))
+                conn.commit()
+            conn.close()
+        except Exception as e:
+            print("Erro ao salvar na fila:", e)
         import secrets
         token_pag = secrets.token_urlsafe(24)[:32]
         dominio = attrs.get("fin_dominio") or detectar_dominio()
