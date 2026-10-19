@@ -260,14 +260,24 @@ fi
 mkdir -p /opt/traccar/media /opt/traccar/conf
 cp /opt/traccar/conf/traccar.xml /tmp/traccar.xml.backup 2>/dev/null || true
 
+# ===== LISTA DE ARQUIVOS/PASTAS CRÍTICAS PARA BACKUP =====
+# Inclui código-fonte, configs, scripts, APIs, bot e nginx
+mkdir -p /opt/traccar/media /opt/traccar/conf
+cp /opt/traccar/conf/traccar.xml /tmp/traccar.xml.backup 2>/dev/null || true
+
+TAR_LIST=(
+  "-C /tmp backup_base.sql traccar.xml.backup"
+  "-C /opt/traccar conf media scripts"
+  "-C /opt device-edit-proxy/server.js device-edit-proxy/package.json"
+  "-C /opt telegram-bot/bot-menu.js telegram-bot/db.js telegram-bot/event-watcher.js telegram-bot/package.json telegram-bot/routes.js telegram-bot/server.js telegram-bot/telegram.js telegram-bot/traccar-event.js"
+  "-C /root/mod-traccar-web src public templates simple deploy scripts telegram-bot VERSION package.json package-lock.json vite.config.js deploy.sh index.html .env .gitattributes .gitignore .npmrc"
+  "-C /etc/nginx/sites-enabled gpscell.site"
+)
+
 if [ -f /tmp/backup_financeiro.sql ]; then
-  tar -czf "$BACKUP_FILE" \
-    -C /tmp backup_base.sql backup_financeiro.sql traccar.xml.backup \
-    -C /opt/traccar conf media scripts
+  tar -czf "$BACKUP_FILE" ${TAR_LIST[@]} -C /tmp backup_financeiro.sql
 else
-  tar -czf "$BACKUP_FILE" \
-    -C /tmp backup_base.sql traccar.xml.backup \
-    -C /opt/traccar conf media scripts
+  tar -czf "$BACKUP_FILE" ${TAR_LIST[@]}
 fi
 
 curl -s -F chat_id="$CHAT_ID" -F caption="Backup $DESCRICAO - $DATA_HORA" -F document=@"$BACKUP_FILE" https://api.telegram.org/bot$TOKEN/sendDocument
