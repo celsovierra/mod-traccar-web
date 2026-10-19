@@ -461,7 +461,7 @@ echo ">> Verificando usuario MySQL traccar_user..."
 mysql -e "CREATE USER IF NOT EXISTS 'traccar_user'@'localhost' IDENTIFIED BY 'Traccar@2026#Sec'; GRANT ALL ON traccar.* TO 'traccar_user'@'localhost'; FLUSH PRIVILEGES;" 2>/dev/null && echo "   traccar_user OK" || echo "   AVISO: erro ao criar user"
 
 # === Garantir SSL (certbot) ===
-DOMINIO=$(grep -h "server_name" /etc/nginx/sites-enabled/* 2>/dev/null | awk '{print $2}' | tr -d ";|" | grep -v "_" | grep -v "www\." | head -1)
+DOMINIO=$(grep -h "server_name" /etc/nginx/sites-enabled/* 2>/dev/null | head -1 | awk '{print $2}' | tr -d ";|")
 if [ -n "$DOMINIO" ] && [ ! -d "/etc/letsencrypt/live/$DOMINIO" ]; then
   echo ">> Emitindo SSL para $DOMINIO..."
   certbot --nginx -d "$DOMINIO" --non-interactive --agree-tos -m celsovierra@gmail.com --redirect || echo "   AVISO: Certbot falhou."
