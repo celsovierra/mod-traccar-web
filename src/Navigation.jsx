@@ -68,6 +68,7 @@ const StreamPage = lazy(() => import('./other/StreamPage'));
 const AuditPage = lazy(() => import('./reports/AuditPage'));
 const ToolsPage = lazy(() => import('./settings/ToolsPage'));
 const FinanceiroPage = lazy(() => import('./financeiro/FinanceiroPage'));
+const ManutencaoPage = lazy(() => import('./settings/ManutencaoPage'));
 const SignContractPage = lazy(() => import('./financeiro/SignContractPage'));
 const PagamentoPage = lazy(() => import('./financeiro/PagamentoPage'));
 
@@ -215,6 +216,7 @@ const Navigation = () => {
             <Route path="user" element={<UserPage />} />
             <Route path="tools" element={<ToolsPage />} />
             <Route path="financeiro" element={<FinanceiroPage />} />
+            <Route path="manutencao" element={<ManutencaoPage />} />
           </Route>
 
           <Route path="reports">

@@ -201,6 +201,12 @@ const SettingsMenu = () => {
               selected={location.pathname.startsWith('/settings/financeiro')}
             />
             <MenuItem
+              title="Manutencao de Veiculos"
+              link="/settings/manutencao"
+              icon={<ConstructionIcon fontSize="small" />}
+              selected={location.pathname.startsWith('/settings/manutencao')}
+            />
+            <MenuItem
               title={t('sharedGeofences')}
               link="/geofences"
               icon={<DrawIcon fontSize="small" />}
