@@ -20,19 +20,21 @@ export default function StoppedTimeDisplay({ stoppedSince }) {
   const label = formatStoppedDuration(totalMinutes);
 
   return (
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '3px',
-      marginTop: '0px',
-      fontSize: '0.65rem',
-      color: '#b78103',
-      fontWeight: 700,
-      backgroundColor: 'rgba(255, 152, 0, 0.15)',
-      padding: '0px 4px',
-      borderRadius: '4px',
-      width: 'fit-content'
-    }}>
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '3px',
+        marginTop: '0px',
+        fontSize: '0.65rem',
+        color: '#b78103',
+        fontWeight: 700,
+        backgroundColor: 'rgba(255, 152, 0, 0.15)',
+        padding: '0px 4px',
+        borderRadius: '4px',
+        width: 'fit-content',
+      }}
+    >
       <AccessTimeIcon sx={{ fontSize: '10px' }} />
       {label}
     </span>

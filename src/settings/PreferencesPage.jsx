@@ -134,7 +134,10 @@ const PreferencesPage = () => {
       >
         {icon}
       </Box>
-      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', fontSize: '0.98rem' }}>
+      <Typography
+        variant="subtitle1"
+        sx={{ fontWeight: 800, color: '#1e293b', fontSize: '0.98rem' }}
+      >
         {title}
       </Typography>
     </Box>
@@ -178,7 +181,11 @@ const PreferencesPage = () => {
               <Accordion
                 expanded={expandedPanel === 'map'}
                 onChange={handleChange('map')}
-                sx={{ boxShadow: 'none', backgroundColor: 'transparent', '&:before': { display: 'none' } }}
+                sx={{
+                  boxShadow: 'none',
+                  backgroundColor: 'transparent',
+                  '&:before': { display: 'none' },
+                }}
               >
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
@@ -189,7 +196,11 @@ const PreferencesPage = () => {
                     transition: 'background-color 0.2s',
                   }}
                 >
-                  {renderHeader(<MapIcon sx={{ fontSize: 20, color: '#7c3aed' }} />, t('mapTitle'), expandedPanel === 'map')}
+                  {renderHeader(
+                    <MapIcon sx={{ fontSize: 20, color: '#7c3aed' }} />,
+                    t('mapTitle'),
+                    expandedPanel === 'map',
+                  )}
                 </AccordionSummary>
                 <AccordionDetails sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <FormControl fullWidth>
@@ -197,15 +208,15 @@ const PreferencesPage = () => {
                     <Select
                       label={t('mapActive')}
                       value={
-                        attributes.activeMapStyles?.split(',') || [
-                          'googleRoad',
-                          'googleHybrid',
-                        ]
+                        attributes.activeMapStyles?.split(',') || ['googleRoad', 'googleHybrid']
                       }
                       onChange={(e, child) => {
                         const clicked = mapStyles.find((s) => s.id === child.props.value);
                         if (clicked.available) {
-                          setAttributes({ ...attributes, activeMapStyles: e.target.value.join(',') });
+                          setAttributes({
+                            ...attributes,
+                            activeMapStyles: e.target.value.join(','),
+                          });
                         } else if (clicked.id !== 'custom') {
                           const query = new URLSearchParams({ attribute: clicked.attribute });
                           navigate(`/settings/user/${user.id}?${query.toString()}`);
@@ -324,7 +335,9 @@ const PreferencesPage = () => {
                     <Select
                       label={t('mapDirection')}
                       value={attributes.mapDirection || 'selected'}
-                      onChange={(e) => setAttributes({ ...attributes, mapDirection: e.target.value })}
+                      onChange={(e) =>
+                        setAttributes({ ...attributes, mapDirection: e.target.value })
+                      }
                     >
                       <MenuItem value="none">{t('sharedDisabled')}</MenuItem>
                       <MenuItem value="selected">{t('deviceSelected')}</MenuItem>
@@ -337,7 +350,9 @@ const PreferencesPage = () => {
                       control={
                         <Checkbox
                           checked={
-                            attributes.hasOwnProperty('mapShowGeofences') ? attributes.mapShowGeofences : true
+                            attributes.hasOwnProperty('mapShowGeofences')
+                              ? attributes.mapShowGeofences
+                              : true
                           }
                           onChange={(e) =>
                             setAttributes({ ...attributes, mapShowGeofences: e.target.checked })
@@ -345,7 +360,11 @@ const PreferencesPage = () => {
                           sx={{ color: '#7c3aed', '&.Mui-checked': { color: '#6d28d9' } }}
                         />
                       }
-                      label={<Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569' }}>Mostrar Cercas no Mapa</Typography>}
+                      label={
+                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569' }}>
+                          Mostrar Cercas no Mapa
+                        </Typography>
+                      }
                     />
                     <FormControlLabel
                       control={
@@ -359,7 +378,11 @@ const PreferencesPage = () => {
                           sx={{ color: '#7c3aed', '&.Mui-checked': { color: '#6d28d9' } }}
                         />
                       }
-                      label={<Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569' }}>{t('deviceFollow')}</Typography>}
+                      label={
+                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569' }}>
+                          {t('deviceFollow')}
+                        </Typography>
+                      }
                     />
                     <FormControlLabel
                       control={
@@ -373,7 +396,11 @@ const PreferencesPage = () => {
                           sx={{ color: '#7c3aed', '&.Mui-checked': { color: '#6d28d9' } }}
                         />
                       }
-                      label={<Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569' }}>{t('mapClustering')}</Typography>}
+                      label={
+                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569' }}>
+                          {t('mapClustering')}
+                        </Typography>
+                      }
                     />
                     <FormControlLabel
                       control={
@@ -387,7 +414,11 @@ const PreferencesPage = () => {
                           sx={{ color: '#7c3aed', '&.Mui-checked': { color: '#6d28d9' } }}
                         />
                       }
-                      label={<Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569' }}>{t('mapOnSelect')}</Typography>}
+                      label={
+                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569' }}>
+                          {t('mapOnSelect')}
+                        </Typography>
+                      }
                     />
                   </FormGroup>
                 </AccordionDetails>
@@ -408,7 +439,11 @@ const PreferencesPage = () => {
               <Accordion
                 expanded={expandedPanel === 'devices'}
                 onChange={handleChange('devices')}
-                sx={{ boxShadow: 'none', backgroundColor: 'transparent', '&:before': { display: 'none' } }}
+                sx={{
+                  boxShadow: 'none',
+                  backgroundColor: 'transparent',
+                  '&:before': { display: 'none' },
+                }}
               >
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
@@ -419,12 +454,18 @@ const PreferencesPage = () => {
                     transition: 'background-color 0.2s',
                   }}
                 >
-                  {renderHeader(<SmartphoneIcon sx={{ fontSize: 20, color: '#7c3aed' }} />, t('deviceTitle'), expandedPanel === 'devices')}
+                  {renderHeader(
+                    <SmartphoneIcon sx={{ fontSize: 20, color: '#7c3aed' }} />,
+                    t('deviceTitle'),
+                    expandedPanel === 'devices',
+                  )}
                 </AccordionSummary>
                 <AccordionDetails sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <SelectField
                     value={attributes.devicePrimary || 'name'}
-                    onChange={(e) => setAttributes({ ...attributes, devicePrimary: e.target.value })}
+                    onChange={(e) =>
+                      setAttributes({ ...attributes, devicePrimary: e.target.value })
+                    }
                     data={deviceFields}
                     titleGetter={(it) => t(it.name)}
                     label={t('devicePrimaryInfo')}
@@ -458,7 +499,11 @@ const PreferencesPage = () => {
               <Accordion
                 expanded={expandedPanel === 'sound'}
                 onChange={handleChange('sound')}
-                sx={{ boxShadow: 'none', backgroundColor: 'transparent', '&:before': { display: 'none' } }}
+                sx={{
+                  boxShadow: 'none',
+                  backgroundColor: 'transparent',
+                  '&:before': { display: 'none' },
+                }}
               >
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
@@ -469,7 +514,11 @@ const PreferencesPage = () => {
                     transition: 'background-color 0.2s',
                   }}
                 >
-                  {renderHeader(<VolumeUpIcon sx={{ fontSize: 20, color: '#7c3aed' }} />, t('sharedSound'), expandedPanel === 'sound')}
+                  {renderHeader(
+                    <VolumeUpIcon sx={{ fontSize: 20, color: '#7c3aed' }} />,
+                    t('sharedSound'),
+                    expandedPanel === 'sound',
+                  )}
                 </AccordionSummary>
                 <AccordionDetails sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <SelectField
@@ -515,7 +564,11 @@ const PreferencesPage = () => {
           <Accordion
             expanded={expandedPanel === 'token'}
             onChange={handleChange('token')}
-            sx={{ boxShadow: 'none', backgroundColor: 'transparent', '&:before': { display: 'none' } }}
+            sx={{
+              boxShadow: 'none',
+              backgroundColor: 'transparent',
+              '&:before': { display: 'none' },
+            }}
           >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
@@ -526,7 +579,11 @@ const PreferencesPage = () => {
                 transition: 'background-color 0.2s',
               }}
             >
-              {renderHeader(<TokenIcon sx={{ fontSize: 20, color: '#7c3aed' }} />, t('userToken'), expandedPanel === 'token')}
+              {renderHeader(
+                <TokenIcon sx={{ fontSize: 20, color: '#7c3aed' }} />,
+                t('userToken'),
+                expandedPanel === 'token',
+              )}
             </AccordionSummary>
             <AccordionDetails sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <TextField
@@ -592,7 +649,11 @@ const PreferencesPage = () => {
               <Accordion
                 expanded={expandedPanel === 'info'}
                 onChange={handleChange('info')}
-                sx={{ boxShadow: 'none', backgroundColor: 'transparent', '&:before': { display: 'none' } }}
+                sx={{
+                  boxShadow: 'none',
+                  backgroundColor: 'transparent',
+                  '&:before': { display: 'none' },
+                }}
               >
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
@@ -603,10 +664,19 @@ const PreferencesPage = () => {
                     transition: 'background-color 0.2s',
                   }}
                 >
-                  {renderHeader(<InfoIcon sx={{ fontSize: 20, color: '#7c3aed' }} />, t('sharedInfoTitle'), expandedPanel === 'info')}
+                  {renderHeader(
+                    <InfoIcon sx={{ fontSize: 20, color: '#7c3aed' }} />,
+                    t('sharedInfoTitle'),
+                    expandedPanel === 'info',
+                  )}
                 </AccordionSummary>
                 <AccordionDetails sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <TextField value={versionApp} label={t('settingsAppVersion')} disabled fullWidth />
+                  <TextField
+                    value={versionApp}
+                    label={t('settingsAppVersion')}
+                    disabled
+                    fullWidth
+                  />
                   <TextField
                     value={versionServer || '-'}
                     label={t('settingsServerVersion')}

@@ -1,4 +1,15 @@
-﻿import { Box, Paper, Typography, Chip, Switch, IconButton, Button, Collapse, TextField, MenuItem } from '@mui/material';
+﻿import {
+  Box,
+  Paper,
+  Typography,
+  Chip,
+  Switch,
+  IconButton,
+  Button,
+  Collapse,
+  TextField,
+  MenuItem,
+} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -35,19 +46,99 @@ const MensagensTab = () => {
   const user = useSelector((state) => state.session.user);
   const userId = user.id;
   const userAttributes = useSelector((state) => state.session.user.attributes) || {};
-  const [ativos, setAtivos] = useState({ 1: (userAttributes.fin_multa_ativo !== 'false'), 2: true, 3: true, 4: true, 5: true });
-  const [vencimentoHora, setVencimentoHora] = useState(userAttributes.fin_msg_vencimento_hora || '08:30');
+  const [ativos, setAtivos] = useState({
+    1: userAttributes.fin_multa_ativo !== 'false',
+    2: true,
+    3: true,
+    4: true,
+    5: true,
+  });
+  const [vencimentoHora, setVencimentoHora] = useState(
+    userAttributes.fin_msg_vencimento_hora || '08:30',
+  );
   const [atrasoDias, setAtrasoDias] = useState(userAttributes.fin_msg_atraso_dias || '1');
   const [multaValor, setMultaValor] = useState(userAttributes.fin_multa_valor || '1');
   const [jurosValor, setJurosValor] = useState(userAttributes.fin_juros_valor || '0,10');
   const [atrasoHora, setAtrasoHora] = useState(userAttributes.fin_msg_atraso_hora || '09:00');
-  const [atrasoTexto, setAtrasoTexto] = useState(userAttributes.fin_msg_atraso || 'Olá *{nome}*!' + String.fromCharCode(10) + String.fromCharCode(10) + 'Identificamos que sua mensalidade está em atraso.' + String.fromCharCode(10) + String.fromCharCode(10) + '📅 *Vencimento original:* {vencimento}' + String.fromCharCode(10) + '💵 *Valor mensal:* R$ {valor}' + String.fromCharCode(10) + '📊 *Multa:* {multa}' + String.fromCharCode(10) + '📈 *Juros:* {juros}' + String.fromCharCode(10) + '💰 *Total a pagar: {valor_atualizado}*' + String.fromCharCode(10) + String.fromCharCode(10) + 'Regularize agora pelo PIX:' + String.fromCharCode(10) + String.fromCharCode(10) + '{pix_copia_cola}' + String.fromCharCode(10) + String.fromCharCode(10) + '_Evite o bloqueio dos serviços._');
-const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_vencimento || 'Olá *{nome}*!' + String.fromCharCode(10) + String.fromCharCode(10) + 'Sua mensalidade está disponível para pagamento.' + String.fromCharCode(10) + String.fromCharCode(10) + '🗓 Vencimento: {vencimento}' + String.fromCharCode(10) + '💰 Valor: R$ {valor}' + String.fromCharCode(10) + String.fromCharCode(10) + 'PIX Copia e Cola:' + String.fromCharCode(10) + '{pix_copia_cola}' + String.fromCharCode(10) + String.fromCharCode(10) + 'Após o vencimento será cobrado juros.' + String.fromCharCode(10) + String.fromCharCode(10) + '_O pagamento é confirmado automaticamente._');
+  const [atrasoTexto, setAtrasoTexto] = useState(
+    userAttributes.fin_msg_atraso ||
+      'Olá *{nome}*!' +
+        String.fromCharCode(10) +
+        String.fromCharCode(10) +
+        'Identificamos que sua mensalidade está em atraso.' +
+        String.fromCharCode(10) +
+        String.fromCharCode(10) +
+        '📅 *Vencimento original:* {vencimento}' +
+        String.fromCharCode(10) +
+        '💵 *Valor mensal:* R$ {valor}' +
+        String.fromCharCode(10) +
+        '📊 *Multa:* {multa}' +
+        String.fromCharCode(10) +
+        '📈 *Juros:* {juros}' +
+        String.fromCharCode(10) +
+        '💰 *Total a pagar: {valor_atualizado}*' +
+        String.fromCharCode(10) +
+        String.fromCharCode(10) +
+        'Regularize agora pelo PIX:' +
+        String.fromCharCode(10) +
+        String.fromCharCode(10) +
+        '{pix_copia_cola}' +
+        String.fromCharCode(10) +
+        String.fromCharCode(10) +
+        '_Evite o bloqueio dos serviços._',
+  );
+  const [vencimentoTexto, setVencimentoTexto] = useState(
+    userAttributes.fin_msg_vencimento ||
+      'Olá *{nome}*!' +
+        String.fromCharCode(10) +
+        String.fromCharCode(10) +
+        'Sua mensalidade está disponível para pagamento.' +
+        String.fromCharCode(10) +
+        String.fromCharCode(10) +
+        '🗓 Vencimento: {vencimento}' +
+        String.fromCharCode(10) +
+        '💰 Valor: R$ {valor}' +
+        String.fromCharCode(10) +
+        String.fromCharCode(10) +
+        'PIX Copia e Cola:' +
+        String.fromCharCode(10) +
+        '{pix_copia_cola}' +
+        String.fromCharCode(10) +
+        String.fromCharCode(10) +
+        'Após o vencimento será cobrado juros.' +
+        String.fromCharCode(10) +
+        String.fromCharCode(10) +
+        '_O pagamento é confirmado automaticamente._',
+  );
   const [lembreteDias, setLembreteDias] = useState(userAttributes.fin_msg_lembrete_dias || '3');
   const [lembreteHora, setLembreteHora] = useState(userAttributes.fin_msg_lembrete_hora || '13:00');
-  const [lembreteTexto, setLembreteTexto] = useState(userAttributes.fin_msg_lembrete || '🚨 Olá *{nome}*, tudo bem?`nBom dia, aqui é um lembrete que sua fatura já está disponível.`n`n🗓 *Vencimento:* {vencimento}`n💰 *Valor:* R$ {valor}`n💸 *Desconto:* {desconto}`n`nPIX Copia e Cola:`n{pix_copia_cola}`n`nApós vencimento será cobrado juros pela operadora.`n`n_O pagamento é confirmado automaticamente. Você receberá o recibo em seguida, sem precisar enviar comprovante._');
-  const [reciboTexto, setReciboTexto] = useState(['✅ *Pagamento Confirmado!* ✅', '', '```RECIBO DE PAGAMENTO', '=======================', 'Cliente : {nome}', 'Serviço : Rastreamento', 'Período : {vencimento}', 'Valor   : R$ {valor}', 'Multa   : {multa}', 'Juros   : {juros}', 'Desconto: {desconto}', '', 'Valor Total : {valor_atualizado}', '=======================', 'Pago em : {data_hoje}', 'Status  : ✅PAGO✅', 'Próx Venc: {prox_vencimento}', '=======================```'].join('\n'));
-  const toggleAberto = (id) => setAbertos((a) => a[id] ? {} : { [id]: true });
+  const [lembreteTexto, setLembreteTexto] = useState(
+    userAttributes.fin_msg_lembrete ||
+      '🚨 Olá *{nome}*, tudo bem?`nBom dia, aqui é um lembrete que sua fatura já está disponível.`n`n🗓 *Vencimento:* {vencimento}`n💰 *Valor:* R$ {valor}`n💸 *Desconto:* {desconto}`n`nPIX Copia e Cola:`n{pix_copia_cola}`n`nApós vencimento será cobrado juros pela operadora.`n`n_O pagamento é confirmado automaticamente. Você receberá o recibo em seguida, sem precisar enviar comprovante._',
+  );
+  const [reciboTexto, setReciboTexto] = useState(
+    [
+      '✅ *Pagamento Confirmado!* ✅',
+      '',
+      '```RECIBO DE PAGAMENTO',
+      '=======================',
+      'Cliente : {nome}',
+      'Serviço : Rastreamento',
+      'Período : {vencimento}',
+      'Valor   : R$ {valor}',
+      'Multa   : {multa}',
+      'Juros   : {juros}',
+      'Desconto: {desconto}',
+      '',
+      'Valor Total : {valor_atualizado}',
+      '=======================',
+      'Pago em : {data_hoje}',
+      'Status  : ✅PAGO✅',
+      'Próx Venc: {prox_vencimento}',
+      '=======================```',
+    ].join('\n'),
+  );
+  const toggleAberto = (id) => setAbertos((a) => (a[id] ? {} : { [id]: true }));
   const toggleAtivo = (id) => setAtivos((a) => ({ ...a, [id]: !a[id] }));
   const iconePorTipo = (tipo) => {
     if (tipo === 'event') return <EventIcon sx={{ fontSize: 20 }} />;
@@ -58,42 +149,132 @@ const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_ve
 
   const preview = (txt) => {
     if (!txt) return '';
-    return txt.split('{nome}').join('João Silva').split('{vencimento}').join('10/10/2026').split('{prox_vencimento}').join('10/11/2026').split('{valor}').join('150,00').split('{valor_atualizado}').join('165,00').split('{multa}').join('5,00').split('{juros}').join('10,00').split('{desconto}').join('0,00').split('{data_hoje}').join('27/09/2026').split('{link_pagamento}').join('https://pagar.exemplo/abc').split('{pix_copia_cola}').join('00020126360014BR.GOV.BCB.PIX...');
+    return txt
+      .split('{nome}')
+      .join('João Silva')
+      .split('{vencimento}')
+      .join('10/10/2026')
+      .split('{prox_vencimento}')
+      .join('10/11/2026')
+      .split('{valor}')
+      .join('150,00')
+      .split('{valor_atualizado}')
+      .join('165,00')
+      .split('{multa}')
+      .join('5,00')
+      .split('{juros}')
+      .join('10,00')
+      .split('{desconto}')
+      .join('0,00')
+      .split('{data_hoje}')
+      .join('27/09/2026')
+      .split('{link_pagamento}')
+      .join('https://pagar.exemplo/abc')
+      .split('{pix_copia_cola}')
+      .join('00020126360014BR.GOV.BCB.PIX...');
   };
 
   const salvarTudo = async () => {
     try {
-      const attrs = { ...userAttributes, fin_msg_recibo: reciboTexto, fin_msg_lembrete: lembreteTexto, fin_msg_lembrete_dias: lembreteDias, fin_msg_lembrete_hora: lembreteHora, fin_msg_vencimento: vencimentoTexto, fin_msg_vencimento_hora: vencimentoHora, fin_msg_atraso: atrasoTexto, fin_msg_atraso_dias: atrasoDias, fin_msg_atraso_hora: atrasoHora, fin_multa_valor: multaValor, fin_juros_valor: jurosValor, fin_multa_ativo: ativos[1] ? 'true' : 'false' };
+      const attrs = {
+        ...userAttributes,
+        fin_msg_recibo: reciboTexto,
+        fin_msg_lembrete: lembreteTexto,
+        fin_msg_lembrete_dias: lembreteDias,
+        fin_msg_lembrete_hora: lembreteHora,
+        fin_msg_vencimento: vencimentoTexto,
+        fin_msg_vencimento_hora: vencimentoHora,
+        fin_msg_atraso: atrasoTexto,
+        fin_msg_atraso_dias: atrasoDias,
+        fin_msg_atraso_hora: atrasoHora,
+        fin_multa_valor: multaValor,
+        fin_juros_valor: jurosValor,
+        fin_multa_ativo: ativos[1] ? 'true' : 'false',
+      };
       await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: userId, name: user.name || '-', email: user.email || 'sem@local', attributes: attrs , administrator: user.administrator, masteruser: user.masteruser }),
+        body: JSON.stringify({
+          id: userId,
+          name: user.name || '-',
+          email: user.email || 'sem@local',
+          attributes: attrs,
+          administrator: user.administrator,
+          masteruser: user.masteruser,
+        }),
       });
-      alert('Salvo!')
-    } catch (e) { console.error(e); alert('Erro ao salvar'); }
+      alert('Salvo!');
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao salvar');
+    }
   };
 
   return (
     <Box sx={{ width: '100%', maxWidth: 1400, mx: 'auto' }}>
-      <Typography sx={{ fontSize: '0.9rem', color: '#475569', mb: 1.5 }}>Variáveis disponíveis:</Typography>
+      <Typography sx={{ fontSize: '0.9rem', color: '#475569', mb: 1.5 }}>
+        Variáveis disponíveis:
+      </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
         {variaveis.map((v) => (
-          <Chip key={v.label} label={v.label} size='small' sx={{ backgroundColor: v.bg, color: v.cor, fontWeight: 700, fontSize: '0.75rem', borderRadius: '8px' }} />
+          <Chip
+            key={v.label}
+            label={v.label}
+            size="small"
+            sx={{
+              backgroundColor: v.bg,
+              color: v.cor,
+              fontWeight: 700,
+              fontSize: '0.75rem',
+              borderRadius: '8px',
+            }}
+          />
         ))}
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {cards.map((c) => (
-          <Paper key={c.id} elevation={0} sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+          <Paper
+            key={c.id}
+            elevation={0}
+            sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5 }}>
               <Box sx={{ color: '#3b82f6', display: 'flex' }}>{iconePorTipo(c.icone)}</Box>
-              <Typography sx={{ fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>{c.titulo}</Typography>
+              <Typography sx={{ fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>
+                {c.titulo}
+              </Typography>
               {c.badge && (
-                <Chip label={c.badge} size='small' sx={{ backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 600, fontSize: '0.7rem', height: 22 }} />
+                <Chip
+                  label={c.badge}
+                  size="small"
+                  sx={{
+                    backgroundColor: '#f1f5f9',
+                    color: '#475569',
+                    fontWeight: 600,
+                    fontSize: '0.7rem',
+                    height: 22,
+                  }}
+                />
               )}
-              <Chip label='Ativo' size='small' sx={{ backgroundColor: '#dcfce7', color: '#16a34a', fontWeight: 700, fontSize: '0.7rem', height: 22 }} />
+              <Chip
+                label="Ativo"
+                size="small"
+                sx={{
+                  backgroundColor: '#dcfce7',
+                  color: '#16a34a',
+                  fontWeight: 700,
+                  fontSize: '0.7rem',
+                  height: 22,
+                }}
+              />
               <Box sx={{ flexGrow: 1 }} />
-              <Switch checked={!!ativos[c.id]} onChange={() => toggleAtivo(c.id)} size='small' color='primary' />
-              <IconButton size='small' onClick={() => toggleAberto(c.id)}>
+              <Switch
+                checked={!!ativos[c.id]}
+                onChange={() => toggleAtivo(c.id)}
+                size="small"
+                color="primary"
+              />
+              <IconButton size="small" onClick={() => toggleAberto(c.id)}>
                 {abertos[c.id] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
               </IconButton>
             </Box>
@@ -103,78 +284,308 @@ const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_ve
                   <Typography sx={{ fontSize: '0.8rem', color: '#64748b', mb: 2 }}>
                     Valores aplicados automaticamente em cobranças atrasadas.
                   </Typography>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                      gap: 3,
+                    }}
+                  >
                     <Box>
-                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Multa por atraso</Typography>
-                      <TextField select fullWidth size='small' defaultValue='fixo' sx={{ mb: 1.5 }}>
-                        <MenuItem value='fixo'>Valor fixo (R$)</MenuItem>
+                      <Typography
+                        sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}
+                      >
+                        Multa por atraso
+                      </Typography>
+                      <TextField select fullWidth size="small" defaultValue="fixo" sx={{ mb: 1.5 }}>
+                        <MenuItem value="fixo">Valor fixo (R$)</MenuItem>
                       </TextField>
-                      <TextField fullWidth size='small' value={multaValor} onChange={(e) => setMultaValor(e.target.value)} />
-                      <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', mt: 0.5 }}>Valor fixo em reais cobrado por atraso. Ex: R$ 5,00</Typography>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        value={multaValor}
+                        onChange={(e) => setMultaValor(e.target.value)}
+                      />
+                      <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', mt: 0.5 }}>
+                        Valor fixo em reais cobrado por atraso. Ex: R$ 5,00
+                      </Typography>
                     </Box>
                     <Box>
-                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Juros por atraso</Typography>
-                      <TextField select fullWidth size='small' defaultValue='fixo' sx={{ mb: 1.5 }}>
-                        <MenuItem value='fixo'>Valor fixo por dia (R$)</MenuItem>
+                      <Typography
+                        sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}
+                      >
+                        Juros por atraso
+                      </Typography>
+                      <TextField select fullWidth size="small" defaultValue="fixo" sx={{ mb: 1.5 }}>
+                        <MenuItem value="fixo">Valor fixo por dia (R$)</MenuItem>
                       </TextField>
-                      <TextField fullWidth size='small' value={jurosValor} onChange={(e) => setJurosValor(e.target.value)} />
-                      <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', mt: 0.5 }}>Valor fixo em reais cobrado por dia de atraso. Ex: R$ 1,00/dia</Typography>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        value={jurosValor}
+                        onChange={(e) => setJurosValor(e.target.value)}
+                      />
+                      <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', mt: 0.5 }}>
+                        Valor fixo em reais cobrado por dia de atraso. Ex: R$ 1,00/dia
+                      </Typography>
                     </Box>
                   </Box>
-                  <Box sx={{ mt: 3, p: 2, backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                    <Typography sx={{ fontWeight: 700, color: '#1e293b', fontSize: '0.85rem', mb: 1 }}>Simulação (R$ 100,00 com 10 dias de atraso)</Typography>
-                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Valor: R$ 100,00</Typography>
-                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Multa (R$ {multaValor}): + R$ {((parseFloat(multaValor.replace(',','.')) || 0)).toFixed(2).replace('.', ',')}</Typography>
-                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>Juros (R$ {jurosValor}/dia x 10d): + R$ {((parseFloat(jurosValor.replace(',','.')) || 0) * 10).toFixed(2).replace('.', ',')}</Typography>
-                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', pt: 1, borderTop: '1px solid #cbd5e1' }}>Total: R$ {(100 + (parseFloat(multaValor.replace(',','.')) || 0) + (parseFloat(jurosValor.replace(',','.')) || 0) * 10).toFixed(2).replace('.', ',')}</Typography>
+                  <Box
+                    sx={{
+                      mt: 3,
+                      p: 2,
+                      backgroundColor: '#f8fafc',
+                      borderRadius: '12px',
+                      border: '1px solid #e2e8f0',
+                    }}
+                  >
+                    <Typography
+                      sx={{ fontWeight: 700, color: '#1e293b', fontSize: '0.85rem', mb: 1 }}
+                    >
+                      Simulação (R$ 100,00 com 10 dias de atraso)
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>
+                      Valor: R$ 100,00
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>
+                      Multa (R$ {multaValor}): + R${' '}
+                      {(parseFloat(multaValor.replace(',', '.')) || 0).toFixed(2).replace('.', ',')}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.82rem', color: '#475569', mb: 0.5 }}>
+                      Juros (R$ {jurosValor}/dia x 10d): + R${' '}
+                      {((parseFloat(jurosValor.replace(',', '.')) || 0) * 10)
+                        .toFixed(2)
+                        .replace('.', ',')}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        color: '#1e293b',
+                        pt: 1,
+                        borderTop: '1px solid #cbd5e1',
+                      }}
+                    >
+                      Total: R${' '}
+                      {(
+                        100 +
+                        (parseFloat(multaValor.replace(',', '.')) || 0) +
+                        (parseFloat(jurosValor.replace(',', '.')) || 0) * 10
+                      )
+                        .toFixed(2)
+                        .replace('.', ',')}
+                    </Typography>
                   </Box>
                 </Box>
               ) : c.id === 2 ? (
                 <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                      gap: 3,
+                      mb: 3,
+                    }}
+                  >
                     <Box>
-                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Dias antes do vencimento</Typography>
-                      <TextField fullWidth size='small' type='number' value={lembreteDias} onChange={(e) => setLembreteDias(e.target.value)} />
+                      <Typography
+                        sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}
+                      >
+                        Dias antes do vencimento
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="number"
+                        value={lembreteDias}
+                        onChange={(e) => setLembreteDias(e.target.value)}
+                      />
                     </Box>
                     <Box>
-                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Horário de envio</Typography>
-                      <TextField fullWidth size='small' type='time' value={lembreteHora} onChange={(e) => setLembreteHora(e.target.value)} />
-                      <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8', mt: 0.5 }}>As mensagens serão enviadas a partir deste horário, em lotes graduais.</Typography>
+                      <Typography
+                        sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}
+                      >
+                        Horário de envio
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="time"
+                        value={lembreteHora}
+                        onChange={(e) => setLembreteHora(e.target.value)}
+                      />
+                      <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8', mt: 0.5 }}>
+                        As mensagens serão enviadas a partir deste horário, em lotes graduais.
+                      </Typography>
                     </Box>
                   </Box>
-                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
-                  <textarea value={lembreteTexto} onChange={(e) => { setLembreteTexto(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} style={{ width: '100%', minHeight: '220px', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontFamily: 'inherit', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }} />
+                  <Typography
+                    sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}
+                  >
+                    Conteúdo da mensagem
+                  </Typography>
+                  <textarea
+                    value={lembreteTexto}
+                    onChange={(e) => {
+                      setLembreteTexto(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
+                    style={{
+                      width: '100%',
+                      minHeight: '220px',
+                      padding: '12px',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      fontFamily: 'inherit',
+                      fontSize: '14px',
+                      resize: 'vertical',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                    }}
+                  />
                 </Box>
               ) : c.id === 3 ? (
                 <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
                   <Box sx={{ mb: 3 }}>
-                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Horário de envio</Typography>
-                    <TextField fullWidth size='small' type='time' value={vencimentoHora} onChange={(e) => setVencimentoHora(e.target.value)} sx={{ maxWidth: 300 }} />
-                    <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8', mt: 0.5 }}>As mensagens serão enviadas a partir deste horário, em lotes graduais.</Typography>
+                    <Typography
+                      sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}
+                    >
+                      Horário de envio
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      type="time"
+                      value={vencimentoHora}
+                      onChange={(e) => setVencimentoHora(e.target.value)}
+                      sx={{ maxWidth: 300 }}
+                    />
+                    <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8', mt: 0.5 }}>
+                      As mensagens serão enviadas a partir deste horário, em lotes graduais.
+                    </Typography>
                   </Box>
-                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
-                  <textarea value={vencimentoTexto} onChange={(e) => { setVencimentoTexto(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} style={{ width: '100%', minHeight: '220px', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontFamily: 'inherit', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }} />
+                  <Typography
+                    sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}
+                  >
+                    Conteúdo da mensagem
+                  </Typography>
+                  <textarea
+                    value={vencimentoTexto}
+                    onChange={(e) => {
+                      setVencimentoTexto(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
+                    style={{
+                      width: '100%',
+                      minHeight: '220px',
+                      padding: '12px',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      fontFamily: 'inherit',
+                      fontSize: '14px',
+                      resize: 'vertical',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                    }}
+                  />
                 </Box>
               ) : c.id === 4 ? (
                 <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                      gap: 3,
+                      mb: 3,
+                    }}
+                  >
                     <Box>
-                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Cobrar a cada (dias)</Typography>
-                      <TextField fullWidth size='small' type='number' value={atrasoDias} onChange={(e) => setAtrasoDias(e.target.value)} />
+                      <Typography
+                        sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}
+                      >
+                        Cobrar a cada (dias)
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="number"
+                        value={atrasoDias}
+                        onChange={(e) => setAtrasoDias(e.target.value)}
+                      />
                     </Box>
                     <Box>
-                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Horário de envio</Typography>
-                      <TextField fullWidth size='small' type='time' value={atrasoHora} onChange={(e) => setAtrasoHora(e.target.value)} />
-                      <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8', mt: 0.5 }}>As mensagens serão enviadas a partir deste horário, em lotes graduais.</Typography>
+                      <Typography
+                        sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}
+                      >
+                        Horário de envio
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="time"
+                        value={atrasoHora}
+                        onChange={(e) => setAtrasoHora(e.target.value)}
+                      />
+                      <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8', mt: 0.5 }}>
+                        As mensagens serão enviadas a partir deste horário, em lotes graduais.
+                      </Typography>
                     </Box>
                   </Box>
-                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
-                  <textarea value={atrasoTexto} onChange={(e) => { setAtrasoTexto(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} style={{ width: '100%', minHeight: '220px', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontFamily: 'inherit', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }} />
+                  <Typography
+                    sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}
+                  >
+                    Conteúdo da mensagem
+                  </Typography>
+                  <textarea
+                    value={atrasoTexto}
+                    onChange={(e) => {
+                      setAtrasoTexto(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
+                    style={{
+                      width: '100%',
+                      minHeight: '220px',
+                      padding: '12px',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      fontFamily: 'inherit',
+                      fontSize: '14px',
+                      resize: 'vertical',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                    }}
+                  />
                 </Box>
               ) : c.id === 5 ? (
                 <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: '1px solid #f1f5f9' }}>
-                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}>Conteúdo da mensagem</Typography>
-                  <textarea value={reciboTexto} onChange={(e) => { setReciboTexto(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} style={{ width: '100%', minHeight: '220px', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontFamily: 'inherit', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }} />
+                  <Typography
+                    sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', mb: 1 }}
+                  >
+                    Conteúdo da mensagem
+                  </Typography>
+                  <textarea
+                    value={reciboTexto}
+                    onChange={(e) => {
+                      setReciboTexto(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
+                    style={{
+                      width: '100%',
+                      minHeight: '220px',
+                      padding: '12px',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      fontFamily: 'inherit',
+                      fontSize: '14px',
+                      resize: 'vertical',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                    }}
+                  />
                 </Box>
               ) : null}
             </Collapse>
@@ -182,7 +593,16 @@ const [vencimentoTexto, setVencimentoTexto] = useState(userAttributes.fin_msg_ve
         ))}
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-        <Button variant='contained' onClick={salvarTudo} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '10px', backgroundColor: '#2563eb' }}>
+        <Button
+          variant="contained"
+          onClick={salvarTudo}
+          sx={{
+            textTransform: 'none',
+            fontWeight: 700,
+            borderRadius: '10px',
+            backgroundColor: '#2563eb',
+          }}
+        >
           Salvar Tudo
         </Button>
       </Box>

@@ -1063,10 +1063,24 @@ const ClientesTab = () => {
             </Paper>
 
             {/* ===== CARDS MOBILE ===== */}
-            <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5, minHeight: 0 }}>
+            <Box
+              sx={{
+                display: { xs: 'flex', md: 'none' },
+                flexDirection: 'column',
+                gap: 1.5,
+                minHeight: 0,
+              }}
+            >
               {filteredItems.map((item) => {
                 const avatarStyle = getAvatarColor(item);
-                const btnBase = { width: 42, height: 42, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+                const btnBase = {
+                  width: 42,
+                  height: 42,
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                };
                 return (
                   <Paper
                     key={item.id}
@@ -1100,32 +1114,66 @@ const ClientesTab = () => {
                       >
                         {item.name}
                       </Typography>
-                      {item.attributes?.fin_vencimento && (() => {
-                        const d = new Date(item.attributes.fin_vencimento);
-                        const hoje = new Date(); hoje.setHours(0,0,0,0);
-                        const atrasado = d < hoje;
-                        const txt = String(item.attributes.fin_vencimento).split('-').reverse().join('/');
-                        return (
-                          <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: atrasado ? '#dc2626' : '#16a34a', whiteSpace: 'nowrap' }}>
-                            {txt}
-                          </Typography>
-                        );
-                      })()}
+                      {item.attributes?.fin_vencimento &&
+                        (() => {
+                          const d = new Date(item.attributes.fin_vencimento);
+                          const hoje = new Date();
+                          hoje.setHours(0, 0, 0, 0);
+                          const atrasado = d < hoje;
+                          const txt = String(item.attributes.fin_vencimento)
+                            .split('-')
+                            .reverse()
+                            .join('/');
+                          return (
+                            <Typography
+                              sx={{
+                                fontWeight: 700,
+                                fontSize: '0.82rem',
+                                color: atrasado ? '#dc2626' : '#16a34a',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {txt}
+                            </Typography>
+                          );
+                        })()}
                     </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ ...btnBase, backgroundColor: '#fff7ed' }} onClick={() => enviarContrato(item)}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      <Box
+                        sx={{ ...btnBase, backgroundColor: '#fff7ed' }}
+                        onClick={() => enviarContrato(item)}
+                      >
                         <DescriptionIcon sx={{ color: '#f97316', fontSize: 26 }} />
                       </Box>
-                      <Box sx={{ ...btnBase, backgroundColor: '#dcfce7' }} onClick={() => abrirCobranca(item)}>
+                      <Box
+                        sx={{ ...btnBase, backgroundColor: '#dcfce7' }}
+                        onClick={() => abrirCobranca(item)}
+                      >
                         <ChatBubbleIcon sx={{ color: '#22c55e', fontSize: 26 }} />
                       </Box>
-                      <Box sx={{ ...btnBase, backgroundColor: '#dbeafe' }} onClick={() => abrirBaixa(item)}>
+                      <Box
+                        sx={{ ...btnBase, backgroundColor: '#dbeafe' }}
+                        onClick={() => abrirBaixa(item)}
+                      >
                         <CheckCircleIcon sx={{ color: '#3b82f6', fontSize: 26 }} />
                       </Box>
-                      <Box sx={{ ...btnBase, backgroundColor: '#f1f5f9' }} onClick={() => setEditMobile(item)}>
+                      <Box
+                        sx={{ ...btnBase, backgroundColor: '#f1f5f9' }}
+                        onClick={() => setEditMobile(item)}
+                      >
                         <EditIcon sx={{ color: '#475569', fontSize: 24 }} />
                       </Box>
-                      <Box sx={{ ...btnBase, backgroundColor: '#fee2e2' }} onClick={() => setConfirmarExclusao(item)}>
+                      <Box
+                        sx={{ ...btnBase, backgroundColor: '#fee2e2' }}
+                        onClick={() => setConfirmarExclusao(item)}
+                      >
                         <DeleteIcon sx={{ color: '#dc2626', fontSize: 24 }} />
                       </Box>
                     </Box>

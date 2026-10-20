@@ -101,7 +101,9 @@ const MainToolbar = ({
   const manager = useManager();
 
   const devices = useSelector((state) => state.devices?.items || {});
-  const positions = useSelector((state) => state.session?.positions || state.positions?.items || {});
+  const positions = useSelector(
+    (state) => state.session?.positions || state.positions?.items || {},
+  );
   const devicesLoaded = useSelector((state) => state.devices?.loaded);
 
   const toolbarRef = useRef();
@@ -110,16 +112,13 @@ const MainToolbar = ({
   const twoDaysAgo = dayjs().subtract(2, 'day').valueOf();
   const totalCount = deviceList.length;
   const onlineCount = deviceList.filter((d) => d.status === 'online').length;
-  const offlineCount = deviceList.filter((d) => d.status === 'offline' || d.status === 'unknown').length;
+  const offlineCount = deviceList.filter(
+    (d) => d.status === 'offline' || d.status === 'unknown',
+  ).length;
 
   const movingCount = deviceList.filter((d) => {
     const pos = positions[d.id];
-    return (
-      d.status === 'online' &&
-      pos &&
-      pos.speed > 0 &&
-      pos.attributes?.ignition === true
-    );
+    return d.status === 'online' && pos && pos.speed > 0 && pos.attributes?.ignition === true;
   }).length;
 
   const oldOfflineCount = deviceList.filter((d) => {
@@ -164,12 +163,18 @@ const MainToolbar = ({
         ref={toolbarRef}
         className={classes.toolbar}
         disableGutters
-        sx={!devicesOpen ? { minHeight: 'unset', p: 0.5, pl: admin ? 0.5 : 2 } : { pl: admin ? 0 : 2 }}
+        sx={
+          !devicesOpen ? { minHeight: 'unset', p: 0.5, pl: admin ? 0.5 : 2 } : { pl: admin ? 0 : 2 }
+        }
       >
         <IconButton
           edge="start"
           onClick={() => setDevicesOpen(!devicesOpen)}
-          sx={!devicesOpen ? { bgcolor: 'background.paper', boxShadow: 2, m: 0.5, ml: admin ? 0.5 : 2 } : { ml: admin ? 0 : 2 }}
+          sx={
+            !devicesOpen
+              ? { bgcolor: 'background.paper', boxShadow: 2, m: 0.5, ml: admin ? 0.5 : 2 }
+              : { ml: admin ? 0 : 2 }
+          }
         >
           {devicesOpen ? <MapIcon /> : <DnsIcon />}
         </IconButton>
@@ -185,18 +190,14 @@ const MainToolbar = ({
                 flex: '1 1 auto',
                 minWidth: 0,
                 maxWidth: '62%',
-                transition: "all 0.2s ease",
+                transition: 'all 0.2s ease',
                 height: 36,
                 '& input': { padding: '6px 8px', fontSize: '0.82rem' },
               }}
               endAdornment={
                 keyword ? (
                   <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      edge="end"
-                      onClick={() => setKeyword('')}
-                    >
+                    <IconButton size="small" edge="end" onClick={() => setKeyword('')}>
                       <ClearIcon fontSize="small" />
                     </IconButton>
                   </InputAdornment>
@@ -204,35 +205,42 @@ const MainToolbar = ({
               }
             />
 
-            {admin && <IconButton
-              edge="end"
-              onClick={() => navigate('/device')}
-              disabled={deviceReadonly}
-              sx={{
-                color: '#ffffff',
-                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                ml: 0.8,
-                transition: 'all 0.15s ease',
-                width: 32,
-                height: 32,
-                borderRadius: '12px',
-                boxShadow: '0 2px 6px rgba(34, 197, 94, 0.35)',
-                '&:hover': { background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', transform: 'scale(1.05)' },
-              }}
-            >
-              <Tooltip
-                open={!deviceReadonly && devicesLoaded && totalCount === 0}
-                title={t('deviceRegisterFirst')}
-                arrow
+            {admin && (
+              <IconButton
+                edge="end"
+                onClick={() => navigate('/device')}
+                disabled={deviceReadonly}
+                sx={{
+                  color: '#ffffff',
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  ml: 0.8,
+                  transition: 'all 0.15s ease',
+                  width: 32,
+                  height: 32,
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 6px rgba(34, 197, 94, 0.35)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                    transform: 'scale(1.05)',
+                  },
+                }}
               >
-                <AddIcon fontSize="small" />
-              </Tooltip>
-            </IconButton>}
+                <Tooltip
+                  open={!deviceReadonly && devicesLoaded && totalCount === 0}
+                  title={t('deviceRegisterFirst')}
+                  arrow
+                >
+                  <AddIcon fontSize="small" />
+                </Tooltip>
+              </IconButton>
+            )}
 
             {admin && (
               <IconButton
                 edge="end"
-                onClick={() => window.dispatchEvent(new CustomEvent('stockMapToggle', { detail: true }))}
+                onClick={() =>
+                  window.dispatchEvent(new CustomEvent('stockMapToggle', { detail: true }))
+                }
                 sx={{
                   color: '#ffffff',
                   background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
@@ -242,7 +250,10 @@ const MainToolbar = ({
                   height: 32,
                   borderRadius: '12px',
                   boxShadow: '0 2px 6px rgba(245, 158, 11, 0.35)',
-                  '&:hover': { background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', transform: 'scale(1.05)' },
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                    transform: 'scale(1.05)',
+                  },
                 }}
               >
                 <Inventory2Icon fontSize="small" />
@@ -261,7 +272,10 @@ const MainToolbar = ({
                   height: 32,
                   borderRadius: '12px',
                   boxShadow: '0 2px 6px rgba(34, 197, 94, 0.35)',
-                  '&:hover': { background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', transform: 'scale(1.05)' },
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                    transform: 'scale(1.05)',
+                  },
                 }}
               >
                 <AttachMoneyIcon fontSize="small" />
@@ -281,7 +295,10 @@ const MainToolbar = ({
                   height: 32,
                   borderRadius: '12px',
                   boxShadow: '0 2px 6px rgba(124, 58, 237, 0.35)',
-                  '&:hover': { background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', transform: 'scale(1.05)' },
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                    transform: 'scale(1.05)',
+                  },
                 }}
               >
                 <PeopleAltIcon fontSize="small" />

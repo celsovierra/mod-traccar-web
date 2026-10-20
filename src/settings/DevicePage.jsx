@@ -1,7 +1,6 @@
-
-import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import {
   Accordion,
   AccordionSummary,
@@ -16,23 +15,23 @@ import {
   DialogContent,
   Box,
   Paper,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import TuneIcon from "@mui/icons-material/Tune";
-import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
-import EditItemView from "./components/EditItemView";
-import SelectField from "../common/components/SelectField";
-import CategorySelect from "../common/components/CategorySelect";
-import { useTranslation } from "../common/components/LocalizationProvider";
-import { useManager } from "../common/util/permissions";
-import { useCatch } from "../reactHelper";
-import useSettingsStyles from "./common/useSettingsStyles";
-import QrCodeDialog from "../common/components/QrCodeDialog";
-import { Scanner } from "@yudiel/react-qr-scanner";
-import fetchOrThrow from "../common/util/fetchOrThrow";
-import { devicesActions } from "../store";
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import TuneIcon from '@mui/icons-material/Tune';
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import EditItemView from './components/EditItemView';
+import SelectField from '../common/components/SelectField';
+import CategorySelect from '../common/components/CategorySelect';
+import { useTranslation } from '../common/components/LocalizationProvider';
+import { useManager } from '../common/util/permissions';
+import { useCatch } from '../reactHelper';
+import useSettingsStyles from './common/useSettingsStyles';
+import QrCodeDialog from '../common/components/QrCodeDialog';
+import { Scanner } from '@yudiel/react-qr-scanner';
+import fetchOrThrow from '../common/util/fetchOrThrow';
+import { devicesActions } from '../store';
 
 const DevicePage = () => {
   const { classes } = useSettingsStyles();
@@ -43,25 +42,24 @@ const DevicePage = () => {
   const manager = useManager();
 
   const [searchParams] = useSearchParams();
-  const uniqueId = searchParams.get("uniqueId");
+  const uniqueId = searchParams.get('uniqueId');
 
   const [item, setItem] = useState(uniqueId ? { uniqueId } : null);
   const [showQr, setShowQr] = useState(false);
   const [imageFile, setImageFile] = useState(null);
 
-
-  const [localPlate, setLocalPlate] = useState("");
-  const [localModel, setLocalModel] = useState("");
+  const [localPlate, setLocalPlate] = useState('');
+  const [localModel, setLocalModel] = useState('');
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     if (item) {
-      setLocalPlate(item.attributes?.plate || item.attributes?.placa || "");
-      setLocalModel(item.model || "");
+      setLocalPlate(item.attributes?.plate || item.attributes?.placa || '');
+      setLocalModel(item.model || '');
     }
   }, [item?.id, item?.model, item?.attributes?.plate, item?.attributes?.placa]);
 
-  const [expandedPanel, setExpandedPanel] = useState("required");
+  const [expandedPanel, setExpandedPanel] = useState('required');
 
   const handleChange = (panel) => (event, isExpanded) => {
     setExpandedPanel(isExpanded ? panel : false);
@@ -71,7 +69,7 @@ const DevicePage = () => {
     setImageFile(newFile);
     if (newFile && item?.id) {
       const response = await fetchOrThrow(`/api/devices/${item.id}/image`, {
-        method: "POST",
+        method: 'POST',
         body: newFile,
       });
       setItem({ ...item, attributes: { ...item.attributes, deviceImage: await response.text() } });
@@ -82,7 +80,7 @@ const DevicePage = () => {
   });
 
   const handlePlateChange = (event) => {
-    const rawValue = event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const rawValue = event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     setLocalPlate(rawValue);
   };
 
@@ -127,7 +125,9 @@ const DevicePage = () => {
     if (listRes.ok) {
       const allDevices = await listRes.json();
       const refreshedMap = {};
-      allDevices.forEach((d) => { refreshedMap[d.id] = d; });
+      allDevices.forEach((d) => {
+        refreshedMap[d.id] = d;
+      });
       dispatch(devicesActions.refresh(refreshedMap));
     }
     navigate(-1);
@@ -140,25 +140,25 @@ const DevicePage = () => {
       setItem={setItem}
       validate={validate}
       onSave={item?.id ? handleCustomSave : undefined}
-      breadcrumbs={["sharedDevice"]}
+      breadcrumbs={['sharedDevice']}
     >
       {item && (
         <Box
           sx={{
-            width: "100%",
+            width: '100%',
             maxWidth: 480,
-            mx: "auto",
+            mx: 'auto',
             p: { xs: 1, sm: 2 },
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "14px",
-              backgroundColor: "#f9fafb",
-              transition: "all 0.2s",
-              "&:hover": {
-                backgroundColor: "#ffffff",
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '14px',
+              backgroundColor: '#f9fafb',
+              transition: 'all 0.2s',
+              '&:hover': {
+                backgroundColor: '#ffffff',
               },
-              "&.Mui-focused": {
-                backgroundColor: "#ffffff",
-                boxShadow: "0 0 0 3px rgba(124, 58, 237, 0.15)",
+              '&.Mui-focused': {
+                backgroundColor: '#ffffff',
+                boxShadow: '0 0 0 3px rgba(124, 58, 237, 0.15)',
               },
             },
           }}
@@ -166,203 +166,242 @@ const DevicePage = () => {
           <Paper
             elevation={0}
             sx={{
-              borderRadius: "20px",
+              borderRadius: '20px',
               mb: 2,
-              border: "1px solid #edf2f7",
-              boxShadow: "0 8px 24px rgba(149, 157, 165, 0.08)",
-              overflow: "hidden",
+              border: '1px solid #edf2f7',
+              boxShadow: '0 8px 24px rgba(149, 157, 165, 0.08)',
+              overflow: 'hidden',
             }}
           >
             <Accordion
-              expanded={expandedPanel === "required"}
-              onChange={handleChange("required")}
+              expanded={expandedPanel === 'required'}
+              onChange={handleChange('required')}
               sx={{
-                boxShadow: "none",
-                backgroundColor: "transparent",
-                "&:before": { display: "none" },
+                boxShadow: 'none',
+                backgroundColor: 'transparent',
+                '&:before': { display: 'none' },
               }}
             >
               <AccordionSummary
-                expandIcon={<ExpandMoreIcon sx={{ color: "#7c3aed" }} />}
+                expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
                 sx={{
                   px: 2.5,
                   py: 1,
-                  backgroundColor: expandedPanel === "required" ? "#f5f3ff" : "#ffffff",
-                  transition: "background-color 0.2s",
+                  backgroundColor: expandedPanel === 'required' ? '#f5f3ff' : '#ffffff',
+                  transition: 'background-color 0.2s',
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Box
                     sx={{
                       width: 36,
                       height: 36,
-                      borderRadius: "10px",
-                      backgroundColor: expandedPanel === "required" ? "#ede9fe" : "#f3f4f6",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      borderRadius: '10px',
+                      backgroundColor: expandedPanel === 'required' ? '#ede9fe' : '#f3f4f6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
-                    <AssignmentIcon sx={{ fontSize: 20, color: "#7c3aed" }} />
+                    <AssignmentIcon sx={{ fontSize: 20, color: '#7c3aed' }} />
                   </Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#1e293b", fontSize: "0.98rem" }}>
-                    {t("sharedRequired")}
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 800, color: '#1e293b', fontSize: '0.98rem' }}
+                  >
+                    {t('sharedRequired')}
                   </Typography>
                 </Box>
               </AccordionSummary>
-              <AccordionDetails sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 2 }}>
-                  <TextField
-                  value={item.name || ""}
+              <AccordionDetails sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <TextField
+                  value={item.name || ''}
                   onChange={(event) => setItem({ ...item, name: event.target.value })}
-                  label={t("sharedName")}
+                  label={t('sharedName')}
                   fullWidth
                   variant="outlined"
                 />
-                <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
-                    <TextField
-                    value={item.uniqueId || ""}
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                  <TextField
+                    value={item.uniqueId || ''}
                     onChange={(event) => setItem({ ...item, uniqueId: event.target.value })}
-                    label={t("deviceIdentifier")}
+                    label={t('deviceIdentifier')}
                     disabled={Boolean(uniqueId)}
                     fullWidth
                     variant="outlined"
                   />
-                    <IconButton
-                      onClick={handleScanQr}
-                      disabled={Boolean(uniqueId)}
-                      sx={{
-                        mt: 0.5,
-                        backgroundColor: "#7c3aed",
-                        color: "#ffffff",
-                        borderRadius: "10px",
-                        width: 48,
-                        height: 48,
-                        "&:hover": { backgroundColor: "#6d28d9" },
-                        "&:disabled": { backgroundColor: "#e5e7eb", color: "#9ca3af" },
-                      }}
-                    >
-                      <QrCodeScannerIcon />
-                    </IconButton>
+                  <IconButton
+                    onClick={handleScanQr}
+                    disabled={Boolean(uniqueId)}
+                    sx={{
+                      mt: 0.5,
+                      backgroundColor: '#7c3aed',
+                      color: '#ffffff',
+                      borderRadius: '10px',
+                      width: 48,
+                      height: 48,
+                      '&:hover': { backgroundColor: '#6d28d9' },
+                      '&:disabled': { backgroundColor: '#e5e7eb', color: '#9ca3af' },
+                    }}
+                  >
+                    <QrCodeScannerIcon />
+                  </IconButton>
                 </Box>
               </AccordionDetails>
             </Accordion>
 
-          <Dialog open={showScanner} onClose={() => setShowScanner(false)} fullWidth maxWidth="sm">
-            <DialogContent>
-              <Scanner
-                onScan={handleScanResult}
-                onError={(err) => console.error("Erro scanner:", err)}
-              />
-            </DialogContent>
-          </Dialog>
+            <Dialog
+              open={showScanner}
+              onClose={() => setShowScanner(false)}
+              fullWidth
+              maxWidth="sm"
+            >
+              <DialogContent>
+                <Scanner
+                  onScan={handleScanResult}
+                  onError={(err) => console.error('Erro scanner:', err)}
+                />
+              </DialogContent>
+            </Dialog>
           </Paper>
 
           <Paper
             elevation={0}
             sx={{
-              borderRadius: "20px",
+              borderRadius: '20px',
               mb: 2,
-              border: "1px solid #edf2f7",
-              boxShadow: "0 8px 24px rgba(149, 157, 165, 0.08)",
-              overflow: "hidden",
+              border: '1px solid #edf2f7',
+              boxShadow: '0 8px 24px rgba(149, 157, 165, 0.08)',
+              overflow: 'hidden',
             }}
           >
             <Accordion
-              expanded={expandedPanel === "extra"}
-              onChange={handleChange("extra")}
+              expanded={expandedPanel === 'extra'}
+              onChange={handleChange('extra')}
               sx={{
-                boxShadow: "none",
-                backgroundColor: "transparent",
-                "&:before": { display: "none" },
+                boxShadow: 'none',
+                backgroundColor: 'transparent',
+                '&:before': { display: 'none' },
               }}
             >
               <AccordionSummary
-                expandIcon={<ExpandMoreIcon sx={{ color: "#7c3aed" }} />}
+                expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
                 sx={{
                   px: 2.5,
                   py: 1,
-                  backgroundColor: expandedPanel === "extra" ? "#f5f3ff" : "#ffffff",
-                  transition: "background-color 0.2s",
+                  backgroundColor: expandedPanel === 'extra' ? '#f5f3ff' : '#ffffff',
+                  transition: 'background-color 0.2s',
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Box
                     sx={{
                       width: 36,
                       height: 36,
-                      borderRadius: "10px",
-                      backgroundColor: expandedPanel === "extra" ? "#ede9fe" : "#f3f4f6",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      borderRadius: '10px',
+                      backgroundColor: expandedPanel === 'extra' ? '#ede9fe' : '#f3f4f6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
-                    <TuneIcon sx={{ fontSize: 20, color: "#7c3aed" }} />
+                    <TuneIcon sx={{ fontSize: 20, color: '#7c3aed' }} />
                   </Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#1e293b", fontSize: "0.98rem" }}>
-                    {t("sharedExtra")}
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 800, color: '#1e293b', fontSize: '0.98rem' }}
+                  >
+                    {t('sharedExtra')}
                   </Typography>
                 </Box>
               </AccordionSummary>
-              <AccordionDetails sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 2 }}>
+              <AccordionDetails sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <SelectField
                   value={item.groupId}
                   onChange={(event) => setItem({ ...item, groupId: Number(event.target.value) })}
                   endpoint="/api/groups"
-                  label={t("groupParent")}
+                  label={t('groupParent')}
                   fullWidth
                 />
-                  <TextField
-                  value={item.phone || ""}
+                <TextField
+                  value={item.phone || ''}
                   onChange={(event) => setItem({ ...item, phone: event.target.value })}
-                  label={t("sharedPhone")}
+                  label={t('sharedPhone')}
                   fullWidth
                   variant="outlined"
                 />
-                  <TextField
+                <TextField
                   value={localModel}
                   onChange={handleModelChange}
-                  label={t("deviceModel")}
+                  label={t('deviceModel')}
                   fullWidth
                   variant="outlined"
                 />
-                  <TextField
+                <TextField
                   value={localPlate}
                   onChange={handlePlateChange}
                   label="Placa do Veículo"
                   placeholder="Ex: ABC1D23"
-                  inputProps={{ maxLength: 8, style: { textTransform: "uppercase", fontWeight: 800, letterSpacing: 1 } }}
+                  inputProps={{
+                    maxLength: 8,
+                    style: { textTransform: 'uppercase', fontWeight: 800, letterSpacing: 1 },
+                  }}
                   helperText="Exibida na placa Mercosul"
                   fullWidth
                   variant="outlined"
                 />
                 <CategorySelect
-                  value={item.attributes?.customIcon || "default"}
-                  onChange={(event) => setItem({ ...item, attributes: { ...item.attributes, customIcon: event.target.value } })}
-                  label={t("deviceCategory")}
+                  value={item.attributes?.customIcon || 'default'}
+                  onChange={(event) =>
+                    setItem({
+                      ...item,
+                      attributes: { ...item.attributes, customIcon: event.target.value },
+                    })
+                  }
+                  label={t('deviceCategory')}
                   fullWidth
                 />
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 1 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    pt: 1,
+                  }}
+                >
                   <FormControlLabel
                     control={
                       <Checkbox
                         checked={item.disabled}
                         onChange={(event) => setItem({ ...item, disabled: event.target.checked })}
-                        sx={{ color: "#7c3aed", "&.Mui-checked": { color: "#6d28d9" } }}
+                        sx={{ color: '#7c3aed', '&.Mui-checked': { color: '#6d28d9' } }}
                       />
                     }
-                    label={<Typography sx={{ fontSize: "0.88rem", fontWeight: 700, color: "#475569" }}>{t("sharedDisabled")}</Typography>}
+                    label={
+                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#475569' }}>
+                        {t('sharedDisabled')}
+                      </Typography>
+                    }
                     disabled={!manager}
                   />
                   <FormControlLabel
                     control={
                       <Checkbox
                         checked={item.attributes?.stock === true}
-                        onChange={(event) => setItem({ ...item, attributes: { ...item.attributes, stock: event.target.checked } })}
+                        onChange={(event) =>
+                          setItem({
+                            ...item,
+                            attributes: { ...item.attributes, stock: event.target.checked },
+                          })
+                        }
                         sx={{ color: '#f59e0b', '&.Mui-checked': { color: '#d97706' } }}
                       />
                     }
-                    label={<Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#475569' }}>Em Estoque</Typography>}
+                    label={
+                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#475569' }}>
+                        Em Estoque
+                      </Typography>
+                    }
                     disabled={!manager}
                   />
                   <Button
@@ -370,19 +409,19 @@ const DevicePage = () => {
                     startIcon={<QrCodeScannerIcon />}
                     onClick={() => setShowQr(true)}
                     sx={{
-                      borderRadius: "12px",
-                      textTransform: "none",
+                      borderRadius: '12px',
+                      textTransform: 'none',
                       fontWeight: 700,
-                      borderColor: "#ddd6fe",
-                      color: "#7c3aed",
-                      backgroundColor: "#f5f3ff",
-                      "&:hover": {
-                        borderColor: "#7c3aed",
-                        backgroundColor: "#ede9fe",
+                      borderColor: '#ddd6fe',
+                      color: '#7c3aed',
+                      backgroundColor: '#f5f3ff',
+                      '&:hover': {
+                        borderColor: '#7c3aed',
+                        backgroundColor: '#ede9fe',
                       },
                     }}
                   >
-                    {t("sharedQrCode")}
+                    {t('sharedQrCode')}
                   </Button>
                 </Box>
               </AccordionDetails>
@@ -393,47 +432,50 @@ const DevicePage = () => {
             <Paper
               elevation={0}
               sx={{
-                borderRadius: "20px",
+                borderRadius: '20px',
                 mb: 2,
-                border: "1px solid #edf2f7",
-                boxShadow: "0 8px 24px rgba(149, 157, 165, 0.08)",
-                overflow: "hidden",
+                border: '1px solid #edf2f7',
+                boxShadow: '0 8px 24px rgba(149, 157, 165, 0.08)',
+                overflow: 'hidden',
               }}
             >
               <Accordion
-                expanded={expandedPanel === "image"}
-                onChange={handleChange("image")}
+                expanded={expandedPanel === 'image'}
+                onChange={handleChange('image')}
                 sx={{
-                  boxShadow: "none",
-                  backgroundColor: "transparent",
-                  "&:before": { display: "none" },
+                  boxShadow: 'none',
+                  backgroundColor: 'transparent',
+                  '&:before': { display: 'none' },
                 }}
               >
                 <AccordionSummary
-                  expandIcon={<ExpandMoreIcon sx={{ color: "#7c3aed" }} />}
+                  expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
                   sx={{
                     px: 2.5,
                     py: 1,
-                    backgroundColor: expandedPanel === "image" ? "#f5f3ff" : "#ffffff",
-                    transition: "background-color 0.2s",
+                    backgroundColor: expandedPanel === 'image' ? '#f5f3ff' : '#ffffff',
+                    transition: 'background-color 0.2s',
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Box
                       sx={{
                         width: 36,
                         height: 36,
-                        borderRadius: "10px",
-                        backgroundColor: expandedPanel === "image" ? "#ede9fe" : "#f3f4f6",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        borderRadius: '10px',
+                        backgroundColor: expandedPanel === 'image' ? '#ede9fe' : '#f3f4f6',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      <AddPhotoAlternateIcon sx={{ fontSize: 20, color: "#7c3aed" }} />
+                      <AddPhotoAlternateIcon sx={{ fontSize: 20, color: '#7c3aed' }} />
                     </Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#1e293b", fontSize: "0.98rem" }}>
-                      {t("attributeDeviceImage")}
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ fontWeight: 800, color: '#1e293b', fontSize: '0.98rem' }}
+                    >
+                      {t('attributeDeviceImage')}
                     </Typography>
                   </Box>
                 </AccordionSummary>
@@ -444,20 +486,20 @@ const DevicePage = () => {
                     startIcon={<AddPhotoAlternateIcon />}
                     fullWidth
                     sx={{
-                      borderRadius: "12px",
-                      textTransform: "none",
+                      borderRadius: '12px',
+                      textTransform: 'none',
                       fontWeight: 700,
-                      borderColor: "#ddd6fe",
-                      color: "#7c3aed",
-                      backgroundColor: "#f5f3ff",
+                      borderColor: '#ddd6fe',
+                      color: '#7c3aed',
+                      backgroundColor: '#f5f3ff',
                       py: 1.5,
-                      "&:hover": {
-                        borderColor: "#7c3aed",
-                        backgroundColor: "#ede9fe",
+                      '&:hover': {
+                        borderColor: '#7c3aed',
+                        backgroundColor: '#ede9fe',
                       },
                     }}
                   >
-                    {imageFile ? imageFile.name : t("attributeDeviceImage")}
+                    {imageFile ? imageFile.name : t('attributeDeviceImage')}
                     <input
                       type="file"
                       accept="image/*"

@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  useTheme,
-  Menu,
-  MenuItem,
-} from '@mui/material';
+import { useTheme, Menu, MenuItem } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { createRoot } from 'react-dom/client';
 import LayersIcon from '@mui/icons-material/Layers';

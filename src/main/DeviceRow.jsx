@@ -125,7 +125,11 @@ const getImageUrl = (item) => {
     item?.attributes?.vehicleImage;
 
   if (!rawImage) return null;
-  if (rawImage.startsWith('data:') || rawImage.startsWith('http://') || rawImage.startsWith('https://')) {
+  if (
+    rawImage.startsWith('data:') ||
+    rawImage.startsWith('http://') ||
+    rawImage.startsWith('https://')
+  ) {
     return rawImage;
   }
   return `/api/media/${item.uniqueId}/${rawImage}`;
@@ -193,7 +197,10 @@ const DeviceRow = ({ devices, index, style }) => {
               <span>â€¢</span>
             </>
           )}
-          <span className={classes[getStatusColor(item.status)]} style={{ fontWeight: item.status === 'online' ? 600 : 400 }}>
+          <span
+            className={classes[getStatusColor(item.status)]}
+            style={{ fontWeight: item.status === 'online' ? 600 : 400 }}
+          >
             {status}
           </span>
         </Box>
@@ -214,25 +221,35 @@ const DeviceRow = ({ devices, index, style }) => {
         <ListItemAvatar sx={{ minWidth: 50 }}>
           <Avatar className={classes.avatar}>
             {imageUrl ? (
-              <img
-                className={classes.avatarImg}
-                src={imageUrl}
-                alt={item.name}
-              />
+              <img className={classes.avatarImg} src={imageUrl} alt={item.name} />
             ) : (
-              <img
-                className={classes.icon}
-                src={mapIcons[mapIconKey(item.category)]}
-                alt=""
-              />
+              <img className={classes.icon} src={mapIcons[mapIconKey(item.category)]} alt="" />
             )}
           </Avatar>
         </ListItemAvatar>
         <ListItemText
-          sx={{ flex: 1, minWidth: 0, pr: 8, '& .MuiListItemText-primary, & .MuiTypography-root': { color: '#f1f5f9 !important' } }}
-          sx={{ '& .MuiListItemText-primary, & .MuiTypography-root': { color: '#f1f5f9 !important' } }}
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            pr: 8,
+            '& .MuiListItemText-primary, & .MuiTypography-root': { color: '#f1f5f9 !important' },
+          }}
+          sx={{
+            '& .MuiListItemText-primary, & .MuiTypography-root': { color: '#f1f5f9 !important' },
+          }}
           primary={
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f1f5f9', fontSize: '0.86rem', lineHeight: '1.25', textShadow: '0 0 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.8)' }} noWrap>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 700,
+                color: '#f1f5f9',
+                fontSize: '0.86rem',
+                lineHeight: '1.25',
+                textShadow:
+                  '0 0 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.8)',
+              }}
+              noWrap
+            >
               {primaryValue}
             </Typography>
           }
@@ -254,13 +271,35 @@ const DeviceRow = ({ devices, index, style }) => {
                   <ErrorIcon fontSize="small" className={classes.error} />
                 </IconButton>
               </Tooltip>
-            )}          {(position?.attributes?.hasOwnProperty?.("power") || position?.attributes?.hasOwnProperty?.("adc1")) && (
-            <Tooltip title={`TensÃ£o da Bateria: ${(position.attributes.power || position.attributes.adc1)}V`}>
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", px: "5px", py: "1px", borderRadius: "4px", bgcolor: "rgba(56, 189, 248, 0.12)", border: "1px solid", borderColor: "rgba(56, 189, 248, 0.35)", fontSize: "0.65rem", fontWeight: 700, color: "#67e8f9", ml: 0.5, mr: 0, letterSpacing: "0px" }}>
-                {Number((position.attributes.power || position.attributes.adc1)).toFixed(1)}V
-              </Box>
-            </Tooltip>
-          )}
+            )}{' '}
+            {(position?.attributes?.hasOwnProperty?.('power') ||
+              position?.attributes?.hasOwnProperty?.('adc1')) && (
+              <Tooltip
+                title={`TensÃ£o da Bateria: ${position.attributes.power || position.attributes.adc1}V`}
+              >
+                <Box
+                  component="span"
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    px: '5px',
+                    py: '1px',
+                    borderRadius: '4px',
+                    bgcolor: 'rgba(56, 189, 248, 0.12)',
+                    border: '1px solid',
+                    borderColor: 'rgba(56, 189, 248, 0.35)',
+                    fontSize: '0.65rem',
+                    fontWeight: 700,
+                    color: '#67e8f9',
+                    ml: 0.5,
+                    mr: 0,
+                    letterSpacing: '0px',
+                  }}
+                >
+                  {Number(position.attributes.power || position.attributes.adc1).toFixed(1)}V
+                </Box>
+              </Tooltip>
+            )}
             {position?.attributes?.hasOwnProperty?.('batteryLevel') && (
               <Tooltip
                 title={`${t('positionBatteryLevel')}: ${formatPercentage(position.attributes.batteryLevel)}`}
@@ -286,13 +325,26 @@ const DeviceRow = ({ devices, index, style }) => {
                 </IconButton>
               </Tooltip>
             )}
-          {admin && <IconButton size='small' onClick={(e) => { e.stopPropagation(); setShowSmsModal(true); }} sx={{ color: '#ff5722', ml: 0.3, p: 0.3 }}><SmsIcon fontSize='small' /></IconButton>}</Box>)}</ListItemButton>{admin && showSmsModal && <SmsMarketModal device={item} onClose={() => setShowSmsModal(false)} />}
+            {admin && (
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSmsModal(true);
+                }}
+                sx={{ color: '#ff5722', ml: 0.3, p: 0.3 }}
+              >
+                <SmsIcon fontSize="small" />
+              </IconButton>
+            )}
+          </Box>
+        )}
+      </ListItemButton>
+      {admin && showSmsModal && (
+        <SmsMarketModal device={item} onClose={() => setShowSmsModal(false)} />
+      )}
     </div>
   );
 };
 
 export default DeviceRow;
-
-
-
-

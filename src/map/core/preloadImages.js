@@ -7,18 +7,25 @@ import backgroundSvg from '../../resources/images/background.svg';
 import defaultSvg from '../../resources/images/icon/default.svg';
 import iconSizes from '../../resources/images/icon/iconSizes.json';
 
-const staticIconFiles = import.meta.glob('../../resources/images/icon/estaticos/*.{svg,png,jpg,jpeg,webp,gif}', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
+const staticIconFiles = import.meta.glob(
+  '../../resources/images/icon/estaticos/*.{svg,png,jpg,jpeg,webp,gif}',
+  {
+    eager: true,
+    query: '?url',
+    import: 'default',
+  },
+);
 
 const rotativeIconFiles = import.meta.glob(
   '../../resources/images/icon/rotativos/*.{png,jpg,jpeg,webp,svg,gif}',
   { eager: true, query: '?url', import: 'default' },
 );
 
-const keyFromPath = (path) => path.split('/').pop().replace(/\.[^/.]+$/, '');
+const keyFromPath = (path) =>
+  path
+    .split('/')
+    .pop()
+    .replace(/\.[^/.]+$/, '');
 
 export const mapIcons = { default: defaultSvg };
 
@@ -67,14 +74,16 @@ export default async () => {
       const results = [];
       ['info', 'success', 'error', 'neutral'].forEach((color) => {
         results.push(
-          loadImage(mapIcons[category]).then((icon) => {
-            mapImages[`${category}-${color}`] = prepareIcon(
-              background,
-              icon,
-              theme.palette[color].main,
-              shape,
-            );
-          }).catch((e) => console.error('Erro ao carregar icone:', category, e)),
+          loadImage(mapIcons[category])
+            .then((icon) => {
+              mapImages[`${category}-${color}`] = prepareIcon(
+                background,
+                icon,
+                theme.palette[color].main,
+                shape,
+              );
+            })
+            .catch((e) => console.error('Erro ao carregar icone:', category, e)),
         );
       });
       await Promise.all(results);

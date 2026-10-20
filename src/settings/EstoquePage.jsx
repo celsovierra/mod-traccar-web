@@ -2,8 +2,17 @@ import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
-  Container, Typography, Box, Paper, List, ListItem, ListItemText,
-  Chip, FormControlLabel, Switch, Button,
+  Container,
+  Typography,
+  Box,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  Chip,
+  FormControlLabel,
+  Switch,
+  Button,
 } from '@mui/material';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -11,7 +20,12 @@ import { makeStyles } from 'tss-react/mui';
 
 const useStyles = makeStyles()((theme) => ({
   root: { padding: theme.spacing(2), height: '100%', overflow: 'auto' },
-  header: { display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginBottom: theme.spacing(2) },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    marginBottom: theme.spacing(2),
+  },
   item: { borderRadius: 12, marginBottom: 6 },
   nome: { fontWeight: 700, color: '#1e293b' },
 }));
@@ -29,9 +43,10 @@ const EstoquePage = () => {
     window.dispatchEvent(new CustomEvent('stockMapToggle', { detail: saved }));
   }, []);
 
-  const emEstoque = useMemo(() => (
-    Object.values(devices).filter((d) => d.attributes && d.attributes.stock === true)
-  ), [devices]);
+  const emEstoque = useMemo(
+    () => Object.values(devices).filter((d) => d.attributes && d.attributes.stock === true),
+    [devices],
+  );
 
   const toggleMapa = (v) => {
     setShowOnMap(v);
@@ -62,25 +77,31 @@ const EstoquePage = () => {
   return (
     <Container maxWidth="md" className={classes.root}>
       <Box className={classes.header}>
-        <Button onClick={() => navigate(-1)} startIcon={<ArrowBackIcon />} sx={{ textTransform: 'none' }}>
+        <Button
+          onClick={() => navigate(-1)}
+          startIcon={<ArrowBackIcon />}
+          sx={{ textTransform: 'none' }}
+        >
           Voltar
         </Button>
         <Inventory2Icon sx={{ fontSize: 32, color: '#f59e0b' }} />
         <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e293b' }}>
           Estoque
         </Typography>
-        <Chip label={emEstoque.length + ' veiculo(s)'} sx={{ ml: 'auto', bgcolor: '#fef3c7', color: '#92400e', fontWeight: 700 }} />
+        <Chip
+          label={emEstoque.length + ' veiculo(s)'}
+          sx={{ ml: 'auto', bgcolor: '#fef3c7', color: '#92400e', fontWeight: 700 }}
+        />
       </Box>
 
       <Paper sx={{ p: 2, mb: 2, borderRadius: 4 }}>
         <FormControlLabel
-          control={
-            <Switch
-              checked={showOnMap}
-              onChange={(e) => toggleMapa(e.target.checked)}
-            />
+          control={<Switch checked={showOnMap} onChange={(e) => toggleMapa(e.target.checked)} />}
+          label={
+            <Typography sx={{ fontWeight: 700, color: '#475569' }}>
+              Mostrar veiculos do estoque no mapa
+            </Typography>
           }
-          label={<Typography sx={{ fontWeight: 700, color: '#475569' }}>Mostrar veiculos do estoque no mapa</Typography>}
         />
       </Paper>
 
@@ -98,7 +119,11 @@ const EstoquePage = () => {
               <ListItem>
                 <ListItemText
                   primary={<span className={classes.nome}>{d.name}</span>}
-                  secondary={'ID: ' + d.uniqueId + (d.attributes && d.attributes.plate ? ' | Placa: ' + d.attributes.plate : '')}
+                  secondary={
+                    'ID: ' +
+                    d.uniqueId +
+                    (d.attributes && d.attributes.plate ? ' | Placa: ' + d.attributes.plate : '')
+                  }
                 />
                 <Button
                   size="small"

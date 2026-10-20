@@ -37,7 +37,9 @@ const SettingsMenu = () => {
   useEffect(() => {
     fetch('/VERSION', { cache: 'no-store' })
       .then((r) => (r.ok ? r.text() : null))
-      .then((txt) => { if (txt) setVersion(txt.trim()); })
+      .then((txt) => {
+        if (txt) setVersion(txt.trim());
+      })
       .catch(() => {});
   }, []);
   const [editingVersion, setEditingVersion] = useState(false);
@@ -53,7 +55,9 @@ const SettingsMenu = () => {
       setTempVersion(version);
       setEditingVersion(true);
     } else {
-      clickTimerRef.current = setTimeout(() => { clickCountRef.current = 0; }, 600);
+      clickTimerRef.current = setTimeout(() => {
+        clickCountRef.current = 0;
+      }, 600);
     }
   };
 
@@ -62,13 +66,21 @@ const SettingsMenu = () => {
     setVersion(v);
     localStorage.setItem('mod_version', v);
     setEditingVersion(false);
-    const cmd = '"' + v + '" | Out-File .\\VERSION -Encoding utf8 -NoNewline ; Copy-Item .\\VERSION .\\public\\VERSION -Force ; git add . ; git commit -m "chore: bump version ' + v + '" ; git push origin main';
+    const cmd =
+      '"' +
+      v +
+      '" | Out-File .\\VERSION -Encoding utf8 -NoNewline ; Copy-Item .\\VERSION .\\public\\VERSION -Force ; git add . ; git commit -m "chore: bump version ' +
+      v +
+      '" ; git push origin main';
     navigator.clipboard.writeText(cmd).catch(() => {});
-    setToast({ open: true, message: 'Comando copiado! Cole no PowerShell: ' + cmd, severity: 'info' });
+    setToast({
+      open: true,
+      message: 'Comando copiado! Cole no PowerShell: ' + cmd,
+      severity: 'info',
+    });
   };
 
   useEffect(() => {
-
     if (!manager) return;
     (async () => {
       try {
@@ -76,7 +88,9 @@ const SettingsMenu = () => {
         if (!localRes.ok) return;
         const localData = await localRes.json();
 
-        const remoteRes = await fetch('https://api.github.com/repos/celsovierra/mod-traccar-web/commits/main');
+        const remoteRes = await fetch(
+          'https://api.github.com/repos/celsovierra/mod-traccar-web/commits/main',
+        );
         if (!remoteRes.ok) return;
         const remoteData = await remoteRes.json();
 
@@ -90,13 +104,29 @@ const SettingsMenu = () => {
   }, [manager]);
 
   const handleUpdateVersion = async () => {
-    if (!window.confirm('Isso vai atualizar o sistema com a ultima versao do GitHub e reiniciar o servidor. Continuar?')) return;
+    if (
+      !window.confirm(
+        'Isso vai atualizar o sistema com a ultima versao do GitHub e reiniciar o servidor. Continuar?',
+      )
+    )
+      return;
     try {
-      const response = await fetch('/api-deploy-trigger/', { method: 'POST', credentials: 'same-origin' });
+      const response = await fetch('/api-deploy-trigger/', {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
       if (!response.ok) throw new Error();
-      setToast({ open: true, message: 'Atualizacao iniciada! O sistema pode reiniciar em instantes.', severity: 'success' });
+      setToast({
+        open: true,
+        message: 'Atualizacao iniciada! O sistema pode reiniciar em instantes.',
+        severity: 'success',
+      });
     } catch (e) {
-      setToast({ open: true, message: 'Nao foi possivel iniciar a atualizacao.', severity: 'error' });
+      setToast({
+        open: true,
+        message: 'Nao foi possivel iniciar a atualizacao.',
+        severity: 'error',
+      });
     }
   };
 
@@ -164,12 +194,12 @@ const SettingsMenu = () => {
               />
             )}
 
-              <MenuItem
-                title="Financeiro"
-                link="/settings/financeiro"
-                icon={<PaymentIcon fontSize="small" />}
-                selected={location.pathname.startsWith('/settings/financeiro')}
-              />
+            <MenuItem
+              title="Financeiro"
+              link="/settings/financeiro"
+              icon={<PaymentIcon fontSize="small" />}
+              selected={location.pathname.startsWith('/settings/financeiro')}
+            />
             <MenuItem
               title={t('sharedGeofences')}
               link="/geofences"
@@ -199,10 +229,18 @@ const SettingsMenu = () => {
           </>
         )}
         {billingLink && (
-          <MenuItem title={t('userBilling')} link={billingLink} icon={<PaymentIcon fontSize="small" />} />
+          <MenuItem
+            title={t('userBilling')}
+            link={billingLink}
+            icon={<PaymentIcon fontSize="small" />}
+          />
         )}
         {supportLink && (
-          <MenuItem title={t('settingsSupport')} link={supportLink} icon={<HelpIcon fontSize="small" />} />
+          <MenuItem
+            title={t('settingsSupport')}
+            link={supportLink}
+            icon={<HelpIcon fontSize="small" />}
+          />
         )}
       </List>
 
@@ -234,7 +272,7 @@ const SettingsMenu = () => {
               icon={<SendIcon fontSize="small" />}
               selected={location.pathname === '/settings/telegram'}
             />
-<Box
+            <Box
               onClick={handleVersionClick}
               sx={{
                 mx: 1.5,
@@ -304,4 +342,3 @@ const SettingsMenu = () => {
 };
 
 export default SettingsMenu;
-

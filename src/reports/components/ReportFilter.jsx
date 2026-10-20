@@ -27,7 +27,16 @@ export const updateReportParams = (searchParams, setSearchParams, key, values) =
   setSearchParams(newParams, { replace: true });
 };
 
-const ReportFilter = ({ hideGroups = false, children, onShow, onExport, onSchedule, deviceType, loading, formats }) => {
+const ReportFilter = ({
+  hideGroups = false,
+  children,
+  onShow,
+  onExport,
+  onSchedule,
+  deviceType,
+  loading,
+  formats,
+}) => {
   const { classes } = useReportStyles();
   const t = useTranslation();
 

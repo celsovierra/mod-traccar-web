@@ -88,7 +88,11 @@ const AnnouncementPage = () => {
           <Accordion
             expanded={expanded}
             onChange={(_, isExpanded) => setExpanded(isExpanded)}
-            sx={{ boxShadow: 'none', backgroundColor: 'transparent', '&:before': { display: 'none' } }}
+            sx={{
+              boxShadow: 'none',
+              backgroundColor: 'transparent',
+              '&:before': { display: 'none' },
+            }}
           >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
@@ -114,7 +118,10 @@ const AnnouncementPage = () => {
                 >
                   <CampaignIcon sx={{ fontSize: 20, color: '#7c3aed' }} />
                 </Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', fontSize: '0.98rem' }}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: 800, color: '#1e293b', fontSize: '0.98rem' }}
+                >
                   {t('sharedRequired')}
                 </Typography>
               </Box>
@@ -171,11 +178,11 @@ const AnnouncementPage = () => {
                 slotProps={{
                   input: {
                     endAdornment: (
-                      <InputAdornment position="end" sx={{ alignSelf: "flex-end", mb: 1 }}>
+                      <InputAdornment position="end" sx={{ alignSelf: 'flex-end', mb: 1 }}>
                         <IconButton
                           size="small"
                           onClick={(e) => setEmojiAnchor(e.currentTarget)}
-                          sx={{ color: "#7c3aed" }}
+                          sx={{ color: '#7c3aed' }}
                         >
                           <InsertEmoticonIcon fontSize="small" />
                         </IconButton>
@@ -199,10 +206,32 @@ const AnnouncementPage = () => {
                     maxWidth: 260,
                   }}
                 >
-                  {['\uD83D\uDE00','\uD83D\uDE02','\uD83D\uDE0D','\uD83D\uDE0E','\uD83D\uDE22','\uD83D\uDE21',
-                    '\uD83D\uDC4D','\uD83D\uDC4E','\uD83D\uDE4F','\uD83D\uDCAA','\uD83D\uDC4F','\u2764\uFE0F',
-                    '\uD83D\uDD25','\u2705','\u274C','\u26A0\uFE0F','\uD83D\uDEA8','\u2757',
-                    '\uD83D\uDE97','\u26FD','\uD83D\uDCCD','\uD83D\uDD52','\uD83D\uDCF1','\uD83D\uDD14'].map((emoji) => (
+                  {[
+                    '\uD83D\uDE00',
+                    '\uD83D\uDE02',
+                    '\uD83D\uDE0D',
+                    '\uD83D\uDE0E',
+                    '\uD83D\uDE22',
+                    '\uD83D\uDE21',
+                    '\uD83D\uDC4D',
+                    '\uD83D\uDC4E',
+                    '\uD83D\uDE4F',
+                    '\uD83D\uDCAA',
+                    '\uD83D\uDC4F',
+                    '\u2764\uFE0F',
+                    '\uD83D\uDD25',
+                    '\u2705',
+                    '\u274C',
+                    '\u26A0\uFE0F',
+                    '\uD83D\uDEA8',
+                    '\u2757',
+                    '\uD83D\uDE97',
+                    '\u26FD',
+                    '\uD83D\uDCCD',
+                    '\uD83D\uDD52',
+                    '\uD83D\uDCF1',
+                    '\uD83D\uDD14',
+                  ].map((emoji) => (
                     <IconButton
                       key={emoji}
                       size="small"
@@ -210,7 +239,7 @@ const AnnouncementPage = () => {
                         setMessage({ ...message, body: (message.body || '') + emoji });
                         setEmojiAnchor(null);
                       }}
-                      sx={{ fontSize: "1.2rem" }}
+                      sx={{ fontSize: '1.2rem' }}
                     >
                       {emoji}
                     </IconButton>

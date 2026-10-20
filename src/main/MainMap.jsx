@@ -49,7 +49,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
       <MapView admin={admin}>
         <MapOverlay />
         <MapGeofence />
-      <AnchorMapLayer />
+        <AnchorMapLayer />
         <MapAccuracy positions={filteredPositions} />
         <MapLiveRoutes deviceIds={filteredPositions.map((p) => p.deviceId)} />
         <MapPositions

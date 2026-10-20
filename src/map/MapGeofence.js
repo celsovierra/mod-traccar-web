@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { map } from "./core/MapView";
-import { geofencesActions } from "../store";
-import { useAttributePreference } from "../common/util/preferences";
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { map } from './core/MapView';
+import { geofencesActions } from '../store';
+import { useAttributePreference } from '../common/util/preferences';
 
-const SOURCE = "geofences-source";
+const SOURCE = 'geofences-source';
 
 const circleToPolygon = (lat, lon, radius) => {
   const points = [];
@@ -14,29 +14,43 @@ const circleToPolygon = (lat, lon, radius) => {
   for (let i = 0; i <= 64; i += 1) {
     const b = (i * 2 * Math.PI) / 64;
     const la = Math.asin(Math.sin(latR) * Math.cos(d) + Math.cos(latR) * Math.sin(d) * Math.cos(b));
-    const lo = lonR + Math.atan2(Math.sin(b) * Math.sin(d) * Math.cos(latR), Math.cos(d) - Math.sin(latR) * Math.sin(la));
+    const lo =
+      lonR +
+      Math.atan2(
+        Math.sin(b) * Math.sin(d) * Math.cos(latR),
+        Math.cos(d) - Math.sin(latR) * Math.sin(la),
+      );
     points.push([(lo * 180) / Math.PI, (la * 180) / Math.PI]);
   }
   return points;
 };
 
 const toFeature = (item) => {
-  const area = String(item.area || "");
+  const area = String(item.area || '');
   const circle = area.match(/CIRCLE\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*,\s*([\d.]+)\s*\)/i);
   if (circle) {
     return {
-      type: "Feature",
-      properties: { name: item.name, color: "#ff3b30" },
-      geometry: { type: "Polygon", coordinates: [circleToPolygon(parseFloat(circle[1]), parseFloat(circle[2]), parseFloat(circle[3]))] },
+      type: 'Feature',
+      properties: { name: item.name, color: '#ff3b30' },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          circleToPolygon(parseFloat(circle[1]), parseFloat(circle[2]), parseFloat(circle[3])),
+        ],
+      },
     };
   }
   const polygon = area.match(/POLYGON\s*\(\((.+)\)\)/i);
   if (polygon) {
-    const coords = polygon[1].split(",").map((p) => {
+    const coords = polygon[1].split(',').map((p) => {
       const [la, lo] = p.trim().split(/\s+/).map(Number);
       return [lo, la];
     });
-    return { type: "Feature", properties: { name: item.name, color: "#3bb2d0" }, geometry: { type: "Polygon", coordinates: [coords] } };
+    return {
+      type: 'Feature',
+      properties: { name: item.name, color: '#3bb2d0' },
+      geometry: { type: 'Polygon', coordinates: [coords] },
+    };
   }
   return null;
 };
@@ -51,7 +65,7 @@ const MapGeofence = () => {
   useEffect(() => {
     const load = async () => {
       const isAdmin = Boolean(user?.administrator || user?.admin);
-      const url = isAdmin ? "/api/geofences?all=true" : "/api/geofences";
+      const url = isAdmin ? '/api/geofences?all=true' : '/api/geofences';
       const res = await fetch(url);
       if (res.ok) dispatch(geofencesActions.refresh(await res.json()));
     };
@@ -62,32 +76,52 @@ const MapGeofence = () => {
 
   useEffect(() => {
     const visible = (item) => {
-      const anchor = String(item.name || "").match(/^ANCORA_(\d+)/);
+      const anchor = String(item.name || '').match(/^ANCORA_(\d+)/);
       if (anchor) return false;
       return true;
     };
 
     const draw = () => {
       if (!map) return;
-      if (!map.isStyleLoaded()) { map.once("idle", draw); return; }
+      if (!map.isStyleLoaded()) {
+        map.once('idle', draw);
+        return;
+      }
       const data = {
-        type: "FeatureCollection",
-        features: showGeofences ? Object.values(geofences || {}).filter(visible).map(toFeature).filter(Boolean) : [],
+        type: 'FeatureCollection',
+        features: showGeofences
+          ? Object.values(geofences || {})
+              .filter(visible)
+              .map(toFeature)
+              .filter(Boolean)
+          : [],
       };
-      if (!map.getSource(SOURCE)) map.addSource(SOURCE, { type: "geojson", data });
+      if (!map.getSource(SOURCE)) map.addSource(SOURCE, { type: 'geojson', data });
       else map.getSource(SOURCE).setData(data);
 
-      if (!map.getLayer("geofences-fill")) {
-        map.addLayer({ id: "geofences-fill", type: "fill", source: SOURCE, paint: { "fill-color": ["get", "color"], "fill-opacity": 0.2 } });
+      if (!map.getLayer('geofences-fill')) {
+        map.addLayer({
+          id: 'geofences-fill',
+          type: 'fill',
+          source: SOURCE,
+          paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.2 },
+        });
       }
-      if (!map.getLayer("geofences-line")) {
-        map.addLayer({ id: "geofences-line", type: "line", source: SOURCE, paint: { "line-color": ["get", "color"], "line-width": 2 } });
+      if (!map.getLayer('geofences-line')) {
+        map.addLayer({
+          id: 'geofences-line',
+          type: 'line',
+          source: SOURCE,
+          paint: { 'line-color': ['get', 'color'], 'line-width': 2 },
+        });
       }
     };
 
     draw();
-    map?.on("styledata", draw);
-    return () => { map?.off("styledata", draw); };
+    map?.on('styledata', draw);
+    return () => {
+      map?.off('styledata', draw);
+    };
   }, [geofences, devices, user, showGeofences]);
 
   return null;

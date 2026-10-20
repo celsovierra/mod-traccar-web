@@ -100,7 +100,9 @@ const ReplayPage = () => {
   const [collapsed, setCollapsed] = useState(false);
 
   const loaded = Boolean(from && to && !loading && positions.length);
-  useEffect(() => { setCollapsed(loaded); }, [loaded]);
+  useEffect(() => {
+    setCollapsed(loaded);
+  }, [loaded]);
 
   const deviceName = useSelector((state) => {
     if (selectedDeviceId) {
@@ -227,8 +229,8 @@ const ReplayPage = () => {
         </Paper>
         <Collapse in={!collapsed} timeout={300}>
           <Paper className={classes.content} square>
-          <HistoryPanel positions={positions} loading={loading} onSelect={handleQuickPeriod} />
-        </Paper>
+            <HistoryPanel positions={positions} loading={loading} onSelect={handleQuickPeriod} />
+          </Paper>
         </Collapse>
       </div>
       {showCard && index < positions.length && (
@@ -244,4 +246,3 @@ const ReplayPage = () => {
 };
 
 export default ReplayPage;
-

@@ -72,10 +72,7 @@ const MapView = ({ children, admin = true }) => {
   const [mapReady, setMapReady] = useState(false);
 
   const mapStyles = useMapStyles();
-  const activeMapStyles = useAttributePreference(
-    'activeMapStyles',
-    'googleRoad,googleHybrid',
-  );
+  const activeMapStyles = useAttributePreference('activeMapStyles', 'googleRoad,googleHybrid');
   const [selectedStyleId, setSelectedStyleId] = usePersistedState(
     'selectedMapStyle',
     usePreference('map', 'googleHybrid'),
@@ -155,11 +152,7 @@ const MapView = ({ children, admin = true }) => {
   return (
     <div style={{ width: '100%', height: '100%' }} ref={containerRef}>
       <MapSwitcher styles={styles} selectedId={selectedStyleId} onSelect={setSelectedStyleId} />
-      {mapReady && (
-        <>
-          {children}
-        </>
-      )}
+      {mapReady && <>{children}</>}
     </div>
   );
 };

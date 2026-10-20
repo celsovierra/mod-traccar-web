@@ -1,5 +1,14 @@
 ﻿import { useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, CircularProgress } from '@mui/material';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Box,
+  CircularProgress,
+} from '@mui/material';
 import { useSelector } from 'react-redux';
 
 const TelegramLinkModal = ({ onClose }) => {
@@ -53,26 +62,42 @@ const TelegramLinkModal = ({ onClose }) => {
   };
 
   return (
-    <Dialog open onClose={onClose} maxWidth='xs' fullWidth>
+    <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ fontWeight: 800 }}>Notificacoes via Telegram</DialogTitle>
       <DialogContent>
-        {loading && <Box sx={{ textAlign: 'center', py: 3 }}><CircularProgress /></Box>}
-        {erro && <Typography color='error'>{erro}</Typography>}
+        {loading && (
+          <Box sx={{ textAlign: 'center', py: 3 }}>
+            <CircularProgress />
+          </Box>
+        )}
+        {erro && <Typography color="error">{erro}</Typography>}
         {!loading && data && (
           <>
             {data.linked ? (
               <>
                 <Typography sx={{ mb: 2 }}>Telegram vinculado com sucesso!</Typography>
-                <Button variant='outlined' color='error' onClick={desvincular} fullWidth sx={{ textTransform: 'none', fontWeight: 700 }}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={desvincular}
+                  fullWidth
+                  sx={{ textTransform: 'none', fontWeight: 700 }}
+                >
                   Desvincular
                 </Button>
               </>
             ) : (
               <>
                 <Typography sx={{ mb: 2, fontSize: '0.9rem', color: '#475569' }}>
-                  Clique no botao abaixo para abrir o Telegram. Depois clique em <b>START</b> no bot e pronto!
+                  Clique no botao abaixo para abrir o Telegram. Depois clique em <b>START</b> no bot
+                  e pronto!
                 </Typography>
-                <Button variant='contained' onClick={gerarLink} fullWidth sx={{ textTransform: 'none', fontWeight: 700, backgroundColor: '#0088cc' }}>
+                <Button
+                  variant="contained"
+                  onClick={gerarLink}
+                  fullWidth
+                  sx={{ textTransform: 'none', fontWeight: 700, backgroundColor: '#0088cc' }}
+                >
                   Vincular Telegram
                 </Button>
               </>
@@ -81,7 +106,9 @@ const TelegramLinkModal = ({ onClose }) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} sx={{ textTransform: 'none', fontWeight: 700 }}>Fechar</Button>
+        <Button onClick={onClose} sx={{ textTransform: 'none', fontWeight: 700 }}>
+          Fechar
+        </Button>
       </DialogActions>
     </Dialog>
   );

@@ -4,14 +4,14 @@ const TOW_SPEED_KMH = 15;
 const MOVING_SPEED_KNOTS = 0.5;
 const OBSERVATION_GAP_MS = 10 * 60 * 1000;
 const MAX_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
-const TZ = "-03:00";
+const TZ = '-03:00';
 
 const stateMap = new Map();
 
 export function parseTraccarTime(value) {
   if (!value) return NaN;
   let s = String(value).trim();
-  if (!/(Z|[+-]\d{2}:?\d{2})$/i.test(s)) s = s.replace(" ", "T") + TZ;
+  if (!/(Z|[+-]\d{2}:?\d{2})$/i.test(s)) s = s.replace(' ', 'T') + TZ;
   const t = new Date(s).getTime();
   return Number.isFinite(t) ? t : NaN;
 }
@@ -21,8 +21,8 @@ export function isMoving(position) {
   const a = position.attributes || {};
   const kmh = (position.speed || 0) * 1.852;
   const ign = a.ignition !== undefined ? a.ignition : a.acc;
-  if (typeof ign === "boolean") return ign === true ? true : kmh >= TOW_SPEED_KMH;
-  if (typeof a.motion === "boolean") return a.motion === true;
+  if (typeof ign === 'boolean') return ign === true ? true : kmh >= TOW_SPEED_KMH;
+  if (typeof a.motion === 'boolean') return a.motion === true;
   return (position.speed || 0) > MOVING_SPEED_KNOTS;
 }
 
@@ -69,7 +69,9 @@ export function getStoppedDuration(deviceId, position) {
 }
 
 export function formatDuration(ms) {
-  const min = Math.floor(ms / 60000), h = Math.floor(min / 60), d = Math.floor(h / 24);
+  const min = Math.floor(ms / 60000),
+    h = Math.floor(min / 60),
+    d = Math.floor(h / 24);
   if (d > 0) return `${d}d ${h % 24}h ${min % 60}min`;
   if (h > 0) return `${h}h ${min % 60}min`;
   return `${min}min`;
@@ -78,7 +80,7 @@ export function formatDuration(ms) {
 export function useIdleTick(intervalMs = 30000) {
   const [tick, setTick] = React.useState(0);
   React.useEffect(() => {
-    const id = setInterval(() => setTick(t => t + 1), intervalMs);
+    const id = setInterval(() => setTick((t) => t + 1), intervalMs);
     return () => clearInterval(id);
   }, [intervalMs]);
   return tick;

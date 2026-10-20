@@ -11,7 +11,7 @@ export function getStoppedTimeStatus(deviceId, position) {
   const ignition = attributes.ignition;
 
   // Se a ignição estiver ligada (true, 1, "true"), limpa o estado de parada imediatamente
-  if (ignition === true || ignition === 1 || ignition === "true" || ignition === "1") {
+  if (ignition === true || ignition === 1 || ignition === 'true' || ignition === '1') {
     if (storage.has(deviceId)) {
       storage.delete(deviceId);
     }
@@ -19,9 +19,9 @@ export function getStoppedTimeStatus(deviceId, position) {
   }
 
   // Se a ignição estiver desligada (false, 0, "false")
-  if (ignition === false || ignition === 0 || ignition === "false" || ignition === "0") {
+  if (ignition === false || ignition === 0 || ignition === 'false' || ignition === '0') {
     let record = storage.get(deviceId);
-    
+
     // Define o timestamp base utilizando o fixTime do pacote fornecido pelo Traccar
     const packetTime = position.fixTime ? new Date(position.fixTime).getTime() : Date.now();
 

@@ -55,9 +55,15 @@ const canvasTintImage = (image, color) => {
 };
 
 export const prepareIcon = (background, icon, color, shape) => {
-  const isTopView = icon && icon.src && (icon.src.includes('.webp') || icon.src.includes('.png') || icon.src.startsWith('data:image/webp') || icon.src.startsWith('data:image/png'));
+  const isTopView =
+    icon &&
+    icon.src &&
+    (icon.src.includes('.webp') ||
+      icon.src.includes('.png') ||
+      icon.src.startsWith('data:image/webp') ||
+      icon.src.startsWith('data:image/png'));
 
-  const baseSize = isTopView ? 80 : (background ? background.width : 48);
+  const baseSize = isTopView ? 80 : background ? background.width : 48;
   const width = Math.round(baseSize * devicePixelRatio);
   const height = Math.round(baseSize * devicePixelRatio);
 
@@ -152,7 +158,7 @@ export const geofenceToFeature = (theme, item) => {
     type: 'Feature',
     geometry,
     properties: {
-      isAnchor: item.name?.startsWith("ANCORA_") || false,
+      isAnchor: item.name?.startsWith('ANCORA_') || false,
       name: item.name,
       color: item.attributes.color || theme.palette.geometry.main,
       width: item.attributes.mapLineWidth || 2,

@@ -1,12 +1,5 @@
 ﻿import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Paper,
-  Typography,
-  Grid,
-  Snackbar,
-  Alert,
-} from '@mui/material';
+import { Box, Paper, Typography, Grid, Snackbar, Alert } from '@mui/material';
 import TuneIcon from '@mui/icons-material/Tune';
 import FolderIcon from '@mui/icons-material/Folder';
 import PersonIcon from '@mui/icons-material/Person';
@@ -33,14 +26,30 @@ const ToolsPage = () => {
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
   const handleUpdateVersion = async () => {
-    if (!window.confirm('Isso vai atualizar o sistema com a ultima versao do GitHub e reiniciar o servidor. Continuar?')) return;
+    if (
+      !window.confirm(
+        'Isso vai atualizar o sistema com a ultima versao do GitHub e reiniciar o servidor. Continuar?',
+      )
+    )
+      return;
     setUpdating(true);
     try {
-      const response = await fetch('/api-deploy-trigger/', { method: 'POST', credentials: 'same-origin' });
+      const response = await fetch('/api-deploy-trigger/', {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
       if (!response.ok) throw new Error();
-      setToast({ open: true, message: 'Atualizacao iniciada! O sistema pode reiniciar em instantes.', severity: 'success' });
+      setToast({
+        open: true,
+        message: 'Atualizacao iniciada! O sistema pode reiniciar em instantes.',
+        severity: 'success',
+      });
     } catch (e) {
-      setToast({ open: true, message: 'Nao foi possivel iniciar a atualizacao.', severity: 'error' });
+      setToast({
+        open: true,
+        message: 'Nao foi possivel iniciar a atualizacao.',
+        severity: 'error',
+      });
     } finally {
       setUpdating(false);
     }
@@ -103,7 +112,7 @@ const ToolsPage = () => {
       bg: '#fee2e2',
       show: admin,
     },
-];
+  ];
 
   return (
     <PageLayout menu={<SettingsMenu />} breadcrumbs={['settingsTitle', 'Ferramentas']}>
@@ -118,56 +127,58 @@ const ToolsPage = () => {
         </Box>
 
         <Grid container spacing={2}>
-          {toolItems.filter((it) => it.show).map((item) => (
-            <Grid item xs={12} sm={6} key={item.link}>
-              <Paper
-                elevation={0}
-                onClick={() => (item.action ? item.action() : navigate(item.link))}
-                sx={{
-                  p: 2,
-                  borderRadius: '20px',
-                  border: '1px solid #edf2f7',
-                  backgroundColor: '#ffffff',
-                  boxShadow: '0 4px 18px rgba(15, 23, 42, 0.04)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 24px rgba(124, 58, 237, 0.12)',
-                    borderColor: '#ddd6fe',
-                  },
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.8 }}>
-                  <Box
-                    sx={{
-                      width: 46,
-                      height: 46,
-                      borderRadius: '14px',
-                      backgroundColor: item.bg,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {item.icon}
+          {toolItems
+            .filter((it) => it.show)
+            .map((item) => (
+              <Grid item xs={12} sm={6} key={item.link}>
+                <Paper
+                  elevation={0}
+                  onClick={() => (item.action ? item.action() : navigate(item.link))}
+                  sx={{
+                    p: 2,
+                    borderRadius: '20px',
+                    border: '1px solid #edf2f7',
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0 4px 18px rgba(15, 23, 42, 0.04)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 8px 24px rgba(124, 58, 237, 0.12)',
+                      borderColor: '#ddd6fe',
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.8 }}>
+                    <Box
+                      sx={{
+                        width: 46,
+                        height: 46,
+                        borderRadius: '14px',
+                        backgroundColor: item.bg,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {item.icon}
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontWeight: 800, fontSize: '0.94rem', color: '#1e293b' }}>
+                        {item.title}
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.78rem', color: '#64748b' }}>
+                        {item.description}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box>
-                    <Typography sx={{ fontWeight: 800, fontSize: '0.94rem', color: '#1e293b' }}>
-                      {item.title}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.78rem', color: '#64748b' }}>
-                      {item.description}
-                    </Typography>
-                  </Box>
-                </Box>
-                <ChevronRightIcon sx={{ color: '#94a3b8' }} />
-              </Paper>
-            </Grid>
-          ))}
+                  <ChevronRightIcon sx={{ color: '#94a3b8' }} />
+                </Paper>
+              </Grid>
+            ))}
         </Grid>
 
         <Snackbar

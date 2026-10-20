@@ -29,7 +29,9 @@ export default () => (next) => {
         if (action.type === devicesActions.update.type) {
           Object.values(action.payload || {}).forEach((item) => (deviceUpdates[item.id] = item));
         } else if (action.type === sessionActions.updatePositions.type) {
-          Object.values(action.payload || {}).forEach((item) => (positionUpdates[item.deviceId] = item));
+          Object.values(action.payload || {}).forEach(
+            (item) => (positionUpdates[item.deviceId] = item),
+          );
         }
       });
 

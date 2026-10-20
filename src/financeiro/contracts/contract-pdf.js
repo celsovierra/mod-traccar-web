@@ -53,7 +53,9 @@ export async function generateContractPdf(options) {
 
   const addCornerSignature = () => {
     if (signatureDataUrl) {
-      try { doc.addImage(signatureDataUrl, 'PNG', pageWidth - margin - 30, 8, 30, 15); } catch {}
+      try {
+        doc.addImage(signatureDataUrl, 'PNG', pageWidth - margin - 30, 8, 30, 15);
+      } catch {}
     }
   };
 
@@ -66,7 +68,10 @@ export async function generateContractPdf(options) {
   };
 
   const ensureSpace = (needed) => {
-    if (currentY + needed > maxContentY) { addNewPage(); return true; }
+    if (currentY + needed > maxContentY) {
+      addNewPage();
+      return true;
+    }
     return false;
   };
 
@@ -81,18 +86,29 @@ export async function generateContractPdf(options) {
   const paragraphs = contractText.split(/\n+/);
   for (const p of paragraphs) {
     const t = p.trim();
-    if (!t) { currentY += 3; continue; }
+    if (!t) {
+      currentY += 3;
+      continue;
+    }
     const isHeading = /^(CLAUSULA|CONTRATAD[AO]:|CONTRATANTE:|IDENTIFICACAO|VEICULOS)/i.test(t);
     if (isHeading) {
       ensureSpace(8);
       doc.setFont('helvetica', 'bold');
       const lines = doc.splitTextToSize(t, contentWidth);
-      for (const l of lines) { ensureSpace(5); doc.text(l, margin, currentY); currentY += 4.5; }
+      for (const l of lines) {
+        ensureSpace(5);
+        doc.text(l, margin, currentY);
+        currentY += 4.5;
+      }
       currentY += 2;
       doc.setFont('helvetica', 'normal');
     } else {
       const lines = doc.splitTextToSize(t, contentWidth);
-      for (const l of lines) { ensureSpace(5); doc.text(l, margin, currentY); currentY += 4.5; }
+      for (const l of lines) {
+        ensureSpace(5);
+        doc.text(l, margin, currentY);
+        currentY += 4.5;
+      }
       currentY += 1;
     }
   }
@@ -137,7 +153,8 @@ export async function generateContractPdf(options) {
   if (signatureDataUrl) {
     try {
       ensureSpace(50);
-      const sigW = 70, sigH = 35;
+      const sigW = 70,
+        sigH = 35;
       doc.addImage(signatureDataUrl, 'PNG', (pageWidth - sigW) / 2, currentY, sigW, sigH);
       currentY += sigH + 3;
       const lineW = 70;
@@ -208,7 +225,8 @@ export async function generateContractPdf(options) {
 
   if (signatureDataUrl) {
     try {
-      const sigW = 40, sigH = 20;
+      const sigW = 40,
+        sigH = 20;
       doc.addImage(signatureDataUrl, 'PNG', pageWidth - margin - sigW, currentY - 25, sigW, sigH);
     } catch {}
   }

@@ -30,12 +30,16 @@ export default (
     const twoDaysAgo = dayjs().subtract(2, 'day').valueOf();
 
     const filtered = Object.values(devices)
-            .filter((device) => {
+      .filter((device) => {
         if (!keyword || keyword.trim() === '') return true;
-        const normalize = (val) => String(val || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const normalize = (val) =>
+          String(val || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
         const q = normalize(keyword);
         return [device.name, device.uniqueId, device.phone, device.model, device.contact].some(
-          (s) => normalize(s).includes(q)
+          (s) => normalize(s).includes(q),
         );
       })
       .filter((device) => {
@@ -48,7 +52,9 @@ export default (
       .filter((device) => {
         if (!isMovingOnly) return true;
         const pos = positions[device.id];
-        return device.status === 'online' && pos && pos.speed > 0 && pos.attributes?.ignition === true;
+        return (
+          device.status === 'online' && pos && pos.speed > 0 && pos.attributes?.ignition === true
+        );
       })
       .filter((device) => {
         if (isMovingOnly || isOldOfflineOnly) return true;
@@ -96,4 +102,3 @@ export default (
     setFilteredPositions,
   ]);
 };
-

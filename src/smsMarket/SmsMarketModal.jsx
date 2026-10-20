@@ -77,7 +77,6 @@ const SmsMarketModal = ({ device, onClose }) => {
     setToast({ open: true, message, severity });
   };
 
-
   useEffect(() => {
     localStorage.setItem('smsmarket_reports', JSON.stringify(reports));
   }, [reports]);
@@ -361,7 +360,10 @@ const SmsMarketModal = ({ device, onClose }) => {
 
           setSelectedGroup(null);
           setMessage('');
-          showToast(`Grupo enviado via GPRS: ${successCount} ok, ${failCount} falha(s).`, failCount > 0 ? 'warning' : 'success');
+          showToast(
+            `Grupo enviado via GPRS: ${successCount} ok, ${failCount} falha(s).`,
+            failCount > 0 ? 'warning' : 'success',
+          );
         } catch (error) {
           showToast(error?.message || 'Erro ao enviar grupo via GPRS.', 'error');
         } finally {
@@ -378,7 +380,16 @@ const SmsMarketModal = ({ device, onClose }) => {
         const response = await fetch('/api/commands/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify((() => { const m = savedCommands.find((c) => (c.attributes?.text || '').trim() === message.trim()); return m ? { deviceId: device.id, id: m.id } : { deviceId: device.id, type: 'custom', attributes: { data: message.trim() } }; })()),
+          body: JSON.stringify(
+            (() => {
+              const m = savedCommands.find(
+                (c) => (c.attributes?.text || '').trim() === message.trim(),
+              );
+              return m
+                ? { deviceId: device.id, id: m.id }
+                : { deviceId: device.id, type: 'custom', attributes: { data: message.trim() } };
+            })(),
+          ),
         });
 
         if (!response.ok) {
@@ -663,7 +674,20 @@ const SmsMarketModal = ({ device, onClose }) => {
         },
       }}
     >
-      <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 10, display: 'flex', gap: 0.5, backgroundColor: '#fff', borderRadius: '50%', p: 0.3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          zIndex: 10,
+          display: 'flex',
+          gap: 0.5,
+          backgroundColor: '#fff',
+          borderRadius: '50%',
+          p: 0.3,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        }}
+      >
         <IconButton onClick={() => setShowSettings(!showSettings)} size="small" color="primary">
           <SettingsIcon />
         </IconButton>
@@ -682,14 +706,34 @@ const SmsMarketModal = ({ device, onClose }) => {
         sx={{ flexShrink: 0 }}
       >
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Box sx={{ width: 30, height: 30, borderRadius: '50%', bgcolor: '#1976d2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mr: 1 }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" /></svg>
+          <Box
+            sx={{
+              width: 30,
+              height: 30,
+              borderRadius: '50%',
+              bgcolor: '#1976d2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              mr: 1,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+            </svg>
           </Box>
           <Typography
             variant="subtitle1"
             fontWeight="900"
             color="#1e293b"
-            sx={{ letterSpacing: 0.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.95rem' }}
+            sx={{
+              letterSpacing: 0.3,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              fontSize: '0.95rem',
+            }}
           >
             {device?.name || 'Veiculo'}
           </Typography>
@@ -824,39 +868,39 @@ const SmsMarketModal = ({ device, onClose }) => {
               mb: 1.5,
             }}
           >
-            <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
+            <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
               <Button
                 fullWidth
                 size="small"
                 onClick={() => setShowCreateGroup(!showCreateGroup)}
                 sx={{
-                  backgroundColor: "#fbbf24",
-                  color: "#1e293b",
-                  fontWeight: "bold",
-                  textTransform: "none",
-                  borderRadius: "8px",
-                  "&:hover": { backgroundColor: "#f59e0b" },
+                  backgroundColor: '#fbbf24',
+                  color: '#1e293b',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  '&:hover': { backgroundColor: '#f59e0b' },
                 }}
               >
-                {showCreateGroup ? "- Ocultar Criacao" : "+ Novo Grupo"}
+                {showCreateGroup ? '- Ocultar Criacao' : '+ Novo Grupo'}
               </Button>
               <Button
                 fullWidth
                 size="small"
                 onClick={() => setShowSavedGroups(!showSavedGroups)}
                 sx={{
-                  backgroundColor: "#fbbf24",
-                  color: "#1e293b",
-                  fontWeight: "bold",
-                  textTransform: "none",
-                  borderRadius: "8px",
-                  "&:hover": { backgroundColor: "#f59e0b" },
+                  backgroundColor: '#fbbf24',
+                  color: '#1e293b',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  '&:hover': { backgroundColor: '#f59e0b' },
                 }}
               >
-                {showSavedGroups ? "Fechar grupos" : "Ver grupos criados"}
+                {showSavedGroups ? 'Fechar grupos' : 'Ver grupos criados'}
               </Button>
             </Box>
-              <Collapse in={showCreateGroup} sx={{ mt: showCreateGroup ? 1.5 : 0 }}>
+            <Collapse in={showCreateGroup} sx={{ mt: showCreateGroup ? 1.5 : 0 }}>
               <TextField
                 fullWidth
                 size="small"
@@ -915,7 +959,6 @@ const SmsMarketModal = ({ device, onClose }) => {
 
         {tabValue === 2 ? (
           <Box>
-
             {showSavedGroups &&
               (savedGroups.length === 0 ? (
                 <Typography variant="body2" color="textSecondary">
@@ -957,7 +1000,13 @@ const SmsMarketModal = ({ device, onClose }) => {
                         onClick={() =>
                           setSelectedGroup(selectedGroup?.id === group.id ? null : group)
                         }
-                        sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, cursor: 'pointer' }}
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          flex: 1,
+                          cursor: 'pointer',
+                        }}
                       >
                         {group.description}
                       </Typography>
@@ -985,36 +1034,36 @@ const SmsMarketModal = ({ device, onClose }) => {
               mb: 1.5,
             }}
           >
-            <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
+            <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
               <Button
                 fullWidth
                 size="small"
                 onClick={() => setShowCreateCommand(!showCreateCommand)}
                 sx={{
-                  backgroundColor: "#fbbf24",
-                  color: "#1e293b",
-                  fontWeight: "bold",
-                  textTransform: "none",
-                  borderRadius: "8px",
-                  "&:hover": { backgroundColor: "#f59e0b" },
+                  backgroundColor: '#fbbf24',
+                  color: '#1e293b',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  '&:hover': { backgroundColor: '#f59e0b' },
                 }}
               >
-                {showCreateCommand ? "- Ocultar Cadastro" : "+ Novo Comando"}
+                {showCreateCommand ? '- Ocultar Cadastro' : '+ Novo Comando'}
               </Button>
               <Button
                 fullWidth
                 size="small"
                 onClick={() => setShowSavedCommands(!showSavedCommands)}
                 sx={{
-                  backgroundColor: "#fbbf24",
-                  color: "#1e293b",
-                  fontWeight: "bold",
-                  textTransform: "none",
-                  borderRadius: "8px",
-                  "&:hover": { backgroundColor: "#f59e0b" },
+                  backgroundColor: '#fbbf24',
+                  color: '#1e293b',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  '&:hover': { backgroundColor: '#f59e0b' },
                 }}
               >
-                {showSavedCommands ? "Fechar comandos" : "Ver comandos criados"}
+                {showSavedCommands ? 'Fechar comandos' : 'Ver comandos criados'}
               </Button>
             </Box>
             <Collapse in={showCreateCommand} sx={{ mt: showCreateCommand ? 1.5 : 0 }}>
@@ -1069,7 +1118,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                     pr: 0.5,
                   }}
                 >
-                {savedCommands.map((command) => (
+                  {savedCommands.map((command) => (
                     <Paper
                       key={command.id}
                       variant="outlined"
@@ -1391,7 +1440,18 @@ const SmsMarketModal = ({ device, onClose }) => {
                 }}
               >
                 <Box display="flex" alignItems="center" gap={1} sx={{ mb: 1.2 }}>
-                  <Box sx={{ width: 36, height: 36, borderRadius: '50%', bgcolor: success ? '#22c55e' : pending ? '#3b82f6' : '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Box
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      bgcolor: success ? '#22c55e' : pending ? '#3b82f6' : '#ef4444',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
                     {pending ? (
                       <CircularProgress size={20} thickness={6} sx={{ color: '#fff' }} />
                     ) : success ? (
@@ -1400,58 +1460,169 @@ const SmsMarketModal = ({ device, onClose }) => {
                       <ErrorIcon sx={{ fontSize: 24, color: '#fff' }} />
                     )}
                   </Box>
-                  <Box sx={{ bgcolor: success ? '#22c55e' : pending ? '#3b82f6' : '#ef4444', color: '#fff', px: 2, py: 0.5, borderRadius: '20px' }}>
-                    <Typography sx={{ fontSize: '16px', fontWeight: 900, letterSpacing: 0.5, lineHeight: 1 }}>
+                  <Box
+                    sx={{
+                      bgcolor: success ? '#22c55e' : pending ? '#3b82f6' : '#ef4444',
+                      color: '#fff',
+                      px: 2,
+                      py: 0.5,
+                      borderRadius: '20px',
+                    }}
+                  >
+                    <Typography
+                      sx={{ fontSize: '16px', fontWeight: 900, letterSpacing: 0.5, lineHeight: 1 }}
+                    >
                       {rep.status}
                     </Typography>
                   </Box>
                   <Box sx={{ ml: 'auto', textAlign: 'right' }}>
-                    <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#475569', lineHeight: 1.2 }}>
+                    <Typography
+                      sx={{ fontSize: '12px', fontWeight: 700, color: '#475569', lineHeight: 1.2 }}
+                    >
                       {rep.time}
                     </Typography>
-                    <Typography sx={{ fontSize: '11px', fontWeight: 600, color: '#64748b', lineHeight: 1.2 }}>
+                    <Typography
+                      sx={{ fontSize: '11px', fontWeight: 600, color: '#64748b', lineHeight: 1.2 }}
+                    >
                       {new Date().toLocaleDateString('pt-BR')}
                     </Typography>
                   </Box>
                 </Box>
 
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.8 }}>
-                  <Box sx={{ bgcolor: '#fff', borderRadius: '8px', p: 0.8, borderLeft: '3px solid #3b82f6' }}>
-                    <Typography sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.3 }}>
+                  <Box
+                    sx={{
+                      bgcolor: '#fff',
+                      borderRadius: '8px',
+                      p: 0.8,
+                      borderLeft: '3px solid #3b82f6',
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.3,
+                      }}
+                    >
                       Dispositivo
                     </Typography>
-                    <Typography sx={{ fontSize: '13px', fontWeight: 800, color: '#1e293b', mt: 0.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <Typography
+                      sx={{
+                        fontSize: '13px',
+                        fontWeight: 800,
+                        color: '#1e293b',
+                        mt: 0.2,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
                       {rep.deviceName}
                     </Typography>
                   </Box>
-                  <Box sx={{ bgcolor: '#fff', borderRadius: '8px', p: 0.8, borderLeft: '3px solid #8b5cf6' }}>
-                    <Typography sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.3 }}>
+                  <Box
+                    sx={{
+                      bgcolor: '#fff',
+                      borderRadius: '8px',
+                      p: 0.8,
+                      borderLeft: '3px solid #8b5cf6',
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.3,
+                      }}
+                    >
                       ID do Comando
                     </Typography>
-                    <Typography sx={{ fontSize: '13px', fontWeight: 800, color: '#1e293b', mt: 0.2 }}>
-                      {rep.smsMarketId || "-"} - {rep.responseCode || "-"}
+                    <Typography
+                      sx={{ fontSize: '13px', fontWeight: 800, color: '#1e293b', mt: 0.2 }}
+                    >
+                      {rep.smsMarketId || '-'} - {rep.responseCode || '-'}
                     </Typography>
                   </Box>
-                  <Box sx={{ bgcolor: '#fff', borderRadius: '8px', p: 0.8, borderLeft: '3px solid #10b981' }}>
-                    <Typography sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.3 }}>
+                  <Box
+                    sx={{
+                      bgcolor: '#fff',
+                      borderRadius: '8px',
+                      p: 0.8,
+                      borderLeft: '3px solid #10b981',
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.3,
+                      }}
+                    >
                       Tipo
                     </Typography>
-                    <Typography sx={{ fontSize: '13px', fontWeight: 800, color: '#1e293b', mt: 0.2 }}>
+                    <Typography
+                      sx={{ fontSize: '13px', fontWeight: 800, color: '#1e293b', mt: 0.2 }}
+                    >
                       {rep.type}
                     </Typography>
                   </Box>
-                  <Box sx={{ bgcolor: '#fff', borderRadius: '8px', p: 0.8, borderLeft: '3px solid #f59e0b' }}>
-                    <Typography sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.3 }}>
+                  <Box
+                    sx={{
+                      bgcolor: '#fff',
+                      borderRadius: '8px',
+                      p: 0.8,
+                      borderLeft: '3px solid #f59e0b',
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.3,
+                      }}
+                    >
                       Status
                     </Typography>
-                    <Typography sx={{ fontSize: '13px', fontWeight: 800, color: success ? '#16a34a' : pending ? '#2563eb' : '#dc2626', mt: 0.2 }}>
+                    <Typography
+                      sx={{
+                        fontSize: '13px',
+                        fontWeight: 800,
+                        color: success ? '#16a34a' : pending ? '#2563eb' : '#dc2626',
+                        mt: 0.2,
+                      }}
+                    >
                       {rep.status}
                     </Typography>
                   </Box>
                 </Box>
 
-                <Box sx={{ bgcolor: '#fff', borderRadius: '8px', p: 0.8, mt: 0.8, borderLeft: '3px solid #06b6d4' }}>
-                  <Typography sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.3 }}>
+                <Box
+                  sx={{
+                    bgcolor: '#fff',
+                    borderRadius: '8px',
+                    p: 0.8,
+                    mt: 0.8,
+                    borderLeft: '3px solid #06b6d4',
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#64748b',
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.3,
+                    }}
+                  >
                     Mensagem
                   </Typography>
                   <Typography sx={{ fontSize: '13px', fontWeight: 700, color: '#1e293b', mt: 0.2 }}>

@@ -1,8 +1,18 @@
 import fetchOrThrow from './fetchOrThrow';
 
 const REQUIRED_NOTIFICATIONS = [
-  { type: 'ignitionOn', description: 'Ignição Ligada', notificators: 'web,firebase', always: false },
-  { type: 'ignitionOff', description: 'Ignição Desligada', notificators: 'web,firebase', always: false },
+  {
+    type: 'ignitionOn',
+    description: 'Ignição Ligada',
+    notificators: 'web,firebase',
+    always: false,
+  },
+  {
+    type: 'ignitionOff',
+    description: 'Ignição Desligada',
+    notificators: 'web,firebase',
+    always: false,
+  },
 ];
 
 export const ensureDefaultNotifications = async () => {

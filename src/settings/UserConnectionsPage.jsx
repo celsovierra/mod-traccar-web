@@ -112,8 +112,25 @@ const UserConnectionsPage = () => {
                 transition: 'background-color 0.2s',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', pr: 1, gap: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, flexWrap: 'wrap', minWidth: 0 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  pr: 1,
+                  gap: 1,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.2,
+                    flexWrap: 'wrap',
+                    minWidth: 0,
+                  }}
+                >
                   <Box
                     sx={{
                       width: 36,
@@ -129,7 +146,15 @@ const UserConnectionsPage = () => {
                   >
                     <HubIcon sx={{ fontSize: 20, color: '#7c3aed' }} />
                   </Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', fontSize: '0.98rem', whiteSpace: 'nowrap' }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 800,
+                      color: '#1e293b',
+                      fontSize: '0.98rem',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {t('sharedConnections')}
                   </Typography>
 
@@ -153,7 +178,9 @@ const UserConnectionsPage = () => {
                       }}
                     >
                       <PersonIcon sx={{ fontSize: 16 }} />
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name || user.email}</span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {user.name || user.email}
+                      </span>
                     </Box>
                   )}
                 </Box>

@@ -13,24 +13,55 @@ const STATUS_MAP = {
   '-3': 'NUMERO INVALIDO',
   '-2': 'FALHA DE ENTREGA',
   '-1': 'ENFILEIRADA',
-  '0': 'ENVIADA',
-  '1': 'ENTREGUE',
-  '2': 'LIDA',
-  '3': 'PREPARANDO',
-  '4': 'RESPONDIDA',
-  '5': 'EM PROCESSAMENTO',
-  '6': 'PAUSADA',
-  '7': 'EXPIRADA',
-  '8': 'REJEITADA',
-  '9': 'NAO RECEBIDA'
+  0: 'ENVIADA',
+  1: 'ENTREGUE',
+  2: 'LIDA',
+  3: 'PREPARANDO',
+  4: 'RESPONDIDA',
+  5: 'EM PROCESSAMENTO',
+  6: 'PAUSADA',
+  7: 'EXPIRADA',
+  8: 'REJEITADA',
+  9: 'NAO RECEBIDA',
 };
 
 export const getStatusInfo = (status) => {
   const code = String(status ?? '-1');
-  const label = STATUS_MAP[code] || ('STATUS ' + code);
-  const terminal = ['1','2','4','7','8','9','-2','-3','-4','-5','-6','-7','-8','-9','-10','-11'].includes(code);
-  const error = ['7','8','9','-2','-3','-4','-5','-6','-7','-8','-9','-10','-11'].includes(code);
-  const success = ['1','2','4'].includes(code);
+  const label = STATUS_MAP[code] || 'STATUS ' + code;
+  const terminal = [
+    '1',
+    '2',
+    '4',
+    '7',
+    '8',
+    '9',
+    '-2',
+    '-3',
+    '-4',
+    '-5',
+    '-6',
+    '-7',
+    '-8',
+    '-9',
+    '-10',
+    '-11',
+  ].includes(code);
+  const error = [
+    '7',
+    '8',
+    '9',
+    '-2',
+    '-3',
+    '-4',
+    '-5',
+    '-6',
+    '-7',
+    '-8',
+    '-9',
+    '-10',
+    '-11',
+  ].includes(code);
+  const success = ['1', '2', '4'].includes(code);
   return { code, label, terminal, error, success };
 };
 
@@ -74,14 +105,18 @@ export const normalizeBrazilPhone = (phone) => {
 const parseResponse = async (response) => {
   const text = await response.text();
   let json = {};
-  try { json = text ? JSON.parse(text) : {}; } catch { json = { raw: text }; }
+  try {
+    json = text ? JSON.parse(text) : {};
+  } catch {
+    json = { raw: text };
+  }
   if (!response.ok || json?.success === false) {
     const rawMsg = json?.responseDescription || json?.message || json?.error || json?.description;
     let message = rawMsg;
     if (json?.responseCode === '080' || /insufficient|expired balance/i.test(rawMsg || '')) {
       message = 'Saldo insuficiente ou expirado na SMSMarket. Adicione creditos para enviar SMS.';
     }
-    if (!message) message = text || ('Erro na SMSMarket: ' + response.status);
+    if (!message) message = text || 'Erro na SMSMarket: ' + response.status;
     throw new Error(message);
   }
   return json;
@@ -96,7 +131,10 @@ const postForm = async (endpoint, data) => {
   });
   const response = await fetch(BASE_URL + '/' + endpoint, {
     method: 'POST',
-    headers: { ...getAuthHeaders(), 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+    },
     body: body.toString(),
   });
   return parseResponse(response);
@@ -109,13 +147,26 @@ const getRequest = async (endpoint, params = {}) => {
       query.append(key, String(value));
     }
   });
-  const url = query.toString() ? (BASE_URL + '/' + endpoint + '?' + query.toString()) : (BASE_URL + '/' + endpoint);
+  const url = query.toString()
+    ? BASE_URL + '/' + endpoint + '?' + query.toString()
+    : BASE_URL + '/' + endpoint;
   const response = await fetch(url, { method: 'GET', headers: getAuthHeaders() });
   return parseResponse(response);
 };
 
 const extractBalance = (json) => {
-  return json?.balance_1 ?? json?.balance ?? json?.credit ?? json?.saldo ?? json?.data?.balance_1 ?? json?.data?.balance ?? json?.data?.credit ?? json?.data?.saldo ?? json?.data ?? 0;
+  return (
+    json?.balance_1 ??
+    json?.balance ??
+    json?.credit ??
+    json?.saldo ??
+    json?.data?.balance_1 ??
+    json?.data?.balance ??
+    json?.data?.credit ??
+    json?.data?.saldo ??
+    json?.data ??
+    0
+  );
 };
 
 const extractMessages = (json) => {
@@ -137,12 +188,27 @@ const extractMessage = (json) => {
 
 const extractMessageId = (json) => {
   const message = extractMessage(json);
-  return message?.id ?? message?.mt_id ?? message?.message_id ?? json?.id ?? json?.mt_id ?? json?.message_id ?? null;
+  return (
+    message?.id ??
+    message?.mt_id ??
+    message?.message_id ??
+    json?.id ??
+    json?.mt_id ??
+    json?.message_id ??
+    null
+  );
 };
 
 const extractMessageStatus = (json, fallback = '-1') => {
   const message = extractMessage(json);
-  return String(message?.status ?? message?.status_id ?? message?.message_status ?? json?.status ?? json?.status_id ?? fallback);
+  return String(
+    message?.status ??
+      message?.status_id ??
+      message?.message_status ??
+      json?.status ??
+      json?.status_id ??
+      fallback,
+  );
 };
 
 export const getBalance = async () => {

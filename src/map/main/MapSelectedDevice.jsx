@@ -48,23 +48,25 @@ const MapSelectedDevice = ({ device, onClose }) => {
     <Box sx={{ minWidth: '240px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
       {!isEditing ? (
         <>
-          <Box 
-            onClick={() => setIsEditing(true)} 
+          <Box
+            onClick={() => setIsEditing(true)}
             sx={{ cursor: 'pointer', display: 'inline-block', '&:hover': { opacity: 0.85 } }}
             title="Clique para editar"
           >
-            <div style={{
-              border: '2px solid #1e3a8a',
-              borderRadius: '6px',
-              padding: '2px 10px',
-              backgroundColor: '#fff',
-              textAlign: 'center',
-              fontWeight: 'bold',
-              fontFamily: 'monospace',
-              fontSize: '16px',
-              letterSpacing: '1px',
-              display: 'inline-block'
-            }}>
+            <div
+              style={{
+                border: '2px solid #1e3a8a',
+                borderRadius: '6px',
+                padding: '2px 10px',
+                backgroundColor: '#fff',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                fontFamily: 'monospace',
+                fontSize: '16px',
+                letterSpacing: '1px',
+                display: 'inline-block',
+              }}
+            >
               {plate || 'SEM PLACA'}
             </div>
           </Box>
@@ -74,7 +76,9 @@ const MapSelectedDevice = ({ device, onClose }) => {
         </>
       ) : (
         <Box sx={{ padding: '8px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <Typography variant="subtitle2" fontWeight="bold">{t('sharedEdit')}</Typography>
+          <Typography variant="subtitle2" fontWeight="bold">
+            {t('sharedEdit')}
+          </Typography>
           <TextField
             label={t('deviceModel')}
             value={model}
@@ -90,8 +94,12 @@ const MapSelectedDevice = ({ device, onClose }) => {
             fullWidth
           />
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-            <Button onClick={() => setIsEditing(false)} size="small" variant="outlined">{t('sharedCancel')}</Button>
-            <Button onClick={handleSave} size="small" variant="contained" disabled={loading}>{t('sharedSave')}</Button>
+            <Button onClick={() => setIsEditing(false)} size="small" variant="outlined">
+              {t('sharedCancel')}
+            </Button>
+            <Button onClick={handleSave} size="small" variant="contained" disabled={loading}>
+              {t('sharedSave')}
+            </Button>
           </Box>
         </Box>
       )}

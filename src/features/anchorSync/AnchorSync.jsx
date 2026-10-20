@@ -5,10 +5,14 @@ import { useSelector } from 'react-redux';
 // Usuario comum -> grava o pedido no veiculo.
 // Administrador -> ve o pedido e cria/apaga a ancora no banco.
 
-const isAnchorOf = (g, id) => new RegExp('^ANCORA_' + Number(id) + '($|[^0-9])').test(String(g?.name || ''));
-const link = (body) => fetch('/api/permissions', {
-  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-}).catch(() => {});
+const isAnchorOf = (g, id) =>
+  new RegExp('^ANCORA_' + Number(id) + '($|[^0-9])').test(String(g?.name || ''));
+const link = (body) =>
+  fetch('/api/permissions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).catch(() => {});
 
 const AnchorSync = () => {
   const user = useSelector((state) => state.session.user);
@@ -25,12 +29,17 @@ const AnchorSync = () => {
         if (!r.ok) return;
         const dev = await r.json();
         const attributes = { ...(dev.attributes || {}) };
-        if (active) attributes.anchorRequest = { latitude, longitude, radius: radius || 100, ts: Date.now() };
+        if (active)
+          attributes.anchorRequest = { latitude, longitude, radius: radius || 100, ts: Date.now() };
         else delete attributes.anchorRequest;
         const pr = await fetch('/api/devices/' + Number(deviceId), {
-          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...dev, attributes }),
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...dev, attributes }),
         });
-      } catch (err) { /* ignora */ }
+      } catch (err) {
+        /* ignora */
+      }
     };
     window.addEventListener('anchor-local', onLocal);
     return () => window.removeEventListener('anchor-local', onLocal);
@@ -44,7 +53,10 @@ const AnchorSync = () => {
 
     const sync = async () => {
       try {
-        const [dRes, gRes] = await Promise.all([fetch('/api/devices?all=true'), fetch('/api/geofences?all=true')]);
+        const [dRes, gRes] = await Promise.all([
+          fetch('/api/devices?all=true'),
+          fetch('/api/geofences?all=true'),
+        ]);
         if (!dRes.ok || !gRes.ok) return;
         const devices = await dRes.json();
         const geofences = await gRes.json();
@@ -61,7 +73,14 @@ const AnchorSync = () => {
               body: JSON.stringify({
                 name: 'ANCORA_' + dev.id + ' - ' + (dev.name || 'Veiculo'),
                 description: 'Ancora automatica',
-                area: 'CIRCLE (' + req.latitude + ' ' + req.longitude + ', ' + (req.radius || 100) + ')',
+                area:
+                  'CIRCLE (' +
+                  req.latitude +
+                  ' ' +
+                  req.longitude +
+                  ', ' +
+                  (req.radius || 100) +
+                  ')',
                 attributes: {},
               }),
             });
@@ -71,27 +90,36 @@ const AnchorSync = () => {
               const uRes = await fetch('/api/users?deviceId=' + Number(dev.id)).catch(() => null);
               if (uRes && uRes.ok) {
                 const users = await uRes.json();
-                await Promise.all(users.map((u) => link({ userId: u.id, geofenceId: geofence.id })));
+                await Promise.all(
+                  users.map((u) => link({ userId: u.id, geofenceId: geofence.id })),
+                );
               }
             }
           }
 
           if (!req && existing.length && handled.has(Number(dev.id))) {
             handled.delete(Number(dev.id));
-            await Promise.all(existing.map((g) => fetch('/api/geofences/' + g.id, { method: 'DELETE' })));
+            await Promise.all(
+              existing.map((g) => fetch('/api/geofences/' + g.id, { method: 'DELETE' })),
+            );
           }
         }
-      } catch (err) { /* ignora */ }
+      } catch (err) {
+        /* ignora */
+      }
     };
 
     sync();
-    const timer = setInterval(() => { if (!stopped) sync(); }, 4000);
-    return () => { stopped = true; clearInterval(timer); };
+    const timer = setInterval(() => {
+      if (!stopped) sync();
+    }, 4000);
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+    };
   }, [isAdmin]);
 
   return null;
 };
 
 export default AnchorSync;
-
-

@@ -166,40 +166,63 @@ const BottomMenu = () => {
         }}
       >
         {admin && (
-        <BottomNavigationAction
-          label={t("mapTitle")}
-          icon={
-            <Badge color="error" variant="dot" overlap="circular" invisible={socket !== false}>
-              <Box
-                sx={{
-                  width: 36, height: 36, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: currentSelection() === 'map' ? 'linear-gradient(135deg, #42a5f5, #1565c0)' : 'transparent',
-                  boxShadow: currentSelection() === 'map' ? '0 4px 10px rgba(21,101,192,0.4)' : 'none',
-                  transition: 'all 0.25s ease',
-                }}
-              >
-                <MapIcon sx={{ fontSize: 20, color: currentSelection() === 'map' ? '#fff' : '#8a94a6' }} />
-              </Box>
-            </Badge>
-          }
-          value="map"
-        />
+          <BottomNavigationAction
+            label={t('mapTitle')}
+            icon={
+              <Badge color="error" variant="dot" overlap="circular" invisible={socket !== false}>
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background:
+                      currentSelection() === 'map'
+                        ? 'linear-gradient(135deg, #42a5f5, #1565c0)'
+                        : 'transparent',
+                    boxShadow:
+                      currentSelection() === 'map' ? '0 4px 10px rgba(21,101,192,0.4)' : 'none',
+                    transition: 'all 0.25s ease',
+                  }}
+                >
+                  <MapIcon
+                    sx={{ fontSize: 20, color: currentSelection() === 'map' ? '#fff' : '#8a94a6' }}
+                  />
+                </Box>
+              </Badge>
+            }
+            value="map"
+          />
         )}
         {admin && !disableReports && (
           <BottomNavigationAction
-            label={t("reportTitle")}
+            label={t('reportTitle')}
             icon={
               <Box
                 sx={{
-                  width: 36, height: 36, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: currentSelection() === 'reports' ? 'linear-gradient(135deg, #ab47bc, #6a1b9a)' : 'transparent',
-                  boxShadow: currentSelection() === 'reports' ? '0 4px 10px rgba(106,27,154,0.4)' : 'none',
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background:
+                    currentSelection() === 'reports'
+                      ? 'linear-gradient(135deg, #ab47bc, #6a1b9a)'
+                      : 'transparent',
+                  boxShadow:
+                    currentSelection() === 'reports' ? '0 4px 10px rgba(106,27,154,0.4)' : 'none',
                   transition: 'all 0.25s ease',
                 }}
               >
-                <DescriptionIcon sx={{ fontSize: 20, color: currentSelection() === 'reports' ? '#fff' : '#8a94a6' }} />
+                <DescriptionIcon
+                  sx={{
+                    fontSize: 20,
+                    color: currentSelection() === 'reports' ? '#fff' : '#8a94a6',
+                  }}
+                />
               </Box>
             }
             value="reports"
@@ -207,18 +230,31 @@ const BottomMenu = () => {
         )}
         {admin && !readonly && (
           <BottomNavigationAction
-            label={t("settingsTitle")}
+            label={t('settingsTitle')}
             icon={
               <Box
                 sx={{
-                  width: 36, height: 36, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: currentSelection() === 'settings' ? 'linear-gradient(135deg, #ffa726, #ef6c00)' : 'transparent',
-                  boxShadow: currentSelection() === 'settings' ? '0 4px 10px rgba(239,108,0,0.4)' : 'none',
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background:
+                    currentSelection() === 'settings'
+                      ? 'linear-gradient(135deg, #ffa726, #ef6c00)'
+                      : 'transparent',
+                  boxShadow:
+                    currentSelection() === 'settings' ? '0 4px 10px rgba(239,108,0,0.4)' : 'none',
                   transition: 'all 0.25s ease',
                 }}
               >
-                <SettingsIcon sx={{ fontSize: 20, color: currentSelection() === 'settings' ? '#fff' : '#8a94a6' }} />
+                <SettingsIcon
+                  sx={{
+                    fontSize: 20,
+                    color: currentSelection() === 'settings' ? '#fff' : '#8a94a6',
+                  }}
+                />
               </Box>
             }
             value="settings"
@@ -226,12 +262,16 @@ const BottomMenu = () => {
         )}
         {readonly ? (
           <BottomNavigationAction
-            label={t("loginLogout")}
+            label={t('loginLogout')}
             icon={
               <Box
                 sx={{
-                  width: 36, height: 36, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   background: 'transparent',
                 }}
               >
@@ -242,18 +282,31 @@ const BottomMenu = () => {
           />
         ) : (
           <BottomNavigationAction
-            label={t("settingsUser")}
+            label={t('settingsUser')}
             icon={
               <Box
                 sx={{
-                  width: 36, height: 36, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: currentSelection() === 'account' ? 'linear-gradient(135deg, #66bb6a, #2e7d32)' : 'transparent',
-                  boxShadow: currentSelection() === 'account' ? '0 4px 10px rgba(46,125,50,0.4)' : 'none',
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background:
+                    currentSelection() === 'account'
+                      ? 'linear-gradient(135deg, #66bb6a, #2e7d32)'
+                      : 'transparent',
+                  boxShadow:
+                    currentSelection() === 'account' ? '0 4px 10px rgba(46,125,50,0.4)' : 'none',
                   transition: 'all 0.25s ease',
                 }}
               >
-                <PersonIcon sx={{ fontSize: 20, color: currentSelection() === 'account' ? '#fff' : '#8a94a6' }} />
+                <PersonIcon
+                  sx={{
+                    fontSize: 20,
+                    color: currentSelection() === 'account' ? '#fff' : '#8a94a6',
+                  }}
+                />
               </Box>
             }
             value="account"
@@ -273,5 +326,3 @@ const BottomMenu = () => {
 };
 
 export default BottomMenu;
-
-

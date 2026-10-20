@@ -33,9 +33,9 @@ export const useDeviceEdit = (item, setItem) => {
 
       const response = await fetch(`/api/devices/${item.id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          Accept: 'application/json',
         },
         credentials: 'same-origin',
         body: JSON.stringify(updatedDevice),
@@ -47,7 +47,7 @@ export const useDeviceEdit = (item, setItem) => {
       }
 
       const saved = await response.json();
-      
+
       const finalDevice = {
         ...saved,
         model: localModel,
@@ -63,7 +63,7 @@ export const useDeviceEdit = (item, setItem) => {
         const allDevices = await listRes.json();
         const refreshedMap = {};
         allDevices.forEach((d) => {
-          refreshedMap[d.id] = (d.id === finalDevice.id) ? finalDevice : d;
+          refreshedMap[d.id] = d.id === finalDevice.id ? finalDevice : d;
         });
         dispatch(devicesActions.refresh(refreshedMap));
       } else {
@@ -72,7 +72,7 @@ export const useDeviceEdit = (item, setItem) => {
 
       if (setItem) setItem(finalDevice);
       window.dispatchEvent(new CustomEvent('deviceDataUpdated', { detail: finalDevice }));
-      
+
       setSaving(false);
       return true;
     } catch (error) {

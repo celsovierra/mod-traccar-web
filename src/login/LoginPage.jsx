@@ -122,7 +122,10 @@ const useStyles = makeStyles()((theme) => ({
 const LoginPage = () => {
   const [loginCfg, setLoginCfg] = useState({});
   useEffect(() => {
-    fetch('/api-contratos/login-config').then((r) => r.json()).then((d) => setLoginCfg(d || {})).catch(() => {});
+    fetch('/api-contratos/login-config')
+      .then((r) => r.json())
+      .then((d) => setLoginCfg(d || {}))
+      .catch(() => {});
   }, []);
   const { classes } = useStyles();
   const dispatch = useDispatch();
@@ -250,12 +253,38 @@ const LoginPage = () => {
   const header = (
     <>
       <div className={classes.iconBox}>
-        {loginCfg.logo ? <img src={loginCfg.logo} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <NavigationIcon fontSize="large" />}
+        {loginCfg.logo ? (
+          <img
+            src={loginCfg.logo}
+            alt="logo"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
+        ) : (
+          <NavigationIcon fontSize="large" />
+        )}
       </div>
-      <Typography variant="h5" sx={{ fontWeight: 800, color: loginCfg.corTexto || '#ffffff', letterSpacing: '-0.5px', WebkitTextStroke: '0.7px #ffffff', textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>
+      <Typography
+        variant="h5"
+        sx={{
+          fontWeight: 800,
+          color: loginCfg.corTexto || '#ffffff',
+          letterSpacing: '-0.5px',
+          WebkitTextStroke: '0.7px #ffffff',
+          textShadow: '0 2px 10px rgba(0,0,0,0.9)',
+        }}
+      >
         {loginCfg.nome || 'GUImod'}
       </Typography>
-      <Typography variant="body2" sx={{ color: loginCfg.corTexto || 'rgba(255,255,255,0.9)', opacity: 0.95, fontWeight: 600, mt: 0.5, textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
+      <Typography
+        variant="body2"
+        sx={{
+          color: loginCfg.corTexto || 'rgba(255,255,255,0.9)',
+          opacity: 0.95,
+          fontWeight: 600,
+          mt: 0.5,
+          textShadow: '0 2px 8px rgba(0,0,0,0.7)',
+        }}
+      >
         {loginCfg.subtitulo || 'Sistema de Rastreamento Veicular'}
       </Typography>
     </>
@@ -367,7 +396,7 @@ const LoginPage = () => {
                   />
                 }
                 label={
-                  <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                  <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
                     Lembrar minha senha
                   </Typography>
                 }
@@ -456,4 +485,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-

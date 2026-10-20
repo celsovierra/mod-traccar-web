@@ -4,7 +4,8 @@ import { geofencesActions } from '../../store';
 
 const ANCHOR_RADIUS = 100;
 const prefix = (deviceId) => `ANCORA_${deviceId}`;
-const isAnchorOf = (g, deviceId) => new RegExp('^ANCORA_' + Number(deviceId) + '($|[^0-9])').test(String(g?.name || ''));
+const isAnchorOf = (g, deviceId) =>
+  new RegExp('^ANCORA_' + Number(deviceId) + '($|[^0-9])').test(String(g?.name || ''));
 
 export const useAnchor = (deviceId) => {
   const dispatch = useDispatch();
@@ -17,7 +18,9 @@ export const useAnchor = (deviceId) => {
   const device = useSelector((state) => state.devices.items[deviceId]);
   const user = useSelector((state) => state.session.user);
   const geofences = useSelector((state) => state.geofences.items);
-  const position = useSelector((state) => Object.values(state.session.positions || {}).find((p) => p.deviceId === Number(deviceId)));
+  const position = useSelector((state) =>
+    Object.values(state.session.positions || {}).find((p) => p.deviceId === Number(deviceId)),
+  );
 
   const isAdmin = user?.administrator || user?.admin;
 
@@ -25,7 +28,8 @@ export const useAnchor = (deviceId) => {
   positionRef.current = position;
 
   useEffect(() => {
-    if (!loadingAnchor) setIsAnchorActive(Object.values(geofences || {}).some((g) => isAnchorOf(g, deviceId)));
+    if (!loadingAnchor)
+      setIsAnchorActive(Object.values(geofences || {}).some((g) => isAnchorOf(g, deviceId)));
   }, [geofences, deviceId, loadingAnchor]);
   useEffect(() => {
     if (!isAnchorActive || !deviceId) return;
@@ -34,34 +38,47 @@ export const useAnchor = (deviceId) => {
       try {
         const pos = positionRef.current;
         if (!pos) return;
-        const res = await fetch("/api/geofences?all=true");
+        const res = await fetch('/api/geofences?all=true');
         if (!res.ok) return;
         const list = await res.json();
         const anchors = list.filter((g) => isAnchorOf(g, deviceId));
         if (!anchors.length) return;
         let center = null;
         for (const a of anchors) {
-          const m = String(a.area || "").match(/CIRCLE\s*\(\s*(-?[\d.]+)\s+(-?[\d.]+)/i);
-          if (m) { center = { lat: parseFloat(m[1]), lon: parseFloat(m[2]) }; break; }
+          const m = String(a.area || '').match(/CIRCLE\s*\(\s*(-?[\d.]+)\s+(-?[\d.]+)/i);
+          if (m) {
+            center = { lat: parseFloat(m[1]), lon: parseFloat(m[2]) };
+            break;
+          }
         }
         if (!center) return;
         const R = 6371000;
-        const toRad = (x) => x * Math.PI / 180;
+        const toRad = (x) => (x * Math.PI) / 180;
         const dLat = toRad(pos.latitude - center.lat);
         const dLon = toRad(pos.longitude - center.lon);
-        const a1 = Math.sin(dLat/2)**2 + Math.cos(toRad(center.lat)) * Math.cos(toRad(pos.latitude)) * Math.sin(dLon/2)**2;
+        const a1 =
+          Math.sin(dLat / 2) ** 2 +
+          Math.cos(toRad(center.lat)) * Math.cos(toRad(pos.latitude)) * Math.sin(dLon / 2) ** 2;
         const dist = 2 * R * Math.asin(Math.sqrt(a1));
         if (dist > 100) {
-          console.log("[anchor] saiu " + Math.round(dist) + "m, desativando");
-          window.dispatchEvent(new CustomEvent("anchor-exit", { detail: { deviceId: Number(deviceId) } }));
-          fetch('/api-device-event/' + Number(deviceId), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'anchorExited', user: user?.name || user?.email || '' }) }).catch(() => {});
+          console.log('[anchor] saiu ' + Math.round(dist) + 'm, desativando');
+          window.dispatchEvent(
+            new CustomEvent('anchor-exit', { detail: { deviceId: Number(deviceId) } }),
+          );
+          fetch('/api-device-event/' + Number(deviceId), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'anchorExited', user: user?.name || user?.email || '' }),
+          }).catch(() => {});
           if (toggleAnchorRef.current) toggleAnchorRef.current();
           stopped = true;
         }
       } catch (e) {}
     };
     check();
-    const t = setInterval(() => { if (!stopped) check(); }, 5000);
+    const t = setInterval(() => {
+      if (!stopped) check();
+    }, 5000);
     return () => clearInterval(t);
   }, [isAnchorActive, deviceId]);
 
@@ -70,22 +87,49 @@ export const useAnchor = (deviceId) => {
     if (res.ok) dispatch(geofencesActions.refresh(await res.json()));
   }, [dispatch, isAdmin]);
 
-  const link = async (body) => fetch('/api/permissions', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body:JSON.stringify(body),
-  }).catch(() => {});
+  const link = async (body) =>
+    fetch('/api/permissions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).catch(() => {});
 
   const toggleAnchor = useCallback(async () => {
     setLoadingAnchor(true);
     const willActivate = !isAnchorActive;
-    const emit = (active) => window.dispatchEvent(new CustomEvent('anchor-local', { detail: { deviceId: Number(deviceId), active, latitude: position?.latitude, longitude: position?.longitude, radius: ANCHOR_RADIUS } }));
-    emit(willActivate); setIsAnchorActive(willActivate);
-    fetch('/api-device-event/' + Number(deviceId), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: willActivate ? 'anchorActivated' : 'anchorDeactivated', user: user?.name || user?.email || '' }) }).catch(() => {});
+    const emit = (active) =>
+      window.dispatchEvent(
+        new CustomEvent('anchor-local', {
+          detail: {
+            deviceId: Number(deviceId),
+            active,
+            latitude: position?.latitude,
+            longitude: position?.longitude,
+            radius: ANCHOR_RADIUS,
+          },
+        }),
+      );
+    emit(willActivate);
+    setIsAnchorActive(willActivate);
+    fetch('/api-device-event/' + Number(deviceId), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: willActivate ? 'anchorActivated' : 'anchorDeactivated',
+        user: user?.name || user?.email || '',
+      }),
+    }).catch(() => {});
 
     try {
       if (!isAdmin) {
         // Usuario comum: usa o proxy que verifica permissao e grava direto no banco
         if (willActivate) {
-          if (!position) { setIsAnchorActive(false); emit(false); window.alert('Sem posicao atual do veiculo'); return; }
+          if (!position) {
+            setIsAnchorActive(false);
+            emit(false);
+            window.alert('Sem posicao atual do veiculo');
+            return;
+          }
           const res = await fetch(`/api-anchor/${deviceId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -96,10 +140,20 @@ export const useAnchor = (deviceId) => {
               deviceName: device?.name || 'Veiculo',
             }),
           });
-          if (!res.ok) { setIsAnchorActive(false); emit(false); window.alert('Falha ao criar ancora: ' + (res.status + ' ' + await res.text())); return; }
+          if (!res.ok) {
+            setIsAnchorActive(false);
+            emit(false);
+            window.alert('Falha ao criar ancora: ' + (res.status + ' ' + (await res.text())));
+            return;
+          }
         } else {
           const res = await fetch(`/api-anchor/${deviceId}`, { method: 'DELETE' });
-          if (!res.ok) { setIsAnchorActive(true); emit(true); window.alert('Falha ao excluir ancora: ' + (res.status + ' ' + await res.text())); return; }
+          if (!res.ok) {
+            setIsAnchorActive(true);
+            emit(true);
+            window.alert('Falha ao excluir ancora: ' + (res.status + ' ' + (await res.text())));
+            return;
+          }
         }
         await reload();
         return;
@@ -110,11 +164,28 @@ export const useAnchor = (deviceId) => {
       const existing = list.filter((g) => isAnchorOf(g, deviceId));
 
       if (existing.length) {
-        const dels = await Promise.all(existing.map((g) => fetch('/api/geofences/' + g.id, { method: 'DELETE' })));
-        const bad = dels.find((r) => !r.ok); if (!bad) { const r2 = await fetch(isAdmin ? '/api/geofences?all=true' : '/api/geofences'); const rest = r2.ok ? (await r2.json()).filter((g) => isAnchorOf(g, deviceId)) : []; await Promise.all(rest.map((g) => fetch('/api/geofences/' + g.id, { method: 'DELETE' }))); }
-        if (bad) { setIsAnchorActive(true); emit(true); window.alert('Falha ao excluir ancora: ' + bad.status + ' ' + (await bad.text())); return; }
+        const dels = await Promise.all(
+          existing.map((g) => fetch('/api/geofences/' + g.id, { method: 'DELETE' })),
+        );
+        const bad = dels.find((r) => !r.ok);
+        if (!bad) {
+          const r2 = await fetch(isAdmin ? '/api/geofences?all=true' : '/api/geofences');
+          const rest = r2.ok ? (await r2.json()).filter((g) => isAnchorOf(g, deviceId)) : [];
+          await Promise.all(rest.map((g) => fetch('/api/geofences/' + g.id, { method: 'DELETE' })));
+        }
+        if (bad) {
+          setIsAnchorActive(true);
+          emit(true);
+          window.alert('Falha ao excluir ancora: ' + bad.status + ' ' + (await bad.text()));
+          return;
+        }
       } else {
-        if (!position) { setIsAnchorActive(false); emit(false); window.alert('Sem posicao atual do veiculo'); return; }
+        if (!position) {
+          setIsAnchorActive(false);
+          emit(false);
+          window.alert('Sem posicao atual do veiculo');
+          return;
+        }
         const res = await fetch('/api/geofences', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -125,11 +196,17 @@ export const useAnchor = (deviceId) => {
             attributes: {},
           }),
         });
-        if (!res.ok) { setIsAnchorActive(false); emit(false); window.alert('Falha ao criar ancora: ' + (res.status + ' ' + await res.text())); return; }
+        if (!res.ok) {
+          setIsAnchorActive(false);
+          emit(false);
+          window.alert('Falha ao criar ancora: ' + (res.status + ' ' + (await res.text())));
+          return;
+        }
         const geofence = await res.json();
 
         await link({ deviceId: Number(deviceId), geofenceId: geofence.id });
-        if (user?.id && !user.administrator) await link({ userId: user.id,geofenceId: geofence.id });
+        if (user?.id && !user.administrator)
+          await link({ userId: user.id, geofenceId: geofence.id });
 
         const usersRes = await fetch(`/api/users?deviceId=${Number(deviceId)}`).catch(() => null);
         if (usersRes && usersRes.ok) {

@@ -175,7 +175,11 @@ const DevicesPage = () => {
         <TableFooter>
           <TableRow>
             <TableCell>
-              <Button onClick={handleExport} variant="text" sx={{ textTransform: 'none', fontWeight: 600 }}>
+              <Button
+                onClick={handleExport}
+                variant="text"
+                sx={{ textTransform: 'none', fontWeight: 600 }}
+              >
                 {t('reportExport')}
               </Button>
             </TableCell>

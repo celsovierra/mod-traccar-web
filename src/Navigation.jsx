@@ -87,7 +87,6 @@ const prefetchPages = () => {
 };
 
 const Navigation = () => {
-
   useEffect(() => {
     const id = window.setTimeout(prefetchPages, 2000);
     return () => window.clearTimeout(id);
@@ -207,8 +206,8 @@ const Navigation = () => {
             <Route path="notification/:id" element={<NotificationPage />} />
             <Route path="notification" element={<NotificationPage />} />
             <Route path="preferences" element={<PreferencesPage />} />
-          <Route path="login-editor" element={<LoginEditorPage />} />
-          <Route path="telegram" element={<TelegramSettingsPage />} />
+            <Route path="login-editor" element={<LoginEditorPage />} />
+            <Route path="telegram" element={<TelegramSettingsPage />} />
             <Route path="server" element={<ServerPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="user/:id/connections" element={<UserConnectionsPage />} />
@@ -239,5 +238,3 @@ const Navigation = () => {
 };
 
 export default Navigation;
-
-

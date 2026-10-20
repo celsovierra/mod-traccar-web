@@ -165,12 +165,15 @@ const MainPage = () => {
     if (selectedDeviceId) setCardVisible(true);
   }, [selectedDeviceId]);
 
-  const handleToggleDevices = useCallback((open) => {
-    setDevicesOpen(open);
-    if (open) {
-      dispatch(devicesActions.selectId(null));
-    }
-  }, [dispatch]);
+  const handleToggleDevices = useCallback(
+    (open) => {
+      setDevicesOpen(open);
+      if (open) {
+        dispatch(devicesActions.selectId(null));
+      }
+    },
+    [dispatch],
+  );
 
   useFilter(
     keyword,
@@ -185,9 +188,44 @@ const MainPage = () => {
   return (
     <div className={classes.root}>
       {stockMode && (
-        <div style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 1000, background: '#f59e0b', color: '#fff', padding: '6px 12px', borderRadius: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 12,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000,
+            background: '#f59e0b',
+            color: '#fff',
+            padding: '6px 12px',
+            borderRadius: 20,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            fontWeight: 700,
+            fontSize: '0.75rem',
+            whiteSpace: 'nowrap',
+          }}
+        >
           <span>Modo Estoque</span>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('stockMapToggle', { detail: false }))} style={{ background: '#fff', color: '#f59e0b', border: 'none', borderRadius: 12, padding: '3px 10px', fontWeight: 700, cursor: 'pointer', fontSize: '0.75rem' }}>Sair</button>
+          <button
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent('stockMapToggle', { detail: false }))
+            }
+            style={{
+              background: '#fff',
+              color: '#f59e0b',
+              border: 'none',
+              borderRadius: 12,
+              padding: '3px 10px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontSize: '0.75rem',
+            }}
+          >
+            Sair
+          </button>
         </div>
       )}
       <div className={classes.contentMap}>

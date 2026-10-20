@@ -70,25 +70,21 @@ const UsersPage = () => {
     handler: (userId) => navigate(`/settings/user/${userId}/connections`),
   };
 
-  const loadItems = useCallback(
-    async (offset, signal) => {
-      const limit = offset === 0 ? 30 : pageSize;
-      const query = new URLSearchParams({ excludeAttributes: true, limit, offset });
-      const response = await fetchOrThrow(`/api/users?${query.toString()}`, { signal });
-      const data = await response.json();
+  const loadItems = useCallback(async (offset, signal) => {
+    const limit = offset === 0 ? 30 : pageSize;
+    const query = new URLSearchParams({ excludeAttributes: true, limit, offset });
+    const response = await fetchOrThrow(`/api/users?${query.toString()}`, { signal });
+    const data = await response.json();
 
+    setItems((previous) => {
+      const combined = offset ? [...previous, ...data] : data;
+      const uniqueMap = new Map();
+      combined.forEach((u) => uniqueMap.set(u.id, u));
+      return Array.from(uniqueMap.values());
+    });
 
-      setItems((previous) => {
-        const combined = offset ? [...previous, ...data] : data;
-        const uniqueMap = new Map();
-        combined.forEach((u) => uniqueMap.set(u.id, u));
-        return Array.from(uniqueMap.values());
-      });
-
-      setHasMore(data.length >= limit);
-    },
-    [],
-  );
+    setHasMore(data.length >= limit);
+  }, []);
 
   const searchTimeoutRef = useRef(null);
 
@@ -115,7 +111,6 @@ const UsersPage = () => {
     return () => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchKeyword]);
 
   const sentinelRef = useScrollToLoad(() => loadItems(items.length));
@@ -229,7 +224,14 @@ const UsersPage = () => {
             }}
           >
             {/* VISUALIZA??O EM CARDS PARA SMARTPHONE */}
-            <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', p: 1.5, gap: 1.5 }}>
+            <Box
+              sx={{
+                display: { xs: 'flex', md: 'none' },
+                flexDirection: 'column',
+                p: 1.5,
+                gap: 1.5,
+              }}
+            >
               {filteredItems.map((item) => {
                 const avatarStyle = getAvatarColor(item);
                 const lastAccess = getLastAccessTime(item);
@@ -247,7 +249,13 @@ const UsersPage = () => {
                       gap: 0.5,
                     }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
                         <Avatar
                           sx={{
@@ -262,7 +270,10 @@ const UsersPage = () => {
                           {getAvatarIcon(item)}
                         </Avatar>
                         <Box sx={{ minWidth: 0 }}>
-                          <Typography noWrap sx={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a', mb: 0.3 }}>
+                          <Typography
+                            noWrap
+                            sx={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a', mb: 0.3 }}
+                          >
                             {item.name}
                           </Typography>
                           <Typography noWrap sx={{ fontSize: '0.85rem', color: '#64748b' }}>
@@ -283,7 +294,8 @@ const UsersPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, px: 0.5 }}>
                       <AccessTimeIcon sx={{ fontSize: 15, color: '#7c3aed' }} />
                       <Typography sx={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600 }}>
-                        ?ltimo Acesso: {lastAccess ? formatTime(lastAccess, format) : 'Nunca acessou'}
+                        ?ltimo Acesso:{' '}
+                        {lastAccess ? formatTime(lastAccess, format) : 'Nunca acessou'}
                       </Typography>
                     </Box>
 
@@ -358,19 +370,36 @@ const UsersPage = () => {
               <Table>
                 <TableHead sx={{ backgroundColor: '#f8fafc' }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8 }}>
+                    <TableCell
+                      sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8 }}
+                    >
                       {t('sharedName')}
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8 }}>
+                    <TableCell
+                      sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8 }}
+                    >
                       {t('userEmail')}
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8, whiteSpace: 'nowrap' }}>
+                    <TableCell
+                      sx={{
+                        fontWeight: 800,
+                        color: '#475569',
+                        fontSize: '0.82rem',
+                        py: 1.8,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       ?ltimo Acesso
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8 }}>
+                    <TableCell
+                      sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8 }}
+                    >
                       {t('sharedDisabled')}
                     </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8 }}>
+                    <TableCell
+                      align="right"
+                      sx={{ fontWeight: 800, color: '#475569', fontSize: '0.82rem', py: 1.8 }}
+                    >
                       {t('sharedActions')}
                     </TableCell>
                   </TableRow>
@@ -400,7 +429,9 @@ const UsersPage = () => {
                             >
                               {getAvatarIcon(item)}
                             </Avatar>
-                            <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#1e293b' }}>
+                            <Typography
+                              sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#1e293b' }}
+                            >
                               {item.name}
                             </Typography>
                           </Box>
@@ -411,7 +442,9 @@ const UsersPage = () => {
                         <TableCell sx={{ py: 1.6, whiteSpace: 'nowrap' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
                             <AccessTimeIcon sx={{ fontSize: 16, color: '#7c3aed' }} />
-                            <Typography sx={{ fontSize: '0.82rem', color: '#334155', fontWeight: 600 }}>
+                            <Typography
+                              sx={{ fontSize: '0.82rem', color: '#334155', fontWeight: 600 }}
+                            >
                               {lastAccess ? formatTime(lastAccess, format) : 'Nunca acessou'}
                             </Typography>
                           </Box>
@@ -439,7 +472,14 @@ const UsersPage = () => {
                           )}
                         </TableCell>
                         <TableCell align="right" sx={{ py: 1.6 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.8 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
+                              gap: 0.8,
+                            }}
+                          >
                             {manager && (
                               <Tooltip title={t('loginLogin')}>
                                 <IconButton
@@ -480,7 +520,11 @@ const UsersPage = () => {
                     );
                   })}
                   {hasMore && (
-                    <TableShimmer ref={items.length > 0 ? sentinelRef : null} columns={5} endAction />
+                    <TableShimmer
+                      ref={items.length > 0 ? sentinelRef : null}
+                      columns={5}
+                      endAction
+                    />
                   )}
                 </TableBody>
               </Table>
@@ -492,11 +536,7 @@ const UsersPage = () => {
       </Box>
 
       {shareUser && (
-        <ShareUserDialog
-          open={!!shareUser}
-          onClose={() => setShareUser(null)}
-          user={shareUser}
-        />
+        <ShareUserDialog open={!!shareUser} onClose={() => setShareUser(null)} user={shareUser} />
       )}
     </PageLayout>
   );

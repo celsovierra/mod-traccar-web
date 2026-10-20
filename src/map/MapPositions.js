@@ -127,9 +127,6 @@ const MapPositions = ({
             center: coords,
             zoom: 17,
             padding: { top: 0, right: 0, bottom: cardExpandedRef.current ? 320 : 0, left: 0 },
-
-
-
           });
         }, 60);
       }
@@ -158,11 +155,38 @@ const MapPositions = ({
         deviceId: position.deviceId,
         name: device ? device.name : '',
         fixTime: formatTime(position.fixTime, 'seconds'),
-        category: (() => { const k = (device?.attributes?.customIcon && mapIcons.hasOwnProperty(device.attributes.customIcon)) ? device.attributes.customIcon : mapIconKey(device ? device.category : ''); return k; })(),
-        scale: (() => { const k = (device?.attributes?.customIcon && mapIcons.hasOwnProperty(device.attributes.customIcon)) ? device.attributes.customIcon : mapIconKey(device ? device.category : ''); return (iconSizes[k]?.tamanho ?? iconSizes.default?.tamanho ?? 1); })(),
-        color: showStatus ? (position.attributes?.color || getStatusColor(device?.status)) : 'neutral',
-        rotation: animatedRotation !== undefined ? animatedRotation : (position.course || 0),
-        iconRotation: rotativeIconKeys.has((() => { const k = (device?.attributes?.customIcon && mapIcons.hasOwnProperty(device.attributes.customIcon)) ? device.attributes.customIcon : mapIconKey(device ? device.category : ''); return k; })()) ? (animatedRotation !== undefined ? animatedRotation : (position.course || 0)) : 0,
+        category: (() => {
+          const k =
+            device?.attributes?.customIcon && mapIcons.hasOwnProperty(device.attributes.customIcon)
+              ? device.attributes.customIcon
+              : mapIconKey(device ? device.category : '');
+          return k;
+        })(),
+        scale: (() => {
+          const k =
+            device?.attributes?.customIcon && mapIcons.hasOwnProperty(device.attributes.customIcon)
+              ? device.attributes.customIcon
+              : mapIconKey(device ? device.category : '');
+          return iconSizes[k]?.tamanho ?? iconSizes.default?.tamanho ?? 1;
+        })(),
+        color: showStatus
+          ? position.attributes?.color || getStatusColor(device?.status)
+          : 'neutral',
+        rotation: animatedRotation !== undefined ? animatedRotation : position.course || 0,
+        iconRotation: rotativeIconKeys.has(
+          (() => {
+            const k =
+              device?.attributes?.customIcon &&
+              mapIcons.hasOwnProperty(device.attributes.customIcon)
+                ? device.attributes.customIcon
+                : mapIconKey(device ? device.category : '');
+            return k;
+          })(),
+        )
+          ? animatedRotation !== undefined
+            ? animatedRotation
+            : position.course || 0
+          : 0,
         direction: showDirection,
         showLabel: Number(position.deviceId) === selectedLabelId,
       };
@@ -204,9 +228,6 @@ const MapPositions = ({
             center: coords,
             zoom: 17,
             padding: { top: 0, right: 0, bottom: cardExpandedRef.current ? 320 : 0, left: 0 },
-
-
-
           });
         }, 60);
 
@@ -295,7 +316,12 @@ const MapPositions = ({
           'icon-allow-overlap': true,
           'icon-rotate': ['get', 'iconRotation'],
           'icon-rotation-alignment': 'map',
-          'text-field': ['case', ['==', ['get', 'showLabel'], true], ['get', titleField || 'name'], ''],
+          'text-field': [
+            'case',
+            ['==', ['get', 'showLabel'], true],
+            ['get', titleField || 'name'],
+            '',
+          ],
           'text-allow-overlap': true,
           'text-anchor': 'bottom',
           'text-offset': [0, -2.5 * iconScale],
@@ -346,17 +372,7 @@ const MapPositions = ({
           100,
           '#ef4444',
         ],
-        'circle-radius': [
-          'step',
-          ['get', 'point_count'],
-          18,
-          10,
-          22,
-          30,
-          26,
-          100,
-          32,
-        ],
+        'circle-radius': ['step', ['get', 'point_count'], 18, 10, 22, 30, 26, 100, 32],
         'circle-stroke-width': 3,
         'circle-stroke-color': '#ffffff',
         'circle-opacity': 0.9,
@@ -448,7 +464,8 @@ const MapPositions = ({
     const anchorFeatures = [];
     Object.keys(devices).forEach((devId) => {
       const anchorKey = `device_anchor_${devId}`;
-      localStorage.removeItem(anchorKey); const anchorRaw = null;
+      localStorage.removeItem(anchorKey);
+      const anchorRaw = null;
       if (anchorRaw) {
         try {
           const anchor = JSON.parse(anchorRaw);
@@ -494,7 +511,7 @@ const MapPositions = ({
           targetRotation,
         };
       } else {
-        const diffRot = (targetRotation - (current.currentRotation % 360) + 540) % 360 - 180;
+        const diffRot = ((targetRotation - (current.currentRotation % 360) + 540) % 360) - 180;
         current.startCoord = [...current.currentCoord];
         current.targetCoord = targetCoord;
         current.startRotation = current.currentRotation;
@@ -505,7 +522,7 @@ const MapPositions = ({
     const animate = (time) => {
       const elapsed = time - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      
+
       const ease = -(Math.cos(Math.PI * progress) - 1) / 2;
 
       Object.keys(animatedPositions.current).forEach((devId) => {
@@ -514,18 +531,23 @@ const MapPositions = ({
           item.startCoord[0] + (item.targetCoord[0] - item.startCoord[0]) * ease,
           item.startCoord[1] + (item.targetCoord[1] - item.startCoord[1]) * ease,
         ];
-        item.currentRotation = item.startRotation + (item.targetRotation - item.startRotation) * ease;
+        item.currentRotation =
+          item.startRotation + (item.targetRotation - item.startRotation) * ease;
       });
 
       const buildFeatures = (sourceTarget) =>
         positions
           .filter((it) => devices.hasOwnProperty(it.deviceId))
           .filter((it) =>
-            sourceTarget === id ? it.deviceId !== selectedDeviceId : it.deviceId === selectedDeviceId,
+            sourceTarget === id
+              ? it.deviceId !== selectedDeviceId
+              : it.deviceId === selectedDeviceId,
           )
           .map((position) => {
             const anim = animatedPositions.current[position.deviceId];
-            const coords = anim ? anim.currentCoord : toMapCoordinates(position.longitude, position.latitude);
+            const coords = anim
+              ? anim.currentCoord
+              : toMapCoordinates(position.longitude, position.latitude);
             const rot = anim ? anim.currentRotation : position.course;
             return {
               type: 'Feature',
@@ -544,7 +566,9 @@ const MapPositions = ({
           });
 
       map.getSource(id)?.setData({ type: 'FeatureCollection', features: buildFeatures(id) });
-      map.getSource(selected)?.setData({ type: 'FeatureCollection', features: buildFeatures(selected) });
+      map
+        .getSource(selected)
+        ?.setData({ type: 'FeatureCollection', features: buildFeatures(selected) });
 
       if (progress < 1) {
         animationFrameRef.current = requestAnimationFrame(animate);
@@ -602,5 +626,3 @@ const MapPositions = ({
 };
 
 export default MapPositions;
-
-

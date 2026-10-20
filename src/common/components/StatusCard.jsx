@@ -1,5 +1,5 @@
-﻿import { AnchorButton } from "../../features/anchor/AnchorButton";
-import { useAnchor } from "../../features/anchor/useAnchor";
+﻿import { AnchorButton } from '../../features/anchor/AnchorButton';
+import { useAnchor } from '../../features/anchor/useAnchor';
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -195,7 +195,8 @@ const useStyles = makeStyles()((theme) => ({
   vehicleIcon: {
     width: 26,
     height: 26,
-    filter: 'invert(27%) sepia(85%) saturate(2250%) hue-rotate(242deg) brightness(92%) contrast(98%)',
+    filter:
+      'invert(27%) sepia(85%) saturate(2250%) hue-rotate(242deg) brightness(92%) contrast(98%)',
   },
   statusRow: {
     display: 'flex',
@@ -467,7 +468,8 @@ const useStyles = makeStyles()((theme) => ({
     maxWidth: '430px !important',
     width: '92% !important',
     margin: '12px auto !important',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05) !important',
+    boxShadow:
+      '0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05) !important',
     overflow: 'hidden',
   },
   customSuccessToast: {
@@ -482,7 +484,10 @@ const useStyles = makeStyles()((theme) => ({
 
 const formatShortAddress = (address) => {
   if (!address || typeof address !== 'string') return address;
-  const parts = address.split(',').map((p) => p.trim()).filter(Boolean);
+  const parts = address
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean);
   if (parts.length <= 1) return address;
 
   const cleanParts = parts.filter(
@@ -545,7 +550,11 @@ const getImageUrl = (device) => {
     device?.attributes?.vehicleImage;
 
   if (!rawImage) return null;
-  if (rawImage.startsWith('data:') || rawImage.startsWith('http://') || rawImage.startsWith('https://')) {
+  if (
+    rawImage.startsWith('data:') ||
+    rawImage.startsWith('http://') ||
+    rawImage.startsWith('https://')
+  ) {
     return rawImage;
   }
   return `/api/media/${device.uniqueId}/${rawImage}`;
@@ -573,7 +582,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const currentPosition = position || positions[deviceId];
   const stoppedStatus = currentPosition ? getStoppedTimeStatus(deviceId, currentPosition) : null;
 
-  const isIgnitionOn = Boolean(position?.attributes?.ignition ?? position?.attributes?.acc ?? false);
+  const isIgnitionOn = Boolean(
+    position?.attributes?.ignition ?? position?.attributes?.acc ?? false,
+  );
   const ignitionColor = isIgnitionOn ? '#16a34a' : '#dc2626';
 
   const isTrulyCommunicating = () => {
@@ -606,7 +617,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const events = useSelector((state) => state.events.items);
 
   const getRelayConfirmation = () => {
-    const relevant = events.find((e) => Number(e.deviceId) === Number(deviceId) && e.type === 'commandResult');
+    const relevant = events.find(
+      (e) => Number(e.deviceId) === Number(deviceId) && e.type === 'commandResult',
+    );
     if (!relevant) return null;
     const result = String(relevant.attributes?.result || '').toUpperCase();
     if (result.includes('RELAY 1')) return true;
@@ -655,13 +668,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   useEffect(() => {
     if (!deviceId) return;
     fetch('/api/devices/' + deviceId)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (data && data.attributes && typeof data.attributes.blocked !== 'undefined') {
           setIsBlocked(data.attributes.blocked === true);
         }
       })
-      .catch(err => console.error('Erro ao buscar status do banco', err));
+      .catch((err) => console.error('Erro ao buscar status do banco', err));
   }, [deviceId]);
   const [isUnlockPending, setIsUnlockPending] = useState(() => {
     return localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true';
@@ -792,22 +805,33 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
       if (!response.ok) {
         setPendingAction(null);
-        throw new Error(`Falha ao enviar comando de ${isStop ? 'bloqueio' : 'desbloqueio'} ao rastreador.`);
+        throw new Error(
+          `Falha ao enviar comando de ${isStop ? 'bloqueio' : 'desbloqueio'} ao rastreador.`,
+        );
       }
 
-      fetch('/api-device-event/' + Number(deviceId), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: isStop ? 'deviceBlocked' : 'deviceUnblocked', user: user?.name || user?.email || '' }) }).catch(() => {});
+      fetch('/api-device-event/' + Number(deviceId), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: isStop ? 'deviceBlocked' : 'deviceUnblocked',
+          user: user?.name || user?.email || '',
+        }),
+      }).catch(() => {});
 
       setIsBlocked(isStop);
-      
+
       // Salva no banco para manter ao atualizar a pagina
       try {
         const attrs = { ...(device.attributes || {}), blocked: isStop };
         await fetch('/api/devices/' + device.id, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: device.id, name: device.name, attributes: attrs })
+          body: JSON.stringify({ id: device.id, name: device.name, attributes: attrs }),
         });
-      } catch (e) { console.error('Erro ao salvar bloqueio', e); }
+      } catch (e) {
+        console.error('Erro ao salvar bloqueio', e);
+      }
       setIsUnlockPending(!isStop && !isOnline);
       setTimeout(() => setPendingAction(null), 3000);
 
@@ -847,14 +871,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     }
   };
 
-
   useEffect(() => {
     const handler = (e) => {
       if (Number(e.detail?.deviceId) !== Number(deviceId)) return;
-      sendSendCommand("engineStop", true);
+      sendSendCommand('engineStop', true);
     };
-    window.addEventListener("anchor-exit", handler);
-    return () => window.removeEventListener("anchor-exit", handler);
+    window.addEventListener('anchor-exit', handler);
+    return () => window.removeEventListener('anchor-exit', handler);
   }, [deviceId]);
 
   const handleConfirmLock = () => {
@@ -985,7 +1008,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         geofenceId: createdGeofenceId,
       };
 
-
       if (device) {
         const updatedDevice = {
           ...device,
@@ -1026,8 +1048,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       const allGeofences = await allGeoRes.json();
 
       const linkedMap = new Map();
-      linkedList
-        .forEach((g) => linkedMap.set(g.id, { ...g, linked: g.linked !== false, snoozeUntil: g.snoozeUntil || null }));
+      linkedList.forEach((g) =>
+        linkedMap.set(g.id, {
+          ...g,
+          linked: g.linked !== false,
+          snoozeUntil: g.snoozeUntil || null,
+        }),
+      );
 
       const snoozeMap = { ...(device?.attributes?.geofenceSnooze || {}) };
       const now = Date.now();
@@ -1110,7 +1137,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       }
 
       setDeviceGeofences((prev) =>
-        prev.map((g) => (g.id === geofence.id ? { ...g, linked: false, snoozeUntil } : g))
+        prev.map((g) => (g.id === geofence.id ? { ...g, linked: false, snoozeUntil } : g)),
       );
 
       await sendSendCommand('engineResume');
@@ -1221,7 +1248,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       `Ã°Å¸â€”ÂºÃ¯Â¸Â *Localizacao no Mapa:*`,
       mapsLink,
     ].join('\n');
-    const isApp = /wv|WebView|Android.*Version/i.test(navigator.userAgent) || window.ReactNativeWebView;
+    const isApp =
+      /wv|WebView|Android.*Version/i.test(navigator.userAgent) || window.ReactNativeWebView;
 
     if (isApp) {
       const encoded = encodeURIComponent(message);
@@ -1311,24 +1339,173 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
             style={{ position: 'relative' }}
           >
             <Card elevation={3} className={classes.card}>
-      {!showSensors && <Box onClick={() => setShowSensors(!showSensors)} sx={{ position: 'absolute', top: -14, right: 16, backgroundColor: '#1e293b', borderRadius: '16px 16px 0 0', padding: '2px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 -2px 8px rgba(0,0,0,0.15)', zIndex: 6 }}>
-        <Typography sx={{ color: '#fff', fontSize: '0.68rem', fontWeight: 700, letterSpacing: 0.5 }}>SENSORES</Typography>
-      </Box>}
-{showSensors && (<Box sx={{ position: 'absolute', bottom: '100%', left: 0, right: 0, mb: -1, backgroundColor: '#1e293b', color: '#fff', borderRadius: '16px 16px 0 0', p: 2, zIndex: 1 }}>
+              {!showSensors && (
+                <Box
+                  onClick={() => setShowSensors(!showSensors)}
+                  sx={{
+                    position: 'absolute',
+                    top: -14,
+                    right: 16,
+                    backgroundColor: '#1e293b',
+                    borderRadius: '16px 16px 0 0',
+                    padding: '2px 14px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 -2px 8px rgba(0,0,0,0.15)',
+                    zIndex: 6,
+                  }}
+                >
+                  <Typography
+                    sx={{ color: '#fff', fontSize: '0.68rem', fontWeight: 700, letterSpacing: 0.5 }}
+                  >
+                    SENSORES
+                  </Typography>
+                </Box>
+              )}
+              {showSensors && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: '100%',
+                    left: 0,
+                    right: 0,
+                    mb: -1,
+                    backgroundColor: '#1e293b',
+                    color: '#fff',
+                    borderRadius: '16px 16px 0 0',
+                    p: 2,
+                    zIndex: 1,
+                  }}
+                >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                     <SensorsIcon sx={{ fontSize: 20 }} />
                     <Typography sx={{ fontWeight: 800, fontSize: '0.95rem' }}>Sensores</Typography>
-                    <Box onClick={() => setShowSensors(false)} sx={{ ml: 'auto', backgroundColor: 'rgba(255,255,255,0.15)', color: '#fff', borderRadius: '10px', padding: '3px 10px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 0.5 }}>RECOLHER <KeyboardArrowDownIcon sx={{ fontSize: 14 }} /></Box>
+                    <Box
+                      onClick={() => setShowSensors(false)}
+                      sx={{
+                        ml: 'auto',
+                        backgroundColor: 'rgba(255,255,255,0.15)',
+                        color: '#fff',
+                        borderRadius: '10px',
+                        padding: '3px 10px',
+                        cursor: 'pointer',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                      }}
+                    >
+                      RECOLHER <KeyboardArrowDownIcon sx={{ fontSize: 14 }} />
+                    </Box>
                   </Box>
                   <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><SpeedIcon sx={{ fontSize: 14, color: '#3b82f6' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Velocidade</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{position ? formatSpeed(position.speed, speedUnit, t) : '0 km/h'}</Typography></Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><PowerIcon sx={{ fontSize: 14, color: '#94a3b8' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Alimentacao</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{(position?.attributes?.charge === true || (position?.attributes?.power || position?.attributes?.adc1) > 0) ? 'Ligado' : 'Desligado'}</Typography></Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><SignalCellularAltIcon sx={{ fontSize: 14, color: '#0ea5e9' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>GSM</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{position?.attributes?.rssi ?? '-'}</Typography></Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><BatteryFullIcon sx={{ fontSize: 14, color: (parseFloat((position?.attributes?.power || position?.attributes?.adc1)) >= 12 || parseFloat((position?.attributes?.power || position?.attributes?.adc1)) >= 12000) ? '#16a34a' : '#dc2626' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Tensao Ext.</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{(position?.attributes?.power || position?.attributes?.adc1) ? `${(parseFloat(position.attributes.power) > 100 ? (parseFloat(position.attributes.power)/1000).toFixed(1) : parseFloat(position.attributes.power).toFixed(1))} V` : '-'}</Typography></Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><SatelliteAltIcon sx={{ fontSize: 14, color: '#94a3b8' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Satelites</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{position?.attributes?.sat ?? '-'}</Typography></Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><LockIcon sx={{ fontSize: 14, color: (position?.attributes?.blocked || device?.attributes?.blocked) ? '#dc2626' : '#16a34a' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Bloqueio</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{(position?.attributes?.blocked || device?.attributes?.blocked) ? 'Ligado' : 'Desligado'}</Typography></Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><BatteryFullIcon sx={{ fontSize: 14, color: (position?.attributes?.batteryLevel ?? 100) > 50 ? '#16a34a' : (position?.attributes?.batteryLevel ?? 100) > 20 ? '#f59e0b' : '#dc2626' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Bateria</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{position?.attributes?.batteryLevel ?? '-'}%</Typography></Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><VpnKeyIcon sx={{ fontSize: 14, color: isIgnitionOn ? '#16a34a' : '#dc2626' }} /><Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Ignicao</Typography><Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>{isIgnitionOn ? 'Ligada' : 'Desligada'}</Typography></Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <SpeedIcon sx={{ fontSize: 14, color: '#3b82f6' }} />
+                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>
+                        Velocidade
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>
+                        {position ? formatSpeed(position.speed, speedUnit, t) : '0 km/h'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PowerIcon sx={{ fontSize: 14, color: '#94a3b8' }} />
+                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>
+                        Alimentacao
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>
+                        {position?.attributes?.charge === true ||
+                        (position?.attributes?.power || position?.attributes?.adc1) > 0
+                          ? 'Ligado'
+                          : 'Desligado'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <SignalCellularAltIcon sx={{ fontSize: 14, color: '#0ea5e9' }} />
+                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>GSM</Typography>
+                      <Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>
+                        {position?.attributes?.rssi ?? '-'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <BatteryFullIcon
+                        sx={{
+                          fontSize: 14,
+                          color:
+                            parseFloat(position?.attributes?.power || position?.attributes?.adc1) >=
+                              12 ||
+                            parseFloat(position?.attributes?.power || position?.attributes?.adc1) >=
+                              12000
+                              ? '#16a34a'
+                              : '#dc2626',
+                        }}
+                      />
+                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>
+                        Tensao Ext.
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>
+                        {position?.attributes?.power || position?.attributes?.adc1
+                          ? `${parseFloat(position.attributes.power) > 100 ? (parseFloat(position.attributes.power) / 1000).toFixed(1) : parseFloat(position.attributes.power).toFixed(1)} V`
+                          : '-'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <SatelliteAltIcon sx={{ fontSize: 14, color: '#94a3b8' }} />
+                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>
+                        Satelites
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>
+                        {position?.attributes?.sat ?? '-'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <LockIcon
+                        sx={{
+                          fontSize: 14,
+                          color:
+                            position?.attributes?.blocked || device?.attributes?.blocked
+                              ? '#dc2626'
+                              : '#16a34a',
+                        }}
+                      />
+                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>
+                        Bloqueio
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>
+                        {position?.attributes?.blocked || device?.attributes?.blocked
+                          ? 'Ligado'
+                          : 'Desligado'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <BatteryFullIcon
+                        sx={{
+                          fontSize: 14,
+                          color:
+                            (position?.attributes?.batteryLevel ?? 100) > 50
+                              ? '#16a34a'
+                              : (position?.attributes?.batteryLevel ?? 100) > 20
+                                ? '#f59e0b'
+                                : '#dc2626',
+                        }}
+                      />
+                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Bateria</Typography>
+                      <Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>
+                        {position?.attributes?.batteryLevel ?? '-'}%
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <VpnKeyIcon
+                        sx={{ fontSize: 14, color: isIgnitionOn ? '#16a34a' : '#dc2626' }}
+                      />
+                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Ignicao</Typography>
+                      <Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>
+                        {isIgnitionOn ? 'Ligada' : 'Desligada'}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
               )}
@@ -1345,15 +1522,15 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   <Box className={classes.headerLeft}>
                     <Avatar className={classes.avatar}>
                       {deviceImage ? (
-                        <img
-                          className={classes.avatarImg}
-                          src={deviceImage}
-                          alt={device.name}
-                        />
+                        <img className={classes.avatarImg} src={deviceImage} alt={device.name} />
                       ) : (
                         <img
                           className={classes.vehicleIcon}
-                          src={(device.attributes?.customIcon && mapIcons[device.attributes.customIcon]) || mapIcons[mapIconKey(device.category)]}
+                          src={
+                            (device.attributes?.customIcon &&
+                              mapIcons[device.attributes.customIcon]) ||
+                            mapIcons[mapIconKey(device.category)]
+                          }
                           alt=""
                         />
                       )}
@@ -1362,7 +1539,12 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       <Typography
                         variant="subtitle1"
                         noWrap
-                        sx={{ fontWeight: 700, color: '#1f2937', fontSize: '0.98rem', lineHeight: 1.2 }}
+                        sx={{
+                          fontWeight: 700,
+                          color: '#1f2937',
+                          fontSize: '0.98rem',
+                          lineHeight: 1.2,
+                        }}
                       >
                         {device.name}
                       </Typography>
@@ -1382,7 +1564,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         </Box>
 
                         <Box className={classes.statusItem}>
-                          <VpnKeyIcon sx={{ fontSize: 13, color: ignitionColor, transform: 'rotate(-45deg)' }} />
+                          <VpnKeyIcon
+                            sx={{ fontSize: 13, color: ignitionColor, transform: 'rotate(-45deg)' }}
+                          />
                           <Typography
                             variant="caption"
                             sx={{
@@ -1390,7 +1574,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                               color: ignitionColor,
                             }}
                           >
-                            {isIgnitionOn ? 'Ignicao ligada' : 'Ignicao desligada'}</Typography>
+                            {isIgnitionOn ? 'Ignicao ligada' : 'Ignicao desligada'}
+                          </Typography>
                         </Box>
                         {stoppedStatus && (
                           <Box sx={{ mt: '2px' }}>
@@ -1408,7 +1593,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         {position ? formatSpeed(position.speed, speedUnit, t) : '0 km/h'}
                       </Typography>
                     </Box>
-
                   </Box>
                 </Box>
               </div>
@@ -1423,7 +1607,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                             .split(',')
                             .filter(
                               (key) =>
-                                position.hasOwnProperty(key) || position.attributes?.hasOwnProperty(key),
+                                position.hasOwnProperty(key) ||
+                                position.attributes?.hasOwnProperty(key),
                             )
                             .map((key) => {
                               let content = (
@@ -1441,13 +1626,23 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                                   <TableCell sx={{ width: '40%', verticalAlign: 'top' }}>
                                     <Box className={classes.rowLabelBox}>
                                       {getRowIcon(key)}
-                                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', fontSize: '0.78rem' }}>
+                                      <Typography
+                                        variant="body2"
+                                        sx={{
+                                          fontWeight: 600,
+                                          color: '#374151',
+                                          fontSize: '0.78rem',
+                                        }}
+                                      >
                                         {positionAttributes[key]?.name || key}
                                       </Typography>
                                     </Box>
                                   </TableCell>
                                   <TableCell sx={{ verticalAlign: 'top' }}>
-                                    <Typography variant="body2" sx={{ color: '#4b5563', fontSize: '0.78rem' }}>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ color: '#4b5563', fontSize: '0.78rem' }}
+                                    >
                                       {content}
                                     </Typography>
                                   </TableCell>
@@ -1466,7 +1661,11 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         </Box>
                       )}
 
-                      <Box className={classes.mercosulPlateContainer} onClick={handleOpenPlateEdit} sx={{ cursor: 'pointer' }}>
+                      <Box
+                        className={classes.mercosulPlateContainer}
+                        onClick={handleOpenPlateEdit}
+                        sx={{ cursor: 'pointer' }}
+                      >
                         <Box className={classes.mercosulTopBar}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                             <svg width="7" height="7" viewBox="0 0 10 10">
@@ -1475,7 +1674,15 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                               <circle cx="8.5" cy="5" r="1.2" fill="#ffffff" />
                               <circle cx="5" cy="8.5" r="1.2" fill="#ffffff" />
                             </svg>
-                            <Typography sx={{ fontSize: '0.38rem', fontWeight: 900, color: '#ffffff', letterSpacing: 0.5, lineHeight: 1 }}>
+                            <Typography
+                              sx={{
+                                fontSize: '0.38rem',
+                                fontWeight: 900,
+                                color: '#ffffff',
+                                letterSpacing: 0.5,
+                                lineHeight: 1,
+                              }}
+                            >
                               MERCOSUL
                             </Typography>
                           </Box>
@@ -1487,7 +1694,11 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                           </svg>
                         </Box>
                         <Box className={classes.mercosulPlateBody}>
-                          <svg className={classes.mercosulQrCode} viewBox="0 0 24 24" fill="#111827">
+                          <svg
+                            className={classes.mercosulQrCode}
+                            viewBox="0 0 24 24"
+                            fill="#111827"
+                          >
                             <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14 0h4v4h-4v-4zm-4-2h2v4h-2v-4zm4-2h2v2h-2v-2zm-2 6h2v4h-2v-4z" />
                           </svg>
                           <span className={classes.mercosulBr}>BR</span>
@@ -1501,23 +1712,36 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
                   <Box className={classes.imageRightBox}>
                     {deviceImage ? (
-                      <img
-                        className={classes.imageMedia}
-                        src={deviceImage}
-                        alt={device.name}
-                      />
+                      <img className={classes.imageMedia} src={deviceImage} alt={device.name} />
                     ) : (
-                      <svg width="100%" height="100%" viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg
+                        width="100%"
+                        height="100%"
+                        viewBox="0 0 160 120"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
                         <rect width="160" height="120" rx="12" fill="#F3E8FF" />
                         <path d="M-10 30 L60 -10 L170 50 L100 90 Z" fill="#E9D5FF" opacity="0.6" />
                         <path d="M20 70 L90 30 L160 80 L90 120 Z" fill="#DDD6FE" opacity="0.7" />
                         <path d="M-20 80 L50 40 L110 90 L40 130 Z" fill="#EDE9FE" opacity="0.8" />
-                        <path d="M120 25 C90 25 140 65 110 85" stroke="#6D28D9" strokeWidth="2.5" strokeDasharray="4 4" fill="none" />
+                        <path
+                          d="M120 25 C90 25 140 65 110 85"
+                          stroke="#6D28D9"
+                          strokeWidth="2.5"
+                          strokeDasharray="4 4"
+                          fill="none"
+                        />
                         <circle cx="120" cy="25" r="3" fill="#6D28D9" />
                         <g transform="translate(100, 75)">
                           <circle cx="10" cy="10" r="9" fill="#6D28D9" />
                           <circle cx="10" cy="10" r="4.5" fill="#FFFFFF" />
-                          <path d="M10 19 L10 24" stroke="#6D28D9" strokeWidth="2.5" strokeLinecap="round" />
+                          <path
+                            d="M10 19 L10 24"
+                            stroke="#6D28D9"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                          />
                         </g>
                       </svg>
                     )}
@@ -1536,14 +1760,14 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                     backgroundColor: isUnlockPending
                       ? '#d97706'
                       : isBlocked
-                      ? '#16a34a'
-                      : '#dc2626',
+                        ? '#16a34a'
+                        : '#dc2626',
                     '&:hover': {
                       backgroundColor: isUnlockPending
                         ? '#b45309'
                         : isBlocked
-                        ? '#15803d'
-                        : '#b91c1c',
+                          ? '#15803d'
+                          : '#b91c1c',
                     },
                   }}
                 >
@@ -1588,7 +1812,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   className={classes.actionItemBtn}
                   onClick={() => {
                     if (position) {
-                      const isApp = /wv|WebView|Android.*Version/i.test(navigator.userAgent) || window.ReactNativeWebView;
+                      const isApp =
+                        /wv|WebView|Android.*Version/i.test(navigator.userAgent) ||
+                        window.ReactNativeWebView;
                       const lat = position.latitude;
                       const lng = position.longitude;
                       if (isApp) {
@@ -1621,7 +1847,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       onClick={handleShareWhatsapp}
                       disabled={disableActions}
                     >
-                      <ShareIcon sx={{ fontSize: 22, color: "#7c3aed" }} />
+                      <ShareIcon sx={{ fontSize: 22, color: '#7c3aed' }} />
                       <Typography className={classes.actionText}>Compart.</Typography>
                     </ButtonBase>
 
@@ -1674,7 +1900,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   width: 36,
                   height: 36,
                   borderRadius: '12px',
-                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(14, 165, 233, 0.05) 100%)',
+                  background:
+                    'linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(14, 165, 233, 0.05) 100%)',
                   border: '1px solid rgba(56, 189, 248, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
@@ -1685,7 +1912,14 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                 <FenceIcon sx={{ fontSize: 20, color: '#38bdf8' }} />
               </Box>
               <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontWeight: 800, fontSize: { xs: '0.92rem', sm: '1rem' }, color: '#ffffff', lineHeight: 1.2 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: { xs: '0.92rem', sm: '1rem' },
+                    color: '#ffffff',
+                    lineHeight: 1.2,
+                  }}
+                >
                   Cercas Virtuais
                 </Typography>
                 <Typography
@@ -1747,11 +1981,14 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   <Box
                     key={geofence.id}
                     sx={{
-                      background: 'linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%)',
+                      background:
+                        'linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%)',
                       backdropFilter: 'blur(10px)',
                       borderRadius: '18px',
                       p: { xs: 1.6, sm: 1.8 },
-                      border: isPaused ? '1px solid rgba(234, 179, 8, 0.35)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      border: isPaused
+                        ? '1px solid rgba(234, 179, 8, 0.35)'
+                        : '1px solid rgba(255, 255, 255, 0.08)',
                       boxShadow: '0 8px 20px rgba(0, 0, 0, 0.25)',
                       display: 'flex',
                       flexDirection: 'column',
@@ -1759,8 +1996,23 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       transition: 'all 0.2s',
                     }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.4, minWidth: 0, flex: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1.4,
+                          minWidth: 0,
+                          flex: 1,
+                        }}
+                      >
                         <Box
                           sx={{
                             width: 42,
@@ -1769,7 +2021,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                             background: isPaused
                               ? 'linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(202, 138, 4, 0.05) 100%)'
                               : 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(79, 70, 229, 0.08) 100%)',
-                            border: isPaused ? '1px solid rgba(234, 179, 8, 0.3)' : '1px solid rgba(99, 102, 241, 0.3)',
+                            border: isPaused
+                              ? '1px solid rgba(234, 179, 8, 0.3)'
+                              : '1px solid rgba(99, 102, 241, 0.3)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1798,7 +2052,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                           >
                             {geofence.name}
                           </Typography>
-                          <Typography sx={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, mt: 0.3 }}>
+                          <Typography
+                            sx={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, mt: 0.3 }}
+                          >
                             {geofence.description || 'Poligono'}
                           </Typography>
                         </Box>
@@ -1846,7 +2102,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                     {isPaused && (
                       <Box
                         sx={{
-                          background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.12) 0%, rgba(202, 138, 4, 0.04) 100%)',
+                          background:
+                            'linear-gradient(135deg, rgba(234, 179, 8, 0.12) 0%, rgba(202, 138, 4, 0.04) 100%)',
                           border: '1px solid rgba(234, 179, 8, 0.25)',
                           borderRadius: '12px',
                           p: { xs: 1.2, sm: 1.4 },
@@ -1856,9 +2113,18 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                         }}
                       >
                         <QueryBuilderIcon sx={{ color: '#facc15', fontSize: 20, flexShrink: 0 }} />
-                        <Typography sx={{ fontSize: { xs: '0.74rem', sm: '0.78rem' }, color: '#fef08a', fontWeight: 600, lineHeight: 1.3 }}>
+                        <Typography
+                          sx={{
+                            fontSize: { xs: '0.74rem', sm: '0.78rem' },
+                            color: '#fef08a',
+                            fontWeight: 600,
+                            lineHeight: 1.3,
+                          }}
+                        >
                           Cerca desvinculada! Ficara ativa novamente em{' '}
-                          <strong style={{ color: '#ffffff', fontWeight: 800 }}>{formatDateTimeBr(geofence.snoozeUntil)}</strong>
+                          <strong style={{ color: '#ffffff', fontWeight: 800 }}>
+                            {formatDateTimeBr(geofence.snoozeUntil)}
+                          </strong>
                         </Typography>
                       </Box>
                     )}
@@ -1951,8 +2217,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
           maxWidth: { xs: '92vw', sm: 420 },
         }}
       >
-        {toast && (
-          toast.customSuccess ? (
+        {toast &&
+          (toast.customSuccess ? (
             <Box
               className={classes.customSuccessToast}
               sx={{
@@ -1964,10 +2230,14 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
             >
               <CheckCircleIcon sx={{ color: '#059669', fontSize: 28, flexShrink: 0 }} />
               <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#065f46', lineHeight: 1.2 }}>
+                <Typography
+                  sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#065f46', lineHeight: 1.2 }}
+                >
                   {toast.title}
                 </Typography>
-                <Typography sx={{ fontWeight: 600, fontSize: '0.76rem', color: '#047857', mt: 0.3 }}>
+                <Typography
+                  sx={{ fontWeight: 600, fontSize: '0.76rem', color: '#047857', mt: 0.3 }}
+                >
                   {toast.subtitle}
                 </Typography>
               </Box>
@@ -1988,29 +2258,25 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                   toast.severity === 'success'
                     ? '#16a34a'
                     : toast.severity === 'warning'
-                    ? '#d97706'
-                    : '#dc2626',
+                      ? '#d97706'
+                      : '#dc2626',
                 color: '#ffffff',
               }}
             >
               {toast.message}
             </Alert>
-          )
-        )}
+          ))}
       </Snackbar>
 
-      <Dialog
-        open={editPlateOpen}
-        onClose={() => setEditPlateOpen(false)}
-        maxWidth="xs"
-        fullWidth
-      >
+      <Dialog open={editPlateOpen} onClose={() => setEditPlateOpen(false)} maxWidth="xs" fullWidth>
         <Box sx={{ p: 3 }}>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
             Editar Veiculo
           </Typography>
           <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" sx={{ fontWeight: 600, color: "#6b7280" }}>Modelo</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7280' }}>
+              Modelo
+            </Typography>
             <input
               type="text"
               value={editModel}
@@ -2027,7 +2293,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
             />
           </Box>
           <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" sx={{ fontWeight: 600, color: "#6b7280" }}>Placa do Veiculo</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7280' }}>
+              Placa do Veiculo
+            </Typography>
             <input
               type="text"
               value={editPlate}
@@ -2043,10 +2311,17 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
               }}
             />
           </Box>
-          <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
             <Button
               onClick={() => setEditPlateOpen(false)}
-              sx={{ flex: 1, borderRadius: 2, color: "#6b7280", border: "1px solid #e5e7eb", textTransform: "none", fontWeight: 600 }}
+              sx={{
+                flex: 1,
+                borderRadius: 2,
+                color: '#6b7280',
+                border: '1px solid #e5e7eb',
+                textTransform: 'none',
+                fontWeight: 600,
+              }}
             >
               Cancelar
             </Button>
@@ -2054,14 +2329,21 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
               onClick={handleSavePlate}
               variant="contained"
               disabled={savingPlate}
-              sx={{ flex: 1, borderRadius: 2, backgroundColor: "#3b82f6", textTransform: "none", fontWeight: 700, boxShadow: "none" }}
+              sx={{
+                flex: 1,
+                borderRadius: 2,
+                backgroundColor: '#3b82f6',
+                textTransform: 'none',
+                fontWeight: 700,
+                boxShadow: 'none',
+              }}
             >
               {savingPlate ? 'Salvando...' : 'Guardar'}
             </Button>
           </Box>
         </Box>
       </Dialog>
-<RemoveDialog
+      <RemoveDialog
         open={removing}
         endpoint="devices"
         itemId={deviceId}
