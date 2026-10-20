@@ -1229,53 +1229,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       (pos.latitude && pos.longitude ? `https://www.google.com/maps?q=${pos.latitude},${pos.longitude}` : 'Sem localizacao'),
     ].join('\n');
     window.location.href = `whatsapp://send?text=${encodeURIComponent(lines)}`;
-  };
-  };
-  };
-        return;
-      } catch (e) {
-        window.open(`https://wa.me/?text=${encoded}`, '_blank');
-        return;
-      }
-    }
-
-    const whatsUrl = 'whatsapp://send?text=' + encodeURIComponent(message);
-    const shareWindow = window.open('', '_blank');
-
-    if (navigator.share) {
-      try {
-        if (deviceImage) {
-          const response = await fetch(deviceImage);
-          const blob = await response.blob();
-          const file = new File([blob], 'veiculo.jpg', { type: blob.type || 'image/jpeg' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            if (shareWindow) shareWindow.close();
-            await navigator.share({ files: [file], text: message });
-            return;
-          }
-        }
-        if (shareWindow) shareWindow.close();
-        await navigator.share({ text: message });
-        return;
-      } catch (e) {
-        // fallback abaixo
-      }
-    }
-
-    if (shareWindow) shareWindow.close();
-    const link = document.createElement('a');
-    link.href = whatsUrl;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const handleRemove = useCatch(async (removed) => {
     if (removed) {
       const response = await fetchOrThrow('/api/devices');
