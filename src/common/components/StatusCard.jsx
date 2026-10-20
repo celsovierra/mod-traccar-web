@@ -1206,55 +1206,32 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   };
 
   const handleShareWhatsapp = async () => {
-    const statusEmoji = isOnline ? 'ðŸŸ¢' : 'ðŸ”´';
-    const statusText = isOnline ? 'Online' : 'Offline';
-    const ignitionText = isIgnitionOn ? 'Ligada' : 'Desligada';
-    const lockText = isBlocked ? 'Bloqueado' : 'Desbloqueado';
-    const modelText = device?.model || 'Nao informado';
-    const plateText = device?.attributes?.plate || 'Nao informado';
-
-    const speedKmh = position ? (position.speed * 1.852).toFixed(2) : '0.00';
-
-    let stoppedText = '0 min';
-    if (stoppedStatus) {
-      const diffMs = Date.now() - new Date(stoppedStatus.stoppedSince).getTime();
-      const hours = Math.floor(diffMs / 3600000);
-      const minutes = Math.floor((diffMs % 3600000) / 60000);
-      stoppedText = hours > 0 ? `${hours}h ${minutes}min` : `${minutes} min`;
-    }
-
-    const addressText = position?.address || 'Nao disponivel';
-    const dateText = position?.fixTime ? formatDateTimeBr(position.fixTime) : '-';
-    const mapsLink = position
-      ? `https://www.google.com/maps?q=${position.latitude},${position.longitude}`
-      : 'Nao disponivel';
-
-    const message = [
-      'Ã°Å¸â€œÂ *RELATORIO DE MONITORAMENTO*',
+    const device = selectedDevice;
+    if (!device) return;
+    const pos = position || {};
+    const lines = [
+      '\u{1F4CD} *RELATORIO DE MONITORAMENTO*',
       '',
-      `Ã°Å¸â€˜Â¤ ${device.name}`,
-      `${statusEmoji} ${isOnline ? 'Conectado / Online' : 'Desconectado / Offline'}`,
-      `Ã°Å¸â€â€˜ ${ignitionText}`,
-      `${isBlocked ? 'Ã°Å¸â€â€™ Bloqueado' : 'Ã°Å¸â€â€œ Desbloqueado'}`,
+      '\u{1F464} ' + (device.name || 'Veiculo'),
+      '\u{1F534} ' + (device.status === 'online' ? 'Online' : 'Offline'),
+      '\u{1F511} ' + (device.attributes?.igni === 'true' ? 'Ligada' : 'Desligada'),
+      '\u{1F512} ' + (device.attributes?.blocked === 'true' ? 'Bloqueado' : 'Desbloqueado'),
       '',
-      `Ã°Å¸Å¡Âµ ${modelText}`,
-      `Ã°Å¸â€Â¢ ${plateText}`,
-      `Ã¢Å¡Â¡ ${speedKmh} km/h`,
-      `Ã°Å¸â€ºâ€˜ ${stoppedText}`,
-      'Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬',
+      '\u{1F6A8} ' + (device.attributes?.modelo || device.name),
+      '\u{1F522} ' + (device.uniqueId || 'SEM PLACA'),
+      '\u26A1 ' + (pos.speed ? (pos.speed * 1.85).toFixed(2) : '0.00') + ' km/h',
+      '\u{1F6DC} ' + (pos.fixTime ? formatDuration(Date.now() - pos.fixTime) : '0'),
+      '────────────────',
       '',
-      `Ã°Å¸â€œÂ ${addressText}`,
+      '\u{1F4E2} Nao disponivel',
       '',
-      `Ã°Å¸â€”ÂºÃ¯Â¸Â *Localizacao no Mapa:*`,
-      mapsLink,
+      '\u{1F5FA}\u{FE0F} *Localizacao no Mapa:*',
+      (pos.latitude && pos.longitude ? `https://www.google.com/maps?q=${pos.latitude},${pos.longitude}` : 'Sem localizacao'),
     ].join('\n');
-    const isApp =
-      /wv|WebView|Android.*Version/i.test(navigator.userAgent) || window.ReactNativeWebView;
-
-    if (isApp) {
-      const encoded = encodeURIComponent(message);
-      try {
-        window.location.href = `whatsapp://send?text=${encoded}`;
+    window.location.href = `whatsapp://send?text=${encodeURIComponent(lines)}`;
+  };
+  };
+  };
         return;
       } catch (e) {
         window.open(`https://wa.me/?text=${encoded}`, '_blank');
