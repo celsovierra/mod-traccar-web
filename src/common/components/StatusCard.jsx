@@ -1206,74 +1206,27 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   };
 
   const handleShareWhatsapp = async () => {
-    const device = selectedDevice;
-    if (!device) return;
     const pos = position || {};
-    const lines = [
-      '\u{1F4CD} *RELATORIO DE MONITORAMENTO*',
+    const isOnline = device?.status === 'online';
+    const isIgnitionOn = Boolean(pos?.attributes?.ignition ?? pos?.attributes?.acc ?? false);
+    
+    const msg = [
+      '*RELATORIO DE MONITORAMENTO*',
       '',
-      '\u{1F464} ' + (device.name || 'Veiculo'),
-      '\u{1F534} ' + (device.status === 'online' ? 'Online' : 'Offline'),
-      '\u{1F511} ' + (device.attributes?.igni === 'true' ? 'Ligada' : 'Desligada'),
-      '\u{1F512} ' + (device.attributes?.blocked === 'true' ? 'Bloqueado' : 'Desbloqueado'),
+      '*Veiculo:* ' + (device?.name || 'Veiculo'),
+      '*Status:* ' + (isOnline ? 'Online' : 'Offline'),
+      'Ignicao: ' + (isIgnitionOn ? 'Ligada' : 'Desligada'),
+      'Bloqueio: ' + (isBlocked ? 'Bloqueado' : 'Desbloqueado'),
       '',
-      '\u{1F6A8} ' + (device.attributes?.modelo || device.name),
-      '\u{1F522} ' + (device.uniqueId || 'SEM PLACA'),
-      '\u26A1 ' + (pos.speed ? (pos.speed * 1.85).toFixed(2) : '0.00') + ' km/h',
-      '\u{1F6DC} ' + (pos.fixTime ? formatDuration(Date.now() - pos.fixTime) : '0'),
-      '────────────────',
+      '*Placa:* ' + (device?.attributes?.plate || 'SEM PLACA'),
+      '*Velocidade:* ' + (pos.speed ? (pos.speed * 1.85).toFixed(2) : '0.00') + ' km/h',
+      '*Tempo:* ' + (stoppedStatus ? 'Parado' : 'Em movimento'),
       '',
-      '\u{1F4E2} Nao disponivel',
-      '',
-      '\u{1F5FA}\u{FE0F} *Localizacao no Mapa:*',
-      (pos.latitude && pos.longitude ? `https://www.google.com/maps?q=${pos.latitude},${pos.longitude}` : 'Sem localizacao'),
+      '*Localizacao no Mapa:*',
+      (pos.latitude && pos.longitude ? 'https://www.google.com/maps?q=' + pos.latitude + ',' + pos.longitude : 'Sem localizacao'),
     ].join('\n');
-    window.location.href = `whatsapp://send?text=${encodeURIComponent(lines)}`;
-  };
-  };
-  };
-        return;
-      } catch (e) {
-        window.open(`https://wa.me/?text=${encoded}`, '_blank');
-        return;
-      }
-    }
-
-    const whatsUrl = 'whatsapp://send?text=' + encodeURIComponent(message);
-    const shareWindow = window.open('', '_blank');
-
-    if (navigator.share) {
-      try {
-        if (deviceImage) {
-          const response = await fetch(deviceImage);
-          const blob = await response.blob();
-          const file = new File([blob], 'veiculo.jpg', { type: blob.type || 'image/jpeg' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            if (shareWindow) shareWindow.close();
-            await navigator.share({ files: [file], text: message });
-            return;
-          }
-        }
-        if (shareWindow) shareWindow.close();
-        await navigator.share({ text: message });
-        return;
-      } catch (e) {
-        // fallback abaixo
-      }
-    }
-
-    if (shareWindow) shareWindow.close();
-    const link = document.createElement('a');
-    link.href = whatsUrl;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    
+    window.location.href = 'whatsapp://send?text=' + encodeURIComponent(msg);
   };
 
   const handleRemove = useCatch(async (removed) => {
