@@ -38,7 +38,7 @@ const MapMarkers = ({ markers, showTitles }) => {
       layerConfig.layout['text-field'] = '{title}';
       layerConfig.layout['text-allow-overlap'] = true;
       layerConfig.layout['text-anchor'] = 'bottom';
-      layerConfig.layout['text-offset'] = [0, -3 * iconScale];
+      layerConfig.layout['text-offset'] = [0, -2.5 * iconScale];
       layerConfig.layout['text-font'] = findFonts(map);
       layerConfig.layout['text-size'] = 12;
       layerConfig.paint = {
