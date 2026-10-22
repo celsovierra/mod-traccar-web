@@ -1680,46 +1680,14 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
               </Collapse>
 
               <Box className={classes.actionsContainer}>
-                <ButtonBase
-                  className={`${classes.lockRectangleBtn} ${
-                    isUnlockPending ? 'blinking-pending-btn' : ''
-                  }`}
-                  onClick={handleToggleBlock}
-                  disabled={disableActions || readonly || loadingCommand}
-                  sx={{
-                    backgroundColor: isUnlockPending
-                      ? '#d97706'
-                      : isBlocked
-                        ? '#16a34a'
-                        : '#dc2626',
-                    '&:hover': {
-                      backgroundColor: isUnlockPending
-                        ? '#b45309'
-                        : isBlocked
-                          ? '#15803d'
-                          : '#b91c1c',
-                    },
-                  }}
-                >
-                  {loadingCommand ? (
-                    <CircularProgress size={16} sx={{ color: '#ffffff' }} />
-                  ) : isUnlockPending ? (
-                    <>
-                      <HourglassEmptyIcon sx={{ fontSize: 18, color: '#ffffff' }} />
-                      <span>Aguardando</span>
-                    </>
-                  ) : isBlocked ? (
-                    <>
-                      <LockOpenIcon sx={{ fontSize: 18, color: '#ffffff' }} />
-                      <span>Desbloquear</span>
-                    </>
-                  ) : (
-                    <>
-                      <LockIcon sx={{ fontSize: 18, color: '#ffffff' }} />
-                      <span>Bloquear</span>
-                    </>
-                  )}
-                </ButtonBase>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+<ButtonBase className={classes.lockRectangleBtn} onClick={() => sendSendCommand('engineStop')} disabled={disableActions || readonly || loadingCommand} sx={{ backgroundColor: '#dc2626', '&:hover': { backgroundColor: '#b91c1c' }, opacity: isBlocked ? 0.5 : 1 }}>
+{loadingCommand && pendingAction === 'lock' ? (<CircularProgress size={16} sx={{ color: '#ffffff' }} />) : (<><LockIcon sx={{ fontSize: 18, color: '#ffffff' }} /><span>Bloquear</span></>)}
+</ButtonBase>
+<ButtonBase className={classes.lockRectangleBtn} onClick={() => sendSendCommand('engineResume')} disabled={disableActions || readonly || loadingCommand} sx={{ backgroundColor: '#16a34a', '&:hover': { backgroundColor: '#15803d' } }}>
+{loadingCommand && pendingAction === 'unlock' ? (<CircularProgress size={16} sx={{ color: '#ffffff' }} />) : (<><LockOpenIcon sx={{ fontSize: 18, color: '#ffffff' }} /><span>Desbloquear</span></>)}
+</ButtonBase>
+</Box>
 
                 {/* Botao de Ancora do Modulo Isolado */}
                 <AnchorButton
