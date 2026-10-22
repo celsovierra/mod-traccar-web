@@ -1713,7 +1713,7 @@ const getConfirmedStatus = (pos = position, dev = device) => {
                     onClick={() => sendSendCommand('engineStop')}
                     disabled={disableActions || readonly || loadingCommand}
                     sx={{
-                      backgroundColor: (isBlocked || lastKnownBlock.status) ? (piscar ? '#ef4444' : '#991b1b') : '#dc2626',
+                      backgroundColor: (isBlocked || lastKnownBlock.status) ? (piscar ? '#ff0000' : '#ffb3b3') : '#dc2626',
                       '&:hover': { backgroundColor: '#b91c1c' },
                       opacity: isBlocked ? 0.5 : 1,
                     }}
