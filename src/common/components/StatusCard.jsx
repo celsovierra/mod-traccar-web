@@ -690,6 +690,16 @@ const getConfirmedStatus = (pos = position, dev = device) => {
     }
   }, [position, deviceId]);
 
+    const [piscar, setPiscar] = useState(false);
+  useEffect(() => {
+    let intervalo;
+    if (isBlocked || lastKnownBlock.status) {
+      intervalo = setInterval(() => setPiscar(p => !p), 600);
+    } else {
+      setPiscar(false);
+    }
+    return () => clearInterval(intervalo);
+  }, [isBlocked, lastKnownBlock.status]);
   const [isUnlockPending, setIsUnlockPending] = useState(() => {
     return localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true';
   });
@@ -1700,10 +1710,10 @@ const getConfirmedStatus = (pos = position, dev = device) => {
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <ButtonBase
                     className={classes.lockRectangleBtn}
-<ButtonBase sx={{ ...((isBlocked || lastKnownBlock.status) ? { animation: 'pulse-red 1.5s infinite' } : {}) }} className={classes.lockRectangleBtn} onClick={() => sendSendCommand('engineStop')} disabled={disableActions || readonly || loadingCommand} onClick={() => sendSendCommand('engineStop')}
+                    onClick={() => sendSendCommand('engineStop')}
                     disabled={disableActions || readonly || loadingCommand}
                     sx={{
-                      backgroundColor: '#dc2626',
+                      backgroundColor: (isBlocked || lastKnownBlock.status) ? (piscar ? '#ef4444' : '#991b1b') : '#dc2626',
                       '&:hover': { backgroundColor: '#b91c1c' },
                       opacity: isBlocked ? 0.5 : 1,
                     }}
