@@ -627,25 +627,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     return null;
   };
 
-  const getIsBlockedReal = (pos = position, dev = device) => {
-    const relayConfirmed = getRelayConfirmation();
-    if (relayConfirmed !== null) return relayConfirmed;
-    const posAttr = pos?.attributes || {};
-    const devAttr = dev?.attributes || {};
-    if (posAttr.out1 === true) return true;
-    if (posAttr.out1 === false) return false;
-    if (posAttr.output1 === true) return true;
-    if (posAttr.output1 === false) return false;
-    if (posAttr.relay === true) return true;
-    if (posAttr.relay === false) return false;
-    if (posAttr.blocked === true) return true;
-    if (posAttr.blocked === false) return false;
-    if (devAttr.blocked === true) return true;
-    if (devAttr.blocked === false) return false;
-    return false;
-  };
+  const getIsBlockedReal = (pos = position, dev = device) => { const relayConfirmed = getRelayConfirmation(); if (relayConfirmed !== null) return relayConfirmed; const posAttr = pos?.attributes || {}; const devAttr = dev?.attributes || {}; if (posAttr.out1 === true) return true; if (posAttr.out1 === false) return false; if (posAttr.output1 === true) return true; if (posAttr.output1 === false) return false; if (posAttr.relay === true) return true; if (posAttr.relay === false) return false; if (posAttr.blocked === true) return true; if (posAttr.blocked === false) return false; if (devAttr.blocked === true) return true; if (devAttr.blocked === false) return false; const localStr = localStorage.getItem("device_blk_" + deviceId); if (localStr) { try { return JSON.parse(localStr).status; } catch(e) {} } return false; };
 
-  const getConfirmedStatus = (pos = position, dev = device) => {
+const getConfirmedStatus = (pos = position, dev = device) => {
     const relayConfirmed = getRelayConfirmation();
     if (relayConfirmed !== null) return relayConfirmed;
     const posAttr = pos?.attributes || {};
@@ -676,6 +660,36 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       })
       .catch((err) => console.error('Erro ao buscar status do banco', err));
   }, [deviceId]);
+  const [lastKnownIgnition, setLastKnownIgnition] = useState(() => {
+    const s = localStorage.getItem('device_ign_' + deviceId);
+    return s ? JSON.parse(s) : { status: false, time: null };
+  });
+  const [lastKnownBlock, setLastKnownBlock] = useState(() => {
+    const s = localStorage.getItem('device_blk_' + deviceId);
+    return s ? JSON.parse(s) : { status: false, time: null };
+  });
+  useEffect(() => {
+    if (isBlocked !== lastKnownBlock.status || !lastKnownBlock.time) {
+      const log = { status: isBlocked, time: new Date().toLocaleString('pt-BR') };
+      setLastKnownBlock(log);
+      localStorage.setItem('device_blk_' + deviceId, JSON.stringify(log));
+    }
+  }, [isBlocked, deviceId]);
+
+  useEffect(() => {
+    if (
+      position &&
+      (position.attributes?.ignition !== undefined || position.attributes?.acc !== undefined)
+    ) {
+      const rawIgn = Boolean(position.attributes.ignition ?? position.attributes.acc);
+      if (rawIgn !== lastKnownIgnition.status || !lastKnownIgnition.time) {
+        const log = { status: rawIgn, time: new Date().toLocaleString('pt-BR') };
+        setLastKnownIgnition(log);
+        localStorage.setItem('device_ign_' + deviceId, JSON.stringify(log));
+      }
+    }
+  }, [position, deviceId]);
+
   const [isUnlockPending, setIsUnlockPending] = useState(() => {
     return localStorage.getItem(`device_unlock_pending_${deviceId}`) === 'true';
   });
@@ -1209,7 +1223,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     const pos = position || {};
     const isOnline = device?.status === 'online';
     const isIgnitionOn = Boolean(pos?.attributes?.ignition ?? pos?.attributes?.acc ?? false);
-    
+
     const msg = [
       '*RELATORIO DE MONITORAMENTO*',
       '',
@@ -1223,9 +1237,11 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
       '*Tempo:* ' + (stoppedStatus ? 'Parado' : 'Em movimento'),
       '',
       '*Localizacao no Mapa:*',
-      (pos.latitude && pos.longitude ? 'https://www.google.com/maps?q=' + pos.latitude + ',' + pos.longitude : 'Sem localizacao'),
+      pos.latitude && pos.longitude
+        ? 'https://www.google.com/maps?q=' + pos.latitude + ',' + pos.longitude
+        : 'Sem localizacao',
     ].join('\n');
-    
+
     window.location.href = 'whatsapp://send?text=' + encodeURIComponent(msg);
   };
 
@@ -1395,19 +1411,17 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       <LockIcon
                         sx={{
                           fontSize: 14,
-                          color:
-                            position?.attributes?.blocked || device?.attributes?.blocked
-                              ? '#dc2626'
-                              : '#16a34a',
+                          color: isBlocked ? '#dc2626' : '#16a34a',
                         }}
                       />
                       <Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>
                         Bloqueio
                       </Typography>
                       <Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>
-                        {position?.attributes?.blocked || device?.attributes?.blocked
-                          ? 'Ligado'
-                          : 'Desligado'}
+                        {isBlocked || lastKnownBlock.status ? 'Bloqueado' : 'Desbloqueado'}
+                        {lastKnownBlock.time
+                          ? '(desde ' + lastKnownBlock.time.split(' ')[1] + ')'
+                          : ''}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1433,7 +1447,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
                       />
                       <Typography sx={{ fontSize: '0.72rem', fontWeight: 700 }}>Ignicao</Typography>
                       <Typography sx={{ fontSize: '0.72rem', ml: 'auto' }}>
-                        {isIgnitionOn ? 'Ligada' : 'Desligada'}
+                        {isIgnitionOn ? 'Ligada' : 'Desligada'}{' '}
+                        {lastKnownIgnition.time
+                          ? '(desde ' + lastKnownIgnition.time.split(' ')[1] + ')'
+                          : ''}
                       </Typography>
                     </Box>
                   </Box>
@@ -1681,13 +1698,41 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
               <Box className={classes.actionsContainer}>
                 <Box sx={{ display: 'flex', gap: 1 }}>
-<ButtonBase className={classes.lockRectangleBtn} onClick={() => sendSendCommand('engineStop')} disabled={disableActions || readonly || loadingCommand} sx={{ backgroundColor: '#dc2626', '&:hover': { backgroundColor: '#b91c1c' }, opacity: isBlocked ? 0.5 : 1 }}>
-{loadingCommand && pendingAction === 'lock' ? (<CircularProgress size={16} sx={{ color: '#ffffff' }} />) : (<><LockIcon sx={{ fontSize: 18, color: '#ffffff' }} /><span>Bloquear</span></>)}
-</ButtonBase>
-<ButtonBase className={classes.lockRectangleBtn} onClick={() => sendSendCommand('engineResume')} disabled={disableActions || readonly || loadingCommand} sx={{ backgroundColor: '#16a34a', '&:hover': { backgroundColor: '#15803d' } }}>
-{loadingCommand && pendingAction === 'unlock' ? (<CircularProgress size={16} sx={{ color: '#ffffff' }} />) : (<><LockOpenIcon sx={{ fontSize: 18, color: '#ffffff' }} /><span>Desbloquear</span></>)}
-</ButtonBase>
-</Box>
+                  <ButtonBase
+                    className={classes.lockRectangleBtn}
+                    onClick={() => sendSendCommand('engineStop')}
+                    disabled={disableActions || readonly || loadingCommand}
+                    sx={{
+                      backgroundColor: '#dc2626',
+                      '&:hover': { backgroundColor: '#b91c1c' },
+                      opacity: isBlocked ? 0.5 : 1,
+                    }}
+                  >
+                    {loadingCommand && pendingAction === 'lock' ? (
+                      <CircularProgress size={16} sx={{ color: '#ffffff' }} />
+                    ) : (
+                      <>
+                        <LockIcon sx={{ fontSize: 18, color: '#ffffff' }} />
+                        <span>Bloquear</span>
+                      </>
+                    )}
+                  </ButtonBase>
+                  <ButtonBase
+                    className={classes.lockRectangleBtn}
+                    onClick={() => sendSendCommand('engineResume')}
+                    disabled={disableActions || readonly || loadingCommand}
+                    sx={{ backgroundColor: '#16a34a', '&:hover': { backgroundColor: '#15803d' } }}
+                  >
+                    {loadingCommand && pendingAction === 'unlock' ? (
+                      <CircularProgress size={16} sx={{ color: '#ffffff' }} />
+                    ) : (
+                      <>
+                        <LockOpenIcon sx={{ fontSize: 18, color: '#ffffff' }} />
+                        <span>Desbloquear</span>
+                      </>
+                    )}
+                  </ButtonBase>
+                </Box>
 
                 {/* Botao de Ancora do Modulo Isolado */}
                 <AnchorButton
