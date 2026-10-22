@@ -1700,7 +1700,7 @@ const getConfirmedStatus = (pos = position, dev = device) => {
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <ButtonBase
                     className={classes.lockRectangleBtn}
-                    onClick={() => sendSendCommand('engineStop')}
+<ButtonBase sx={{ ...((isBlocked || lastKnownBlock.status) ? { animation: 'pulse-red 1.5s infinite' } : {}) }} className={classes.lockRectangleBtn} onClick={() => sendSendCommand('engineStop')} disabled={disableActions || readonly || loadingCommand} onClick={() => sendSendCommand('engineStop')}
                     disabled={disableActions || readonly || loadingCommand}
                     sx={{
                       backgroundColor: '#dc2626',
