@@ -1,7 +1,5 @@
-﻿import { Autocomplete, Snackbar, TextField, Button, Box } from '@mui/material';
+﻿import { Autocomplete, TextField, Button, Box } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { useCatchCallback, useAsyncTask } from '../../reactHelper';
-import { snackBarDurationShortMs } from '../util/duration';
 import { useTranslation } from './LocalizationProvider';
 import fetchOrThrow from '../util/fetchOrThrow';
 
@@ -18,75 +16,65 @@ const LinkField = ({
 }) => {
   const t = useTranslation();
   const [active, setActive] = useState(false);
-  const [items, setItems] = useState();
-  const [linked, setLinked] = useState();
-  const [updated, setUpdated] = useState(false);
+  const [items, setItems] = useState([]);
+  const [linked, setLinked] = useState([]);
   const [tempValue, setTempValue] = useState([]);
 
-  useAsyncTask(
-    async ({ signal }) => {
-      if (active) {
-        const response = await fetchOrThrow(endpointAll, { signal });
-        setItems(await response.json());
-      }
-    },
-    [active, endpointAll],
-  );
+  useEffect(() => {
+    if (active) {
+      fetchOrThrow(endpointAll)
+        .then((res) => res.json())
+        .then((data) => setItems(data))
+        .catch(() => {});
+    }
+  }, [active, endpointAll]);
 
-  useAsyncTask(
-    async ({ signal }) => {
-      if (active) {
-        const response = await fetchOrThrow(endpointLinked, { signal });
-        const data = await response.json();
-        setLinked(data);
-        setTempValue(data);
-      }
-    },
-    [active, endpointLinked],
-  );
+  useEffect(() => {
+    if (active) {
+      fetchOrThrow(endpointLinked)
+        .then((res) => res.json())
+        .then((data) => {
+          setLinked(data);
+          setTempValue(data);
+        })
+        .catch(() => {});
+    }
+  }, [active, endpointLinked]);
 
-  const onChange = useCatchCallback(
-    async (value) => {
-      const createBody = (linkId) => ({ [keyBase]: baseId, [keyLink]: linkId });
-      const oldValue = linked.map((it) => it.id);
-      const newValue = value.map((it) => it.id);
-      if (!newValue.find((it) => it < 0)) {
-        const results = [];
-        newValue
-          .filter((it) => !oldValue.includes(it))
-          .forEach((added) => {
-            results.push(
-              fetchOrThrow('/api/permissions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(createBody(added)),
-              }),
-            );
-          });
-        oldValue
-          .filter((it) => !newValue.includes(it))
-          .forEach((removed) => {
-            results.push(
-              fetchOrThrow('/api/permissions', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(createBody(removed)),
-              }),
-            );
-          });
-        await Promise.all(results);
-        setUpdated(results.length > 0);
-        setLinked(value);
+  const handleSave = async () => {
+    const oldValue = linked.map((it) => it.id);
+    const newValue = tempValue.map((it) => it.id);
+
+    try {
+      // 1. Adicionar novas permissões
+      for (const added of newValue.filter((it) => !oldValue.includes(it))) {
+        await fetchOrThrow('/api/permissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [keyBase]: baseId, [keyLink]: added }),
+        });
       }
-    },
-    [linked, baseId, keyBase, keyLink],
-  );
+
+      // 2. Remover permissões antigas
+      for (const removed of oldValue.filter((it) => !newValue.includes(it))) {
+        await fetchOrThrow('/api/permissions', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [keyBase]: baseId, [keyLink]: removed }),
+        });
+      }
+
+      window.location.reload();
+    } catch (err) {
+      alert('Erro ao salvar: ' + err.message);
+    }
+  };
 
   return (
     <Box>
       <Autocomplete
         size="small"
-        loading={active && !items}
+        loading={active && items.length === 0}
         isOptionEqualToValue={(i1, i2) => i1.id === i2.id}
         options={items || []}
         getOptionLabel={(item) => titleGetter(item)}
@@ -110,15 +98,9 @@ const LinkField = ({
         onChange={(_, val) => setTempValue(val)}
         multiple
       />
-      <Button variant="contained" size="small" onClick={() => onChange(tempValue)} sx={{ mt: 2 }}>
+      <Button variant="contained" size="small" onClick={handleSave} sx={{ mt: 2 }}>
         Salvar
       </Button>
-      <Snackbar
-        open={Boolean(updated)}
-        onClose={() => setUpdated(false)}
-        autoHideDuration={snackBarDurationShortMs}
-        message={t('sharedSaved')}
-      />
     </Box>
   );
 };
