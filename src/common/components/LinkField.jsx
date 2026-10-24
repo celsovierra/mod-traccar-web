@@ -1,5 +1,5 @@
-import { Autocomplete, Snackbar, TextField } from '@mui/material';
-import { useState } from 'react';
+﻿import { Autocomplete, Snackbar, TextField, Button, Box } from '@mui/material';
+import { useState, useEffect } from 'react';
 import { useCatchCallback, useAsyncTask } from '../../reactHelper';
 import { snackBarDurationShortMs } from '../util/duration';
 import { useTranslation } from './LocalizationProvider';
@@ -21,6 +21,7 @@ const LinkField = ({
   const [items, setItems] = useState();
   const [linked, setLinked] = useState();
   const [updated, setUpdated] = useState(false);
+  const [tempValue, setTempValue] = useState([]);
 
   useAsyncTask(
     async ({ signal }) => {
@@ -36,7 +37,9 @@ const LinkField = ({
     async ({ signal }) => {
       if (active) {
         const response = await fetchOrThrow(endpointLinked, { signal });
-        setLinked(await response.json());
+        const data = await response.json();
+        setLinked(data);
+        setTempValue(data);
       }
     },
     [active, endpointLinked],
@@ -80,7 +83,7 @@ const LinkField = ({
   );
 
   return (
-    <>
+    <Box>
       <Autocomplete
         size="small"
         loading={active && !items}
@@ -103,17 +106,20 @@ const LinkField = ({
             }}
           />
         )}
-        value={(items && linked) || []}
-        onChange={(_, value) => onChange(value)}
+        value={tempValue || []}
+        onChange={(_, val) => setTempValue(val)}
         multiple
       />
+      <Button variant="contained" size="small" onClick={() => onChange(tempValue)} sx={{ mt: 2 }}>
+        Salvar
+      </Button>
       <Snackbar
         open={Boolean(updated)}
         onClose={() => setUpdated(false)}
         autoHideDuration={snackBarDurationShortMs}
         message={t('sharedSaved')}
       />
-    </>
+    </Box>
   );
 };
 
