@@ -53,7 +53,7 @@ const LinkField = ({
           .filter((it) => !oldValue.includes(it))
           .forEach((added) => {
             results.push(
-              fetchOrThrow('/api/permissions', {
+              fetchOrThrow('/api/permissions/' + removed, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(createBody(added)),
@@ -64,10 +64,9 @@ const LinkField = ({
           .filter((it) => !newValue.includes(it))
           .forEach((removed) => {
             results.push(
-              fetchOrThrow('/api/permissions', {
+              fetchOrThrow('/api/permissions/' + removed, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(createBody(removed)),
               }),
             );
           });
