@@ -104,6 +104,7 @@ const UserConnectionsPage = () => {
             }}
           >
             <AccordionSummary
+              component="div"
               expandIcon={<ExpandMoreIcon sx={{ color: '#7c3aed' }} />}
               sx={{
                 px: 2.5,
