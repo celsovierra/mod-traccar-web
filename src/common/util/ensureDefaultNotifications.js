@@ -1,4 +1,4 @@
-import fetchOrThrow from './fetchOrThrow';
+﻿import fetchOrThrow from './fetchOrThrow';
 
 const REQUIRED_NOTIFICATIONS = [
   {
@@ -39,7 +39,7 @@ export const ensureDefaultNotifications = async (user) => {
       }
     }
     done = true;
-  } catch (error) {
+  } catch {
     // silencia erros
   } finally {
     running = false;
