@@ -3,34 +3,45 @@ import fetchOrThrow from './fetchOrThrow';
 const REQUIRED_NOTIFICATIONS = [
   {
     type: 'ignitionOn',
-    description: 'Ignição Ligada',
+    description: 'Igni\u00e7\u00e3o Ligada',
     notificators: 'web,firebase',
     always: true,
   },
   {
     type: 'ignitionOff',
-    description: 'Ignição Desligada',
+    description: 'Igni\u00e7\u00e3o Desligada',
     notificators: 'web,firebase',
     always: true,
   },
 ];
 
-export const ensureDefaultNotifications = async () => {
+let running = false;
+let done = false;
+
+export const ensureDefaultNotifications = async (user) => {
+  if (running || done || !user || !user.administrator) {
+    return;
+  }
+  running = true;
   try {
     const response = await fetchOrThrow('/api/notifications?all=true');
     const existing = await response.json();
-
+    if (!Array.isArray(existing)) {
+      return;
+    }
     for (const req of REQUIRED_NOTIFICATIONS) {
-      const alreadyExists = existing.some((item) => item.type === req.type);
-      if (!alreadyExists) {
+      if (!existing.some((item) => item.type === req.type)) {
         await fetchOrThrow('/api/notifications', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(req),
-        }).catch(() => {});
+        });
       }
     }
+    done = true;
   } catch (error) {
-    // Silencia erros se não for admin ou se a API falhar
+    // silencia erros
+  } finally {
+    running = false;
   }
 };

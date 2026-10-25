@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
@@ -59,7 +59,7 @@ const App = () => {
 
   useEffect(() => {
     if (user) {
-      ensureDefaultNotifications();
+      ensureDefaultNotifications(user);
     }
   }, [user]);
 
