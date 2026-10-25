@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 cd /root/mod-traccar-web && bash ./deploy/fix_media.sh
 bash ./deploy/fix_backup.sh
 
@@ -183,6 +183,17 @@ echo "   Rota /api-deploy-trigger/ verificada."
 echo ""
 echo ">> Token do botao Atualizar Versao (guarde se precisar conferir): $DEPLOY_TOKEN"
 
+python3 - <<'PYX'
+import re
+p='/opt/traccar/conf/traccar.xml'
+try:
+    x=open(p).read()
+except Exception:
+    raise SystemExit
+n=re.sub(r"\s*<entry key='notificator\.firebase\.serviceAccount'>.*?</entry>","",x,flags=re.S)
+if n!=x:
+    open(p,'w').write(n)
+PYX
 echo ">> Verificando configuracoes do traccar.xml..."
 if [ -f /opt/traccar/conf/traccar.xml ]; then
   cp /opt/traccar/conf/traccar.xml /opt/traccar/conf/traccar.xml.bak.$(date +%F-%H%M%S)
