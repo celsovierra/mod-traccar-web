@@ -5,13 +5,13 @@ const REQUIRED_NOTIFICATIONS = [
     type: 'ignitionOn',
     description: 'Ignição Ligada',
     notificators: 'web,firebase',
-    always: false,
+    always: true,
   },
   {
     type: 'ignitionOff',
     description: 'Ignição Desligada',
     notificators: 'web,firebase',
-    always: false,
+    always: true,
   },
 ];
 

@@ -202,6 +202,7 @@ updates = {
     "geocoder.onRequest": "false",
     "geocoder.processInvalidPositions": "false",
     "geocoder.reuseDistance": "50",
+    "notificator.types": "web,mail,command,firebase",
     "web.default.map": "googleHybrid",
     "web.origin": "*",
     "filter.enable": "true",
@@ -520,6 +521,8 @@ else
   FORWARD_URL="https://$DOMINIO/api-telegram/traccar-event"
 fi
 echo "   Forward URL: $FORWARD_URL"
+echo ">> Garantindo notificacoes de ignicao (web,firebase)..."
+mysql -u traccar -p"Traccar@2026#Sec" traccar -e "UPDATE tc_notifications SET notificators='web,firebase', always=1 WHERE type IN ('ignitionOn','ignitionOff'); INSERT INTO tc_user_notification (userid, notificationid) SELECT u.id, n.id FROM tc_users u, tc_notifications n WHERE u.administrator=1 AND n.type IN ('ignitionOn','ignitionOff') AND NOT EXISTS (SELECT 1 FROM tc_user_notification x WHERE x.userid=u.id AND x.notificationid=n.id); INSERT INTO tc_device_notification (deviceid, notificationid) SELECT d.id, n.id FROM tc_devices d, tc_notifications n WHERE n.type IN ('ignitionOn','ignitionOff') AND NOT EXISTS (SELECT 1 FROM tc_device_notification x WHERE x.deviceid=d.id AND x.notificationid=n.id);" 2>/dev/null || true
 if grep -q 'event.forward.url' /opt/traccar/conf/traccar.xml; then
   sed -i "s|<entry key='event.forward.url'>.*</entry>|<entry key='event.forward.url'>$FORWARD_URL</entry>|" /opt/traccar/conf/traccar.xml
 else
