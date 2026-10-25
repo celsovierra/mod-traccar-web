@@ -17,7 +17,7 @@ const REQUIRED_NOTIFICATIONS = [
 
 export const ensureDefaultNotifications = async () => {
   try {
-    const response = await fetchOrThrow('/api/notifications');
+    const response = await fetchOrThrow('/api/notifications?all=true');
     const existing = await response.json();
 
     for (const req of REQUIRED_NOTIFICATIONS) {
