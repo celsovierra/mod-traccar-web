@@ -183,6 +183,20 @@ echo "   Rota /api-deploy-trigger/ verificada."
 echo ""
 echo ">> Token do botao Atualizar Versao (guarde se precisar conferir): $DEPLOY_TOKEN"
 
+python3 - <<'PYX'
+import re
+from xml.sax.saxutils import escape
+p='/opt/traccar/conf/traccar.xml'
+j='/opt/traccar/conf/firebase.json'
+try:
+    x=open(p).read()
+    c=open(j).read().strip()
+except Exception:
+    raise SystemExit
+if "notificator.firebase.serviceAccount" not in x:
+    x=x.replace('</properties>',"    <entry key='notificator.firebase.serviceAccount'>"+escape(c)+"</entry>\n</properties>")
+    open(p,'w').write(x)
+PYX
 echo ">> Verificando configuracoes do traccar.xml..."
 if [ -f /opt/traccar/conf/traccar.xml ]; then
   cp /opt/traccar/conf/traccar.xml /opt/traccar/conf/traccar.xml.bak.$(date +%F-%H%M%S)
