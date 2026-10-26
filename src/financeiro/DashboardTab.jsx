@@ -32,6 +32,7 @@ import {
 } from 'recharts';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import { useSelector } from 'react-redux';
+import ContasPagarPage from './ContasPagarPage';
 
 const fmtBR = (n) =>
   Number(n || 0)
@@ -67,6 +68,7 @@ const DashboardTab = ({ onClose }) => {
   const [items, setItems] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [diaAberto, setDiaAberto] = useState(null);
+  const [contasPagarOpen, setContasPagarOpen] = useState(false);
 
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
@@ -178,6 +180,7 @@ const DashboardTab = ({ onClose }) => {
     qtd: porDia[dia].qtd,
   }));
 
+  if (contasPagarOpen) return <ContasPagarPage onClose={() => setContasPagarOpen(false)} />;
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f1f5f9', p: 3 }}>
       <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
@@ -205,6 +208,22 @@ const DashboardTab = ({ onClose }) => {
               </Typography>
             </Box>
           </Box>
+          <Button
+            variant="contained"
+            sx={{
+              background: '#f59e0b',
+              color: '#fff',
+              textTransform: 'none',
+              borderRadius: '10px',
+              fontWeight: 700,
+              px: 2.5,
+              py: 1,
+              '&:hover': { background: '#d97706' },
+            }}
+            onClick={() => setContasPagarOpen(true)}
+          >
+            Contas a Pagar
+          </Button>
           <Button
             variant="outlined"
             startIcon={<ArrowBackIcon />}

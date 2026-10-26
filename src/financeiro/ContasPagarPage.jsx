@@ -1,0 +1,304 @@
+import { useState } from 'react';
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  IconButton,
+  Chip,
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+
+const nomeMes = [
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
+];
+
+const ContasPagarPage = ({ onClose }) => {
+  const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [descricao, setDescricao] = useState('');
+  const [valorTotal, setValorTotal] = useState('');
+  const [parcelas, setParcelas] = useState(1);
+  const [mesInicial, setMesInicial] = useState('2026-10');
+  const [contas, setContas] = useState([]);
+  const [mesFiltro, setMesFiltro] = useState('2026-10');
+
+  const handleSalvar = () => {
+    const valor = parseFloat(valorTotal.replace(',', '.')) || 0;
+    if (!descricao || valor <= 0) return alert('Preencha descrição e valor válido.');
+
+    if (editId) {
+      setContas(
+        contas.map((c) =>
+          c.id === editId ? { ...c, descricao, valor, vencimento: mesInicial } : c,
+        ),
+      );
+    } else {
+      const valorParcela = valor / parcelas;
+      const [ano, mes] = mesInicial.split('-').map(Number);
+      const novasContas = [];
+      for (let i = 0; i < parcelas; i++) {
+        const dataVenc = new Date(ano, mes - 1 + i, 1);
+        const mesStr = String(dataVenc.getMonth() + 1).padStart(2, '0');
+        novasContas.push({
+          id: Date.now() + i,
+          descricao: parcelas > 1 ? `${descricao} (${i + 1}/${parcelas})` : descricao,
+          valor: valorParcela,
+          vencimento: `${dataVenc.getFullYear()}-${mesStr}`,
+          pago: false,
+        });
+      }
+      setContas([...contas, ...novasContas]);
+    }
+    setOpen(false);
+    setEditId(null);
+    setDescricao('');
+    setValorTotal('');
+    setParcelas(1);
+  };
+
+  const handleEditar = (c) => {
+    setEditId(c.id);
+    setDescricao(c.descricao);
+    setValorTotal(c.valor.toString());
+    setMesInicial(c.vencimento);
+    setOpen(true);
+  };
+
+  const handleExcluir = (id) => {
+    if (window.confirm('Excluir esta conta?')) setContas(contas.filter((c) => c.id !== id));
+  };
+
+  const handlePagar = (id) => {
+    setContas(contas.map((c) => (c.id === id ? { ...c, pago: !c.pago } : c)));
+  };
+
+  const contasFiltradas = contas.filter((c) => c.vencimento === mesFiltro);
+
+  return (
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f1f5f9', p: 3 }}>
+      <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box
+              sx={{
+                width: 56,
+                height: 56,
+                borderRadius: '16px',
+                backgroundColor: '#ffedd5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <AddIcon sx={{ color: '#f59e0b', fontSize: 30 }} />
+            </Box>
+            <Box>
+              <Typography sx={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>
+                Contas a Pagar
+              </Typography>
+              <Typography sx={{ fontSize: '0.85rem', color: '#64748b' }}>
+                Gerencie suas despesas fixas e parceladas.
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <FormControl size="small" sx={{ minWidth: 150, mr: 2, backgroundColor: '#fff' }}>
+              <Select value={mesFiltro} onChange={(e) => setMesFiltro(e.target.value)}>
+                {['2026-10', '2026-11', '2026-12', '2027-01'].map((m) => {
+                  const [a, me] = m.split('-');
+                  return (
+                    <MenuItem key={m} value={m}>
+                      {nomeMes[Number(me) - 1]} {a}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setEditId(null);
+                setDescricao('');
+                setValorTotal('');
+                setParcelas(1);
+                setOpen(true);
+              }}
+              sx={{
+                background: '#f59e0b',
+                textTransform: 'none',
+                borderRadius: '10px',
+                fontWeight: 700,
+                px: 2.5,
+                py: 1,
+              }}
+            >
+              Nova Conta
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              onClick={onClose}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 700,
+                borderRadius: '10px',
+                borderColor: '#e2e8f0',
+                color: '#2563eb',
+                backgroundColor: '#eff6ff',
+                px: 2.5,
+                py: 1,
+              }}
+            >
+              Voltar
+            </Button>
+          </Box>
+        </Box>
+
+        <Paper
+          elevation={0}
+          sx={{ p: 3, borderRadius: '16px', backgroundColor: '#fff', border: '1px solid #e2e8f0' }}
+        >
+          {contasFiltradas.length === 0 ? (
+            <Typography sx={{ color: '#94a3b8', textAlign: 'center', py: 4 }}>
+              Nenhuma conta neste mês.
+            </Typography>
+          ) : (
+            contasFiltradas.map((c) => (
+              <Box
+                key={c.id}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  p: 2,
+                  borderBottom: '1px solid #f1f5f9',
+                }}
+              >
+                <Box sx={{ flexGrow: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        color: '#1e293b',
+                        textDecoration: c.pago ? 'line-through' : 'none',
+                      }}
+                    >
+                      {c.descricao}
+                    </Typography>
+                    <Chip
+                      label={c.pago ? 'Pago' : 'Pendente'}
+                      color={c.pago ? 'success' : 'warning'}
+                      size="small"
+                    />
+                  </Box>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    Vencimento: {c.vencimento}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Typography sx={{ fontWeight: 700, color: '#dc2626' }}>
+                    R$ {c.valor.toFixed(2).replace('.', ',')}
+                  </Typography>
+                  <IconButton size="small" onClick={() => handlePagar(c.id)} title="Dar Baixa">
+                    <CheckCircleIcon color={c.pago ? 'success' : 'action'} />
+                  </IconButton>
+                  <IconButton size="small" onClick={() => handleEditar(c)} title="Editar">
+                    <EditIcon color="primary" />
+                  </IconButton>
+                  <IconButton size="small" onClick={() => handleExcluir(c.id)} title="Excluir">
+                    <DeleteIcon color="error" />
+                  </IconButton>
+                </Box>
+              </Box>
+            ))
+          )}
+        </Paper>
+      </Box>
+
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          {editId ? 'Editar Conta' : 'Cadastrar Nova Conta'}
+        </DialogTitle>
+        <DialogContent dividers>
+          <TextField
+            fullWidth
+            label="Descrição"
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Valor Total (R$)"
+            value={valorTotal}
+            onChange={(e) => setValorTotal(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          {!editId && (
+            <TextField
+              fullWidth
+              type="number"
+              label="Parcelas"
+              value={parcelas}
+              onChange={(e) => setParcelas(Number(e.target.value))}
+              sx={{ mb: 2 }}
+            />
+          )}
+          <FormControl fullWidth>
+            <InputLabel>Mês Inicial</InputLabel>
+            <Select
+              value={mesInicial}
+              label="Mês Inicial"
+              onChange={(e) => setMesInicial(e.target.value)}
+            >
+              <MenuItem value="2026-10">Outubro 2026</MenuItem>
+              <MenuItem value="2026-11">Novembro 2026</MenuItem>
+              <MenuItem value="2026-12">Dezembro 2026</MenuItem>
+              <MenuItem value="2027-01">Janeiro 2027</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setOpen(false)} sx={{ color: '#64748b' }}>
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSalvar}
+            sx={{ background: '#f59e0b', '&:hover': { background: '#d97706' } }}
+          >
+            Salvar
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+};
+
+export default ContasPagarPage;

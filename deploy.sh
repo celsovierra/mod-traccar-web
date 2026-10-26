@@ -617,3 +617,6 @@ pm2 save
 pm2 startup >/dev/null 2>&1
 systemctl enable pm2-root >/dev/null 2>&1
 echo ">> Proxy da Ancora (8090) instalado e rodando via PM2."
+
+# Criar tabela de contas a pagar
+mysql traccar -e 'CREATE TABLE IF NOT EXISTS tc_contas_pagar (id INT AUTO_INCREMENT PRIMARY KEY, descricao VARCHAR(255), valor DECIMAL(10,2), vencimento VARCHAR(7), pago BOOLEAN DEFAULT FALSE);'
