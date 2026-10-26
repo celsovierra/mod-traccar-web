@@ -334,6 +334,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
           <TextField
             fullWidth
             type="date"
+            InputLabelProps={{ shrink: true }}
             label="Data de Vencimento"
             value={mesInicial}
             onChange={(e) => setMesInicial(e.target.value)}
