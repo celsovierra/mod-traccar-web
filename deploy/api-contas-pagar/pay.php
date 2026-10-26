@@ -1,0 +1,1 @@
+<?php $data = json_decode(file_get_contents("php://input"), true); $conn = new mysqli("localhost", "root", "", "traccar"); $pago = $data["pago"] ? 1 : 0; $conn->query("UPDATE tc_contas_pagar SET pago=$pago WHERE id=" . $data["id"]); echo json_encode(["success" => true]); ?>

@@ -1,0 +1,1 @@
+<?php $id = $_GET["id"]; $conn = new mysqli("localhost", "root", "", "traccar"); $conn->query("DELETE FROM tc_contas_pagar WHERE id=$id"); echo json_encode(["success" => true]); ?>

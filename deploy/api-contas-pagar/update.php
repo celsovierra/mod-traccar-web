@@ -1,0 +1,1 @@
+<?php $data = json_decode(file_get_contents("php://input"), true); $conn = new mysqli("localhost", "root", "", "traccar"); $stmt = $conn->prepare("UPDATE tc_contas_pagar SET descricao=?, valor=?, vencimento=? WHERE id=?"); $stmt->bind_param("sdsi", $data["descricao"], $data["valor"], $data["vencimento"], $data["id"]); $stmt->execute(); echo json_encode(["success" => true]); ?>
