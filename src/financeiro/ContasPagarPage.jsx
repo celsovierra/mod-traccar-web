@@ -38,7 +38,7 @@ const nomeMes = [
   'Dezembro',
 ];
 
-const ContasPagarPage = ({ onClose }) => {
+const ContasPagarPage = ({ onClose, receber = 0 }) => {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [descricao, setDescricao] = useState('');
@@ -128,6 +128,8 @@ const ContasPagarPage = ({ onClose }) => {
   };
 
   const contasFiltradas = contas.filter((c) => c.vencimento === mesFiltro);
+  const totalMes = contasFiltradas.reduce((s, c) => s + Number(c.valor || 0), 0);
+  const saldoMes = receber - totalMes;
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f1f5f9', p: 3 }}>
@@ -155,6 +157,28 @@ const ContasPagarPage = ({ onClose }) => {
                 Gerencie suas despesas fixas e parceladas.
               </Typography>
             </Box>
+          </Box>
+          <Box sx={{ textAlign: 'right', mr: 3 }}>
+            <Typography sx={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
+              Saldo (receber - contas)
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: '1.4rem',
+                fontWeight: 800,
+                color: saldoMes >= 0 ? '#16a34a' : '#dc2626',
+              }}
+            >
+              {saldoMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </Typography>
+          </Box>
+          <Box sx={{ textAlign: 'right', mr: 2 }}>
+            <Typography sx={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
+              Total do mês
+            </Typography>
+            <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: '#dc2626' }}>
+              {totalMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </Typography>
           </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <FormControl size="small" sx={{ minWidth: 150, mr: 2, backgroundColor: '#fff' }}>
@@ -308,19 +332,15 @@ const ContasPagarPage = ({ onClose }) => {
               sx={{ mb: 2 }}
             />
           )}
-          <FormControl fullWidth>
-            <InputLabel>Mês Inicial</InputLabel>
-            <Select
-              value={mesInicial}
-              label="Mês Inicial"
-              onChange={(e) => setMesInicial(e.target.value)}
-            >
-              <MenuItem value="2026-10">Outubro 2026</MenuItem>
-              <MenuItem value="2026-11">Novembro 2026</MenuItem>
-              <MenuItem value="2026-12">Dezembro 2026</MenuItem>
-              <MenuItem value="2027-01">Janeiro 2027</MenuItem>
-            </Select>
-          </FormControl>
+          <TextField
+            fullWidth
+            type="date"
+            label="Data de Vencimento"
+            value={mesInicial}
+            onChange={(e) => setMesInicial(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ mb: 2 }}
+          />
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setOpen(false)} sx={{ color: '#64748b' }}>
