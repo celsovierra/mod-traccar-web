@@ -307,7 +307,37 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
           {editId ? 'Editar Conta' : 'Cadastrar Nova Conta'}
         </DialogTitle>
         <DialogContent dividers>
-          <div style={{ display: "flex", flexDirection: "column", marginBottom: "16px", width: "100%" }}><label style={{ fontSize: "12px", color: "#64748b", marginBottom: "4px" }}>Data de Vencimento</label><input type="date" value={mesInicial} onChange={(e) => setMesInicial(e.target.value)} style={{ padding: "16.5px 14px", borderRadius: "4px", border: "1px solid rgba(0, 0, 0, 0.23)", fontSize: "16px", outline: "none", width: "100%", boxSizing: "border-box" }} /></div></div> setMesInicial(e.target.value)}
+          <TextField
+            fullWidth
+            label="DescriÃ§Ã£o"
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Valor Total (R$)"
+            value={valorTotal}
+            onChange={(e) => setValorTotal(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          {!editId && (
+            <TextField
+              fullWidth
+              type="number"
+              label="Parcelas"
+              value={parcelas}
+              onChange={(e) => setParcelas(Number(e.target.value))}
+              sx={{ mb: 2 }}
+            />
+          )}
+          <TextField
+            fullWidth
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            label="Data de Vencimento"
+            value={mesInicial}
+            onChange={(e) => setMesInicial(e.target.value)}
             InputLabelProps={{ shrink: true }}
             sx={{ mb: 2 }}
           />
