@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import {
   Table,
   TableRow,
@@ -483,6 +483,26 @@ const ClientesTab = () => {
     return (n * meses).toFixed(2).replace('.', ',');
   };
 
+  const RECIBO_PADRAO = [
+    '\u2705 *Pagamento Confirmado!* \u2705',
+    '',
+    '```RECIBO DE PAGAMENTO',
+    '=======================',
+    'Cliente : {nome}',
+    'Servi\u00e7o : Rastreamento',
+    'Per\u00edodo : {vencimento}',
+    'Valor   : R$ {valor}',
+    'Multa   : {multa}',
+    'Juros   : {juros}',
+    'Desconto: {desconto}',
+    '',
+    'Valor Total : {valor_atualizado}',
+    '=======================',
+    'Pago em : {data_hoje}',
+    'Status  : \u2705PAGO\u2705',
+    'Pr\u00f3x Venc: {prox_vencimento}',
+    '=======================```',
+  ].join('\n');
   const confirmarBaixa = async () => {
     if (!modalBaixa) return;
     setSalvandoBaixa(true);
@@ -509,8 +529,8 @@ const ClientesTab = () => {
       const evoUrl = adm.fin_evo_url;
       const evoKey = adm.fin_evo_key;
       const evoInst = adm.fin_evo_instance;
-      const recibo = adm.fin_msg_recibo;
-      console.log('ADM', adm);
+      const recibo = adm.fin_msg_recibo || RECIBO_PADRAO;
+      const reciboOk = Boolean(evoUrl && evoKey && evoInst && recibo);
       if (evoUrl && evoKey && evoInst && recibo) {
         const hoje = new Date();
         const dataHoje =
@@ -567,7 +587,12 @@ const ClientesTab = () => {
         }
       }
       setModalBaixa(null);
-      mostrarAviso('Baixa enviada com sucesso', true);
+      mostrarAviso(
+        reciboOk
+          ? 'Baixa enviada com sucesso'
+          : 'Baixa salva, mas o recibo NAO foi enviado (configure a Evolution)',
+        reciboOk,
+      );
     } catch (e) {
       console.error(e);
     } finally {
