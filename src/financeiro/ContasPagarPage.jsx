@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -11,7 +11,6 @@ import {
   DialogActions,
   MenuItem,
   Select,
-  InputLabel,
   FormControl,
   IconButton,
   Chip,
@@ -26,7 +25,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 const nomeMes = [
   'Janeiro',
   'Fevereiro',
-  'Março',
+  'MarÃ§o',
   'Abril',
   'Maio',
   'Junho',
@@ -68,7 +67,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
 
   const handleSalvar = async () => {
     const valor = parseFloat(valorTotal.replace(',', '.')) || 0;
-    if (!descricao || valor <= 0) return alert('Preencha descrição e valor válido.');
+    if (!descricao || valor <= 0) return alert('Preencha descriÃ§Ã£o e valor vÃ¡lido.');
 
     if (editId) {
       await fetch('/api-contas-pagar/update.php', {
@@ -174,7 +173,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
           </Box>
           <Box sx={{ textAlign: 'right', mr: 2 }}>
             <Typography sx={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
-              Total do mês
+              Total do mÃªs
             </Typography>
             <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: '#dc2626' }}>
               {totalMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -244,7 +243,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
             </Box>
           ) : contasFiltradas.length === 0 ? (
             <Typography sx={{ color: '#94a3b8', textAlign: 'center', py: 4 }}>
-              Nenhuma conta neste mês.
+              Nenhuma conta neste mÃªs.
             </Typography>
           ) : (
             contasFiltradas.map((c) => (
@@ -310,7 +309,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
         <DialogContent dividers>
           <TextField
             fullWidth
-            label="Descrição"
+            label="DescriÃ§Ã£o"
             value={descricao}
             onChange={(e) => setDescricao(e.target.value)}
             sx={{ mb: 2 }}
