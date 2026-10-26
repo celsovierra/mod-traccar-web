@@ -625,4 +625,4 @@ mysql traccar -e 'CREATE TABLE IF NOT EXISTS tc_contas_pagar (id INT AUTO_INCREM
 mysql traccar -e 'CREATE TABLE IF NOT EXISTS tc_contas_pagar (id INT AUTO_INCREMENT PRIMARY KEY, descricao VARCHAR(255), valor DECIMAL(10,2), vencimento VARCHAR(7), pago BOOLEAN DEFAULT FALSE);'
 
 # Copiar API de contas a pagar
-cp -r deploy/api-contas-pagar /opt/traccar/web/
+bash deploy/contas-pagar.sh
