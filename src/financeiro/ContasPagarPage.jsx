@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -15,6 +15,7 @@ import {
   FormControl,
   IconButton,
   Chip,
+  CircularProgress,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
@@ -45,18 +46,36 @@ const ContasPagarPage = ({ onClose }) => {
   const [parcelas, setParcelas] = useState(1);
   const [mesInicial, setMesInicial] = useState('2026-10');
   const [contas, setContas] = useState([]);
+  const [carregando, setCarregando] = useState(true);
   const [mesFiltro, setMesFiltro] = useState('2026-10');
 
-  const handleSalvar = () => {
+  const carregarContas = async () => {
+    try {
+      setCarregando(true);
+      const res = await fetch('/api-contas-pagar/get.php');
+      const data = await res.json();
+      setContas(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  useEffect(() => {
+    carregarContas();
+  }, []);
+
+  const handleSalvar = async () => {
     const valor = parseFloat(valorTotal.replace(',', '.')) || 0;
     if (!descricao || valor <= 0) return alert('Preencha descrição e valor válido.');
 
     if (editId) {
-      setContas(
-        contas.map((c) =>
-          c.id === editId ? { ...c, descricao, valor, vencimento: mesInicial } : c,
-        ),
-      );
+      await fetch('/api-contas-pagar/update.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editId, descricao, valor, vencimento: mesInicial }),
+      });
     } else {
       const valorParcela = valor / parcelas;
       const [ano, mes] = mesInicial.split('-').map(Number);
@@ -65,20 +84,23 @@ const ContasPagarPage = ({ onClose }) => {
         const dataVenc = new Date(ano, mes - 1 + i, 1);
         const mesStr = String(dataVenc.getMonth() + 1).padStart(2, '0');
         novasContas.push({
-          id: Date.now() + i,
           descricao: parcelas > 1 ? `${descricao} (${i + 1}/${parcelas})` : descricao,
           valor: valorParcela,
           vencimento: `${dataVenc.getFullYear()}-${mesStr}`,
-          pago: false,
         });
       }
-      setContas([...contas, ...novasContas]);
+      await fetch('/api-contas-pagar/create.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(novasContas),
+      });
     }
     setOpen(false);
     setEditId(null);
     setDescricao('');
     setValorTotal('');
     setParcelas(1);
+    carregarContas();
   };
 
   const handleEditar = (c) => {
@@ -89,12 +111,20 @@ const ContasPagarPage = ({ onClose }) => {
     setOpen(true);
   };
 
-  const handleExcluir = (id) => {
-    if (window.confirm('Excluir esta conta?')) setContas(contas.filter((c) => c.id !== id));
+  const handleExcluir = async (id) => {
+    if (window.confirm('Excluir esta conta?')) {
+      await fetch(`/api-contas-pagar/delete.php?id=${id}`, { method: 'DELETE' });
+      carregarContas();
+    }
   };
 
-  const handlePagar = (id) => {
-    setContas(contas.map((c) => (c.id === id ? { ...c, pago: !c.pago } : c)));
+  const handlePagar = async (id, pago) => {
+    await fetch('/api-contas-pagar/pay.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, pago: !pago }),
+    });
+    carregarContas();
   };
 
   const contasFiltradas = contas.filter((c) => c.vencimento === mesFiltro);
@@ -184,7 +214,11 @@ const ContasPagarPage = ({ onClose }) => {
           elevation={0}
           sx={{ p: 3, borderRadius: '16px', backgroundColor: '#fff', border: '1px solid #e2e8f0' }}
         >
-          {contasFiltradas.length === 0 ? (
+          {carregando ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : contasFiltradas.length === 0 ? (
             <Typography sx={{ color: '#94a3b8', textAlign: 'center', py: 4 }}>
               Nenhuma conta neste mês.
             </Typography>
@@ -223,9 +257,13 @@ const ContasPagarPage = ({ onClose }) => {
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Typography sx={{ fontWeight: 700, color: '#dc2626' }}>
-                    R$ {c.valor.toFixed(2).replace('.', ',')}
+                    R$ {Number(c.valor).toFixed(2).replace('.', ',')}
                   </Typography>
-                  <IconButton size="small" onClick={() => handlePagar(c.id)} title="Dar Baixa">
+                  <IconButton
+                    size="small"
+                    onClick={() => handlePagar(c.id, c.pago)}
+                    title="Dar Baixa"
+                  >
                     <CheckCircleIcon color={c.pago ? 'success' : 'action'} />
                   </IconButton>
                   <IconButton size="small" onClick={() => handleEditar(c)} title="Editar">
