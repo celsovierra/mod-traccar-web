@@ -120,14 +120,22 @@ const UserPage = () => {
       dispatch(sessionActions.updateUser(result));
     }
     if (!item.id) {
-      const notificationIds = result.administrator ? [139] : [160, 139];
-      notificationIds.forEach((notificationId) => {
-        fetchOrThrow('/api/permissions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: result.id, notificationId }),
-        });
-      });
+      (async () => {
+        try {
+          const resp = await fetchOrThrow('/api/notifications?all=true');
+          const lista = await resp.json();
+          const ign = Array.isArray(lista) ? lista.find((n) => n.type === 'ignitionOn') : null;
+          if (ign) {
+            await fetchOrThrow('/api/permissions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: result.id, notificationId: ign.id }),
+            });
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      })();
     }
   };
 

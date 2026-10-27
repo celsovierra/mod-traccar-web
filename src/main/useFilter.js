@@ -38,9 +38,14 @@ export default (
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '');
         const q = normalize(keyword);
-        return [device.name, device.uniqueId, device.phone, device.model, device.contact].some(
-          (s) => normalize(s).includes(q),
-        );
+        return [
+          device.name,
+          device.uniqueId,
+          device.phone,
+          device.model,
+          device.contact,
+          device.attributes?.plate,
+        ].some((s) => normalize(s).includes(q));
       })
       .filter((device) => {
         if (!isOldOfflineOnly) return true;
