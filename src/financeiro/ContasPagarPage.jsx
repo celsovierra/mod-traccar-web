@@ -1,3 +1,5 @@
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { useState, useEffect } from 'react';
 import {
   Box,
@@ -25,7 +27,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 const nomeMes = [
   'Janeiro',
   'Fevereiro',
-  'MarÃ§o',
+  'Março',
   'Abril',
   'Maio',
   'Junho',
@@ -43,7 +45,8 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
   const [descricao, setDescricao] = useState('');
   const [valorTotal, setValorTotal] = useState('');
   const [parcelas, setParcelas] = useState(1);
-  const [mesInicial, setMesInicial] = useState('2026-10');
+  const [recorrente, setRecorrente] = useState(false);
+  const [mesInicial, setMesInicial] = useState(new Date().toISOString().slice(0, 10));
   const [contas, setContas] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [mesFiltro, setMesFiltro] = useState('2026-10');
@@ -67,7 +70,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
 
   const handleSalvar = async () => {
     const valor = parseFloat(valorTotal.replace(',', '.')) || 0;
-    if (!descricao || valor <= 0) return alert('Preencha descriÃ§Ã£o e valor vÃ¡lido.');
+    if (!descricao || valor <= 0) return alert('Preencha descrição e valor válido.');
 
     if (editId) {
       await fetch('/api-contas-pagar/update.php', {
@@ -76,16 +79,21 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
         body: JSON.stringify({ id: editId, descricao, valor, vencimento: mesInicial }),
       });
     } else {
-      const valorParcela = valor / parcelas;
-      const [ano, mes] = mesInicial.split('-').map(Number);
+      const qtd = recorrente ? 12 : parcelas;
+      const valorParcela = recorrente ? valor : valor / qtd;
+      const [ano, mes, dia0] = mesInicial.split('-').map(Number);
+      const dia = dia0 || 1;
       const novasContas = [];
-      for (let i = 0; i < parcelas; i++) {
-        const dataVenc = new Date(ano, mes - 1 + i, 1);
+      for (let i = 0; i < qtd; i++) {
+        const ultimo = new Date(ano, mes + i, 0).getDate();
+        const d = Math.min(dia, ultimo);
+        const dataVenc = new Date(ano, mes - 1 + i, d);
         const mesStr = String(dataVenc.getMonth() + 1).padStart(2, '0');
         novasContas.push({
-          descricao: parcelas > 1 ? `${descricao} (${i + 1}/${parcelas})` : descricao,
+          descricao:
+            !recorrente && parcelas > 1 ? `${descricao} (${i + 1}/${parcelas})` : descricao,
           valor: valorParcela,
-          vencimento: `${dataVenc.getFullYear()}-${mesStr}`,
+          vencimento: `${dataVenc.getFullYear()}-${mesStr}-${String(d).padStart(2, '0')}`,
         });
       }
       await fetch('/api-contas-pagar/create.php', {
@@ -95,6 +103,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
       });
     }
     setOpen(false);
+    setRecorrente(false);
     setEditId(null);
     setDescricao('');
     setValorTotal('');
@@ -106,7 +115,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
     setEditId(c.id);
     setDescricao(c.descricao);
     setValorTotal(c.valor.toString());
-    setMesInicial(c.vencimento);
+    setMesInicial(c.vencimento.length === 7 ? `${c.vencimento}-01` : c.vencimento);
     setOpen(true);
   };
 
@@ -126,7 +135,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
     carregarContas();
   };
 
-  const contasFiltradas = contas.filter((c) => c.vencimento === mesFiltro);
+  const contasFiltradas = contas.filter((c) => String(c.vencimento).slice(0, 7) === mesFiltro);
   const totalMes = contasFiltradas.reduce((s, c) => s + Number(c.valor || 0), 0);
   const saldoMes = receber - totalMes;
 
@@ -332,18 +341,39 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
                     >
                       {c.descricao}
                     </Typography>
-                    <Chip
-                      label={c.pago ? 'Pago' : 'Pendente'}
-                      color={c.pago ? 'success' : 'warning'}
-                      size="small"
-                    />
                   </Box>
-                  <Typography sx={{ fontSize: '0.8rem', color: '#64748b' }}>
-                    Vencimento: {c.vencimento}
-                  </Typography>
                 </Box>
+                <Box sx={{ width: 110, display: 'flex', justifyContent: 'center', mr: 2 }}>
+                  <Chip
+                    label={c.pago ? 'Pago' : 'Pendente'}
+                    color={c.pago ? 'success' : 'warning'}
+                    size="small"
+                  />
+                </Box>
+                <Typography
+                  sx={{
+                    fontWeight: 700,
+                    color: '#2563eb',
+                    fontSize: '0.95rem',
+                    mr: 3,
+                    minWidth: 95,
+                    textAlign: 'right',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {String(c.vencimento).split('-').reverse().join('/')}
+                </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Typography sx={{ fontWeight: 700, color: '#dc2626' }}>
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      color:
+                        !c.pago &&
+                        String(c.vencimento).slice(0, 10) < new Date().toLocaleDateString('sv-SE')
+                          ? '#dc2626'
+                          : '#16a34a',
+                    }}
+                  >
                     R$ {Number(c.valor).toFixed(2).replace('.', ',')}
                   </Typography>
                   <IconButton
@@ -373,7 +403,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
         <DialogContent dividers>
           <TextField
             fullWidth
-            label="DescriÃ§Ã£o"
+            label="Descrição"
             value={descricao}
             onChange={(e) => setDescricao(e.target.value)}
             sx={{ mb: 2 }}
@@ -390,9 +420,19 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
               fullWidth
               type="number"
               label="Parcelas"
+              disabled={recorrente}
               value={parcelas}
               onChange={(e) => setParcelas(Number(e.target.value))}
               sx={{ mb: 2 }}
+            />
+          )}
+          {!editId && (
+            <FormControlLabel
+              sx={{ mb: 1 }}
+              control={
+                <Checkbox checked={recorrente} onChange={(e) => setRecorrente(e.target.checked)} />
+              }
+              label="Recorrente (todo mês, 12 meses)"
             />
           )}
           <TextField
