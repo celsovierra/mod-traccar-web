@@ -19,7 +19,8 @@ import QrCodeIcon from '@mui/icons-material/QrCode';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { sessionActions } from '../store';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const cards = [
@@ -42,6 +43,7 @@ const ConexoesTab = () => {
   const [gdClientSecret, setGdClientSecret] = useState('');
   const [gdRefreshToken, setGdRefreshToken] = useState('');
   const [gdFolderId, setGdFolderId] = useState('');
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.session.user);
   const userId = user.id;
   const userAttributes = useSelector((state) => state.session.user.attributes) || {};
@@ -110,7 +112,7 @@ const ConexoesTab = () => {
         fin_gd_refresh_token: gdRefreshToken,
         fin_gd_folder_id: gdFolderId,
       };
-      await fetchOrThrow('/api/users/' + userId, {
+      const respUser = await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -122,6 +124,7 @@ const ConexoesTab = () => {
           masteruser: user.masteruser,
         }),
       });
+      dispatch(sessionActions.updateUser(await respUser.json()));
       // garante que a instancia existe no Evolution
       if (evoUrl && evoKey && evoInst) {
         const base = evoUrl.replace(/\/$/, '');
