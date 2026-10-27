@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 import sys
 import os
 import time
@@ -211,7 +211,7 @@ def get_admin_attrs():
     conn = conectar()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT attributes FROM tc_users WHERE id = 1000 LIMIT 1")
+            cur.execute("SELECT attributes FROM tc_users WHERE administrator = 1 AND attributes LIKE '%fin_%' ORDER BY id LIMIT 1")
             row = cur.fetchone()
         if not row or not row["attributes"]:
             return {}
