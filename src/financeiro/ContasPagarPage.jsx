@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -133,65 +133,25 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f1f5f9', p: 3 }}>
       <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box
-              sx={{
-                width: 56,
-                height: 56,
-                borderRadius: '16px',
-                backgroundColor: '#ffedd5',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <AddIcon sx={{ color: '#f59e0b', fontSize: 30 }} />
-            </Box>
-            <Box>
-              <Typography sx={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>
-                Contas a Pagar
-              </Typography>
-              <Typography sx={{ fontSize: '0.85rem', color: '#64748b' }}>
-                Gerencie suas despesas fixas e parceladas.
-              </Typography>
-            </Box>
-          </Box>
-          <Box sx={{ textAlign: 'right', mr: 3 }}>
-            <Typography sx={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
-              Saldo (receber - contas)
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 2,
+            mb: 3,
+          }}
+        >
+          <Box>
+            <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a' }}>
+              Contas a Pagar
             </Typography>
-            <Typography
-              sx={{
-                fontSize: '1.4rem',
-                fontWeight: 800,
-                color: saldoMes >= 0 ? '#16a34a' : '#dc2626',
-              }}
-            >
-              {saldoMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-            </Typography>
-          </Box>
-          <Box sx={{ textAlign: 'right', mr: 2 }}>
-            <Typography sx={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
-              Total do mÃªs
-            </Typography>
-            <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: '#dc2626' }}>
-              {totalMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            <Typography sx={{ fontSize: '0.9rem', color: '#64748b' }}>
+              Gerencie suas despesas fixas e parceladas.
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <FormControl size="small" sx={{ minWidth: 150, mr: 2, backgroundColor: '#fff' }}>
-              <Select value={mesFiltro} onChange={(e) => setMesFiltro(e.target.value)}>
-                {['2026-10', '2026-11', '2026-12', '2027-01'].map((m) => {
-                  const [a, me] = m.split('-');
-                  return (
-                    <MenuItem key={m} value={m}>
-                      {nomeMes[Number(me) - 1]} {a}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -208,7 +168,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
                 borderRadius: '10px',
                 fontWeight: 700,
                 px: 2.5,
-                py: 1,
+                whiteSpace: 'nowrap',
               }}
             >
               Nova Conta
@@ -225,14 +185,118 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
                 color: '#2563eb',
                 backgroundColor: '#eff6ff',
                 px: 2.5,
-                py: 1,
               }}
             >
               Voltar
             </Button>
           </Box>
         </Box>
-
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            mb: 3,
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+          }}
+        >
+          <Box
+            sx={{
+              borderRadius: '16px',
+              p: 2.5,
+              color: '#fff',
+              minHeight: 110,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              background:
+                saldoMes >= 0
+                  ? 'linear-gradient(135deg,#22c55e,#16a34a)'
+                  : 'linear-gradient(135deg,#ef4444,#dc2626)',
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                opacity: 0.9,
+              }}
+            >
+              Saldo (receber - contas)
+            </Typography>
+            <Typography sx={{ fontSize: '1.9rem', fontWeight: 800, mt: 0.5 }}>
+              {saldoMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              borderRadius: '16px',
+              p: 2.5,
+              color: '#fff',
+              minHeight: 110,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg,#ef4444,#dc2626)',
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                opacity: 0.9,
+              }}
+            >
+              {'Total do m\u00eas'}
+            </Typography>
+            <Typography sx={{ fontSize: '1.9rem', fontWeight: 800, mt: 0.5 }}>
+              {totalMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              borderRadius: '16px',
+              p: 2.5,
+              color: '#fff',
+              minHeight: 110,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg,#3b82f6,#2563eb)',
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                opacity: 0.9,
+              }}
+            >
+              {'M\u00eas'}
+            </Typography>
+            <FormControl
+              size="small"
+              fullWidth
+              sx={{ mt: 1, backgroundColor: '#fff', borderRadius: '10px' }}
+            >
+              <Select value={mesFiltro} onChange={(e) => setMesFiltro(e.target.value)}>
+                {['2026-10', '2026-11', '2026-12', '2027-01'].map((m) => {
+                  const [a, me] = m.split('-');
+                  return (
+                    <MenuItem key={m} value={m}>
+                      {nomeMes[Number(me) - 1]} {a}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
         <Paper
           elevation={0}
           sx={{ p: 3, borderRadius: '16px', backgroundColor: '#fff', border: '1px solid #e2e8f0' }}
@@ -243,7 +307,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
             </Box>
           ) : contasFiltradas.length === 0 ? (
             <Typography sx={{ color: '#94a3b8', textAlign: 'center', py: 4 }}>
-              Nenhuma conta neste mÃªs.
+              Nenhuma conta neste mês.
             </Typography>
           ) : (
             contasFiltradas.map((c) => (
@@ -334,11 +398,10 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
           <TextField
             fullWidth
             type="date"
-            InputLabelProps={{ shrink: true }}
             label="Data de Vencimento"
             value={mesInicial}
             onChange={(e) => setMesInicial(e.target.value)}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             sx={{ mb: 2 }}
           />
         </DialogContent>
