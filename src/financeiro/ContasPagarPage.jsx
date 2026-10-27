@@ -80,7 +80,7 @@ const ContasPagarPage = ({ onClose, receberAtraso = 0, receberPorMes = {} }) => 
       });
     } else {
       const qtd = recorrente ? 12 : parcelas;
-      const valorParcela = recorrente ? valor : valor / qtd;
+      const valorParcela = valor;
       const [ano, mes, dia0] = mesInicial.split('-').map(Number);
       const dia = dia0 || 1;
       const novasContas = [];
@@ -120,8 +120,23 @@ const ContasPagarPage = ({ onClose, receberAtraso = 0, receberPorMes = {} }) => 
   };
 
   const handleExcluir = async (id) => {
-    if (window.confirm('Excluir esta conta?')) {
-      await fetch(`/api-contas-pagar/delete.php?id=${id}`, { method: 'DELETE' });
+    const conta = contas.find((c) => c.id === id);
+    const rx = /^(.*?)\s*\((\d+)\/(\d+)\)\s*$/;
+    const mt = conta ? String(conta.descricao).match(rx) : null;
+    const grupo = mt
+      ? contas.filter((c) => {
+          const x = String(c.descricao).match(rx);
+          return x && x[1] === mt[1] && x[3] === mt[3];
+        })
+      : [{ id }];
+    const msg =
+      grupo.length > 1
+        ? `Excluir TODAS as ${grupo.length} parcelas de ${mt[1]}?`
+        : 'Excluir esta conta?';
+    if (window.confirm(msg)) {
+      for (const g of grupo) {
+        await fetch(`/api-contas-pagar/delete.php?id=${g.id}`, { method: 'DELETE' });
+      }
       carregarContas();
     }
   };
@@ -135,7 +150,13 @@ const ContasPagarPage = ({ onClose, receberAtraso = 0, receberPorMes = {} }) => 
     carregarContas();
   };
 
-  const contasFiltradas = contas.filter((c) => String(c.vencimento).slice(0, 7) === mesFiltro);
+  const contasFiltradas = contas
+    .filter((c) => String(c.vencimento).slice(0, 7) === mesFiltro)
+    .sort(
+      (x, y) =>
+        (Number(x.pago) ? 1 : 0) - (Number(y.pago) ? 1 : 0) ||
+        String(x.vencimento).localeCompare(String(y.vencimento)),
+    );
   const totalMes = contasFiltradas.reduce((s, c) => s + Number(c.valor || 0), 0);
   const receberAcum =
     receberAtraso +
@@ -146,8 +167,16 @@ const ContasPagarPage = ({ onClose, receberAtraso = 0, receberPorMes = {} }) => 
     .filter((c) => String(c.vencimento).slice(0, 7) <= mesFiltro)
     .reduce((s, c) => s + Number(c.valor || 0), 0);
   const saldoMes = receberAcum - contasAcum;
-  const listaMeses = Array.from({ length: 25 }, (_, i) => {
-    const d = new Date(new Date().getFullYear(), new Date().getMonth() + i, 1);
+  const mesAtualStr = new Date().toISOString().slice(0, 7);
+  const menorMes = contas.reduce((mn, c) => {
+    const k = String(c.vencimento).slice(0, 7);
+    return k.length === 7 && k < mn ? k : mn;
+  }, mesAtualStr);
+  const [anoIni, mesIni] = menorMes.split('-').map(Number);
+  const hojeRef = new Date();
+  const qtdMeses = (hojeRef.getFullYear() - anoIni) * 12 + (hojeRef.getMonth() + 1 - mesIni) + 25;
+  const listaMeses = Array.from({ length: qtdMeses }, (_, i) => {
+    const d = new Date(anoIni, mesIni - 1 + i, 1);
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
   });
 
@@ -271,7 +300,7 @@ const ContasPagarPage = ({ onClose, receberAtraso = 0, receberPorMes = {} }) => 
                 opacity: 0.9,
               }}
             >
-              {'Total do m\u00eas'}
+              {'D\u00edvidas do m\u00eas'}
             </Typography>
             <Typography sx={{ fontSize: '1.9rem', fontWeight: 800, mt: 0.5 }}>
               {totalMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -422,7 +451,7 @@ const ContasPagarPage = ({ onClose, receberAtraso = 0, receberPorMes = {} }) => 
           />
           <TextField
             fullWidth
-            label="Valor Total (R$)"
+            label="Valor da parcela (R$)"
             value={valorTotal}
             onChange={(e) => setValorTotal(e.target.value)}
             sx={{ mb: 2 }}
