@@ -1,4 +1,4 @@
-import Checkbox from '@mui/material/Checkbox';
+﻿import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { useState, useEffect } from 'react';
 import {
@@ -39,7 +39,7 @@ const nomeMes = [
   'Dezembro',
 ];
 
-const ContasPagarPage = ({ onClose, receber = 0 }) => {
+const ContasPagarPage = ({ onClose, receberAtraso = 0, receberPorMes = {} }) => {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [descricao, setDescricao] = useState('');
@@ -49,7 +49,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
   const [mesInicial, setMesInicial] = useState(new Date().toISOString().slice(0, 10));
   const [contas, setContas] = useState([]);
   const [carregando, setCarregando] = useState(true);
-  const [mesFiltro, setMesFiltro] = useState('2026-10');
+  const [mesFiltro, setMesFiltro] = useState(() => new Date().toISOString().slice(0, 7));
 
   const carregarContas = async () => {
     try {
@@ -137,7 +137,19 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
 
   const contasFiltradas = contas.filter((c) => String(c.vencimento).slice(0, 7) === mesFiltro);
   const totalMes = contasFiltradas.reduce((s, c) => s + Number(c.valor || 0), 0);
-  const saldoMes = receber - totalMes;
+  const receberAcum =
+    receberAtraso +
+    Object.keys(receberPorMes)
+      .filter((k) => k <= mesFiltro)
+      .reduce((s, k) => s + receberPorMes[k], 0);
+  const contasAcum = contas
+    .filter((c) => String(c.vencimento).slice(0, 7) <= mesFiltro)
+    .reduce((s, c) => s + Number(c.valor || 0), 0);
+  const saldoMes = receberAcum - contasAcum;
+  const listaMeses = Array.from({ length: 25 }, (_, i) => {
+    const d = new Date(new Date().getFullYear(), new Date().getMonth() + i, 1);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  });
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f1f5f9', p: 3 }}>
@@ -294,7 +306,7 @@ const ContasPagarPage = ({ onClose, receber = 0 }) => {
               sx={{ mt: 1, backgroundColor: '#fff', borderRadius: '10px' }}
             >
               <Select value={mesFiltro} onChange={(e) => setMesFiltro(e.target.value)}>
-                {['2026-10', '2026-11', '2026-12', '2027-01'].map((m) => {
+                {listaMeses.map((m) => {
                   const [a, me] = m.split('-');
                   return (
                     <MenuItem key={m} value={m}>

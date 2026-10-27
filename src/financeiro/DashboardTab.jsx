@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -118,6 +118,7 @@ const DashboardTab = ({ onClose }) => {
     qtdMes = 0;
   const porDia = {};
   const listaAtraso = [];
+  const receberPorMes = {};
 
   clientes.forEach((c) => {
     const vencStr = c.attributes.fin_vencimento;
@@ -153,6 +154,8 @@ const DashboardTab = ({ onClose }) => {
 
     const mes = venc.getMonth();
     const ano = venc.getFullYear();
+    const kMes = ano + "-" + String(mes + 1).padStart(2, "0");
+    receberPorMes[kMes] = (receberPorMes[kMes] || 0) + valor;
     if (mes === mesSel && ano === anoSel) {
       const dia = venc.getDate();
       totalMes += valor;
@@ -180,7 +183,10 @@ const DashboardTab = ({ onClose }) => {
     qtd: porDia[dia].qtd,
   }));
 
-  if (contasPagarOpen) return <ContasPagarPage onClose={() => setContasPagarOpen(false)} />;
+  if (contasPagarOpen)
+    return (
+      <ContasPagarPage onClose={() => setContasPagarOpen(false)} receber={totalAtraso + totalMes} receberAtraso={totalAtraso} receberPorMes={receberPorMes} />
+    );
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f1f5f9', p: 3 }}>
       <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
