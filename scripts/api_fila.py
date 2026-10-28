@@ -99,7 +99,7 @@ def get_pagamento(token):
         if row.get("tipo") == "Atraso":
             conn2 = conectar()
             with conn2.cursor() as cur2:
-                cur2.execute("SELECT attributes FROM tc_users WHERE id = 1000 LIMIT 1")
+                cur2.execute("SELECT attributes FROM tc_users WHERE administrator = 1 AND attributes LIKE '%fin_evo_url%' ORDER BY id LIMIT 1")
                 r2 = cur2.fetchone()
             conn2.close()
             attrs = {}
@@ -146,7 +146,7 @@ def get_pagamento(token):
         if row.get("pix_id"):
             conn3 = conectar()
             with conn3.cursor() as cur3:
-                cur3.execute("SELECT attributes FROM tc_users WHERE id = 1000 LIMIT 1")
+                cur3.execute("SELECT attributes FROM tc_users WHERE administrator = 1 AND attributes LIKE '%fin_evo_url%' ORDER BY id LIMIT 1")
                 r3 = cur3.fetchone()
             conn3.close()
             attrs3 = {}
@@ -186,7 +186,7 @@ def webhook_mercadopago():
         conn = conectar()
         attrs = {}
         with conn.cursor() as cur:
-            cur.execute("SELECT attributes FROM tc_users WHERE id = 1000 LIMIT 1")
+            cur.execute("SELECT attributes FROM tc_users WHERE administrator = 1 AND attributes LIKE '%fin_evo_url%' ORDER BY id LIMIT 1")
             r = cur.fetchone()
         if r and r.get("attributes"):
             try:
