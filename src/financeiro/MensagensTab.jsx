@@ -79,10 +79,10 @@ const MensagensTab = () => {
         '💰 *Total a pagar: {valor_atualizado}*' +
         String.fromCharCode(10) +
         String.fromCharCode(10) +
-        'Regularize agora pelo PIX:' +
+        'Regularize agora pelo link:' +
         String.fromCharCode(10) +
         String.fromCharCode(10) +
-        '{pix_copia_cola}' +
+        '{link_pagamento}' +
         String.fromCharCode(10) +
         String.fromCharCode(10) +
         '_Evite o bloqueio dos serviços._',
@@ -100,9 +100,9 @@ const MensagensTab = () => {
         '💰 Valor: R$ {valor}' +
         String.fromCharCode(10) +
         String.fromCharCode(10) +
-        'PIX Copia e Cola:' +
+        'Link para pagar:' +
         String.fromCharCode(10) +
-        '{pix_copia_cola}' +
+        '{link_pagamento}' +
         String.fromCharCode(10) +
         String.fromCharCode(10) +
         'Após o vencimento será cobrado juros.' +
@@ -114,7 +114,20 @@ const MensagensTab = () => {
   const [lembreteHora, setLembreteHora] = useState(userAttributes.fin_msg_lembrete_hora || '13:00');
   const [lembreteTexto, setLembreteTexto] = useState(
     userAttributes.fin_msg_lembrete ||
-      '🚨 Olá *{nome}*, tudo bem?`nBom dia, aqui é um lembrete que sua fatura já está disponível.`n`n🗓 *Vencimento:* {vencimento}`n💰 *Valor:* R$ {valor}`n💸 *Desconto:* {desconto}`n`nPIX Copia e Cola:`n{pix_copia_cola}`n`nApós vencimento será cobrado juros pela operadora.`n`n_O pagamento é confirmado automaticamente. Você receberá o recibo em seguida, sem precisar enviar comprovante._',
+      [
+        '🚨 Olá *{nome}*, tudo bem?',
+        'Bom dia, aqui é um lembrete que sua fatura já está disponível.',
+        '',
+        '🗓 *Vencimento:* {vencimento}',
+        '💰 *Valor:* R$ {valor}',
+        '💸 *Desconto:* {desconto}',
+        '',
+        '🔗 Link para pagar: {link_pagamento}',
+        '',
+        'Após vencimento será cobrado juros pela operadora.',
+        '',
+        '_O pagamento é confirmado automaticamente. Você receberá o recibo em seguida, sem precisar enviar comprovante._',
+      ].join(String.fromCharCode(10)),
   );
   const [reciboTexto, setReciboTexto] = useState(
     [
