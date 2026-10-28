@@ -126,6 +126,12 @@ const useStyles = makeStyles()((theme) => ({
     position: 'relative',
     padding: '8px 16px 14px 16px',
   },
+  cardAdminPc: {
+    [theme.breakpoints.up('md')]: {
+      width: 540,
+      maxWidth: 'calc(100vw - 490px)',
+    },
+  },
   toggleTab: {
     position: 'absolute',
     top: -14,
@@ -378,6 +384,13 @@ const useStyles = makeStyles()((theme) => ({
     },
   },
 
+  actionsContainerAdminPc: {
+    [theme.breakpoints.up('md')]: {
+      flexWrap: 'nowrap',
+      overflowX: 'auto',
+    },
+  },
+
   lockRectangleBtn: {
     display: 'flex',
     alignItems: 'center',
@@ -569,6 +582,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const speedUnit = usePreference('speedUnit', 'kmh');
   const user = useSelector((state) => state.session.user);
   const admin = useAdministrator();
+  const adminPc = admin && Boolean(user?.attributes?.fin_evo_url);
   const readonly = useRestriction('readonly');
   const deviceReadonly = useDeviceReadonly();
 
@@ -627,9 +641,31 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     return null;
   };
 
-  const getIsBlockedReal = (pos = position, dev = device) => { const relayConfirmed = getRelayConfirmation(); if (relayConfirmed !== null) return relayConfirmed; const posAttr = pos?.attributes || {}; const devAttr = dev?.attributes || {}; if (posAttr.out1 === true) return true; if (posAttr.out1 === false) return false; if (posAttr.output1 === true) return true; if (posAttr.output1 === false) return false; if (posAttr.relay === true) return true; if (posAttr.relay === false) return false; if (posAttr.blocked === true) return true; if (posAttr.blocked === false) return false; if (devAttr.blocked === true) return true; if (devAttr.blocked === false) return false; const localStr = localStorage.getItem("device_blk_" + deviceId); if (localStr) { try { return JSON.parse(localStr).status; } catch(e) {} } return false; };
+  const getIsBlockedReal = (pos = position, dev = device) => {
+    const relayConfirmed = getRelayConfirmation();
+    if (relayConfirmed !== null) return relayConfirmed;
+    const posAttr = pos?.attributes || {};
+    const devAttr = dev?.attributes || {};
+    if (posAttr.out1 === true) return true;
+    if (posAttr.out1 === false) return false;
+    if (posAttr.output1 === true) return true;
+    if (posAttr.output1 === false) return false;
+    if (posAttr.relay === true) return true;
+    if (posAttr.relay === false) return false;
+    if (posAttr.blocked === true) return true;
+    if (posAttr.blocked === false) return false;
+    if (devAttr.blocked === true) return true;
+    if (devAttr.blocked === false) return false;
+    const localStr = localStorage.getItem('device_blk_' + deviceId);
+    if (localStr) {
+      try {
+        return JSON.parse(localStr).status;
+      } catch (e) {}
+    }
+    return false;
+  };
 
-const getConfirmedStatus = (pos = position, dev = device) => {
+  const getConfirmedStatus = (pos = position, dev = device) => {
     const relayConfirmed = getRelayConfirmation();
     if (relayConfirmed !== null) return relayConfirmed;
     const posAttr = pos?.attributes || {};
@@ -690,11 +726,11 @@ const getConfirmedStatus = (pos = position, dev = device) => {
     }
   }, [position, deviceId]);
 
-    const [piscar, setPiscar] = useState(false);
+  const [piscar, setPiscar] = useState(false);
   useEffect(() => {
     let intervalo;
     if (isBlocked || lastKnownBlock.status) {
-      intervalo = setInterval(() => setPiscar(p => !p), 600);
+      intervalo = setInterval(() => setPiscar((p) => !p), 600);
     } else {
       setPiscar(false);
     }
@@ -1294,7 +1330,7 @@ const getConfirmedStatus = (pos = position, dev = device) => {
             dragHandleClassName="draggable-header"
             style={{ position: 'relative' }}
           >
-            <Card elevation={3} className={classes.card}>
+            <Card elevation={3} className={`${classes.card} ${adminPc ? classes.cardAdminPc : ''}`}>
               {!showSensors && (
                 <Box
                   onClick={() => setShowSensors(!showSensors)}
@@ -1706,14 +1742,21 @@ const getConfirmedStatus = (pos = position, dev = device) => {
                 </Box>
               </Collapse>
 
-              <Box className={classes.actionsContainer}>
+              <Box
+                className={`${classes.actionsContainer} ${adminPc ? classes.actionsContainerAdminPc : ''}`}
+              >
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <ButtonBase
                     className={classes.lockRectangleBtn}
                     onClick={() => sendSendCommand('engineStop')}
                     disabled={disableActions || readonly || loadingCommand}
                     sx={{
-                      backgroundColor: (isBlocked || lastKnownBlock.status) ? (piscar ? '#ff0000' : '#ffb3b3') : '#dc2626',
+                      backgroundColor:
+                        isBlocked || lastKnownBlock.status
+                          ? piscar
+                            ? '#ff0000'
+                            : '#ffb3b3'
+                          : '#dc2626',
                       '&:hover': { backgroundColor: '#b91c1c' },
                       opacity: isBlocked ? 0.5 : 1,
                     }}
