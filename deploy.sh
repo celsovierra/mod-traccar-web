@@ -625,4 +625,13 @@ mysql traccar -e 'CREATE TABLE IF NOT EXISTS tc_contas_pagar (id INT AUTO_INCREM
 mysql traccar -e 'CREATE TABLE IF NOT EXISTS tc_contas_pagar (id INT AUTO_INCREMENT PRIMARY KEY, descricao VARCHAR(255), valor DECIMAL(10,2), vencimento VARCHAR(7), pago BOOLEAN DEFAULT FALSE);'
 
 # Copiar API de contas a pagar
-bash deploy/contas-pagar.sh
+bash /root/mod-traccar-web/deploy/contas-pagar.sh
+
+# --- Teste de sanidade: multa/juros no link de pagamento (so avisa) ---
+sleep 3
+TK=$(mysql traccar -N -e "SELECT token_pag FROM tc_fila_financeiro WHERE tipo='Atraso' AND token_pag<>'' ORDER BY id DESC LIMIT 1;")
+if [ -n "$TK" ]; then
+  R=$(curl -s http://localhost:8092/pagamento/$TK)
+  echo "$R" | grep -q '"multa":0.0' && echo "!!! ALERTA: multa zerada no link de pagamento (conferir admin em api_fila.py)"
+  echo "$R" | grep -q '"total"' && echo ">> Teste link de pagamento OK (total presente)"
+fi
