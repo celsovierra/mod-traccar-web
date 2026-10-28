@@ -40,7 +40,7 @@ def conectar():
 
 def get_admin(conn):
     with conn.cursor() as cur:
-        cur.execute("SELECT id, attributes FROM tc_users WHERE id = 1000 LIMIT 1")
+        cur.execute("SELECT id, attributes FROM tc_users WHERE administrator = 1 AND attributes LIKE '%fin_evo_url%' ORDER BY id LIMIT 1")
         row = cur.fetchone()
     return row
 
