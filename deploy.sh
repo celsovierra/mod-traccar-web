@@ -628,6 +628,10 @@ mysql traccar -e 'CREATE TABLE IF NOT EXISTS tc_contas_pagar (id INT AUTO_INCREM
 mysql traccar -e 'CREATE TABLE IF NOT EXISTS tc_contas_pagar (id INT AUTO_INCREMENT PRIMARY KEY, descricao VARCHAR(255), valor DECIMAL(10,2), vencimento VARCHAR(7), pago BOOLEAN DEFAULT FALSE);'
 
 # Copiar API de contas a pagar
+echo ">> Instalando ultimo acesso (cron)..."
+cp -f /root/mod-traccar-web/deploy/update_last_access.sh /opt/traccar/scripts/update_last_access.sh ; chmod +x /opt/traccar/scripts/update_last_access.sh
+(crontab -l 2>/dev/null | grep -q update_last_access) || (crontab -l 2>/dev/null ; echo "*/2 * * * * /opt/traccar/scripts/update_last_access.sh >/dev/null 2>&1") | crontab -
+systemctl disable --now traccar-login-tracker 2>/dev/null || true
 bash /root/mod-traccar-web/deploy/contas-pagar.sh
 
 # --- Teste de sanidade: multa/juros no link de pagamento (so avisa) ---

@@ -1,0 +1,2 @@
+#!/bin/bash
+mysql traccar -e "UPDATE tc_users u JOIN (SELECT userid, MAX(actiontime) t FROM tc_actions WHERE actiontype='login' GROUP BY userid) a ON a.userid=u.id SET u.attributes=JSON_SET(COALESCE(u.attributes,'{}'),'$.lastUpdate',DATE_FORMAT(a.t,'%Y-%m-%dT%H:%i:%s.000Z')) WHERE JSON_UNQUOTE(JSON_EXTRACT(u.attributes,'$.lastUpdate')) IS NULL OR JSON_UNQUOTE(JSON_EXTRACT(u.attributes,'$.lastUpdate')) <> DATE_FORMAT(a.t,'%Y-%m-%dT%H:%i:%s.000Z');"
