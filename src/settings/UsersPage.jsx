@@ -72,7 +72,7 @@ const UsersPage = () => {
 
   const loadItems = useCallback(async (offset, signal) => {
     const limit = offset === 0 ? 30 : pageSize;
-    const query = new URLSearchParams({ excludeAttributes: true, limit, offset });
+    const query = new URLSearchParams({ limit, offset });
     const response = await fetchOrThrow(`/api/users?${query.toString()}`, { signal });
     const data = await response.json();
 
@@ -95,7 +95,7 @@ const UsersPage = () => {
       const keyword = searchKeyword.trim();
       if (keyword) {
         try {
-          const query = new URLSearchParams({ excludeAttributes: true, limit: 5000, offset: 0 });
+          const query = new URLSearchParams({ limit: 5000, offset: 0 });
           const response = await fetchOrThrow('/api/users?' + query.toString());
           const data = await response.json();
           setItems(data);
