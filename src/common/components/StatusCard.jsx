@@ -582,7 +582,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
   const speedUnit = usePreference('speedUnit', 'kmh');
   const user = useSelector((state) => state.session.user);
   const admin = useAdministrator();
-  const adminPc = admin && Boolean(user?.attributes?.fin_evo_url);
+  const adminPc = admin;
   const readonly = useRestriction('readonly');
   const deviceReadonly = useDeviceReadonly();
 
