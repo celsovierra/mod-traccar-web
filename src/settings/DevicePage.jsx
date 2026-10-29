@@ -152,6 +152,8 @@ const DevicePage = () => {
             '& .MuiOutlinedInput-root': {
               borderRadius: '14px',
               backgroundColor: '#f9fafb',
+              color: '#111827',
+              '& input, & textarea': { color: '#111827', WebkitTextFillColor: '#111827' },
               transition: 'all 0.2s',
               '&:hover': {
                 backgroundColor: '#ffffff',
