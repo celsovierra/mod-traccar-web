@@ -17,7 +17,8 @@ import EventIcon from '@mui/icons-material/Event';
 import WarningIcon from '@mui/icons-material/Warning';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { sessionActions } from '../store';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const variaveis = [
@@ -45,6 +46,7 @@ const MensagensTab = () => {
   const [abertos, setAbertos] = useState({});
   const user = useSelector((state) => state.session.user);
   const userId = user.id;
+  const dispatch = useDispatch();
   const userAttributes = useSelector((state) => state.session.user.attributes) || {};
   const [ativos, setAtivos] = useState({
     1: userAttributes.fin_multa_ativo !== 'false',
@@ -204,7 +206,7 @@ const MensagensTab = () => {
         fin_juros_valor: jurosValor,
         fin_multa_ativo: ativos[1] ? 'true' : 'false',
       };
-      await fetchOrThrow('/api/users/' + userId, {
+      const resp = await fetchOrThrow('/api/users/' + userId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -216,6 +218,7 @@ const MensagensTab = () => {
           masteruser: user.masteruser,
         }),
       });
+      dispatch(sessionActions.updateUser(await resp.json()));
       alert('Salvo!');
     } catch (e) {
       console.error(e);
