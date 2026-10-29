@@ -543,6 +543,9 @@ else
   sed -i "/<\/properties>/i \    <entry key='event.forward.enable'>true</entry>\n    <entry key='event.forward.url'>$FORWARD_URL</entry>\n    <entry key='event.forward.type'>json</entry>\n    <entry key='event.forward.header'>Content-Type: application/json</entry>" /opt/traccar/conf/traccar.xml
 fi
 mysql -u traccar -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || mysql -u traccar_user -p"Traccar@2026#Sec" traccar -e "UPDATE DATABASECHANGELOGLOCK SET LOCKED=0, LOCKGRANTED=NULL, LOCKEDBY=NULL WHERE ID=1;" 2>/dev/null || true
+echo ">> Instalando templates de notificacao (pt-BR no idioma en)..."
+mkdir -p /opt/traccar/templates/notifications/en
+cp -f /root/mod-traccar-web/deploy/templates/notifications/en/*.vm /opt/traccar/templates/notifications/en/
 systemctl restart traccar
 echo ">> Configurando descricao das notificacoes..."
 mysql -u traccar -p"Traccar@2026#Sec" traccar -e 'UPDATE tc_notifications SET description = "Saiu da Cerca: $${geofenceName}" WHERE type = "geofenceExit" AND (description IS NULL OR description = "");' 2>/dev/null || true

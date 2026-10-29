@@ -1,0 +1,13 @@
+#set($hora = $dateTool.format('HH:mm', $event.eventTime, $locale, $timezone))
+#if($geofence.name.startsWith("ANCORA_"))
+#set($msg = "Saiu da área segura (Âncora).")
+#else
+#set($msg = "Saiu da cerca: ${geofence.name}.")
+#end
+#set($subject = "$device.name")
+#set($digest = "$msg • Horário: $hora")
+<!DOCTYPE html>
+<html><body>
+Veículo: $esc.html($device.name)<br>
+$esc.html($msg) • Horário: $hora<br>
+</body></html>

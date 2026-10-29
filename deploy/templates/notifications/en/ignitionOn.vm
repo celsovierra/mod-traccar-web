@@ -1,0 +1,8 @@
+#set($hora = $dateTool.format('HH:mm', $event.eventTime, $locale, $timezone))
+#set($subject = "$device.name")
+#set($digest = "Ignição ligada. • Horário: $hora")
+<!DOCTYPE html>
+<html><body>
+Veículo: $esc.html($device.name)<br>
+Ignição ligada • Horário: $hora<br>
+</body></html>
