@@ -2,6 +2,7 @@
 import SmsIcon from '@mui/icons-material/Sms';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import InventoryIcon from '@mui/icons-material/Inventory2Outlined';
 import { makeStyles } from 'tss-react/mui';
 import {
   IconButton,
@@ -322,6 +323,35 @@ const DeviceRow = ({ devices, index, style }) => {
                     ) : (
                       <Battery20Icon fontSize="small" className={classes.error} />
                     ))}
+                </IconButton>
+              </Tooltip>
+            )}
+            {item.attributes?.stock === true && (
+              <Tooltip title="Tirar do estoque">
+                <IconButton
+                  size="small"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (!window.confirm('Tirar ' + item.name + ' do estoque?')) return;
+                    try {
+                      const r = await fetch('/api/devices/' + item.id, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                          ...item,
+                          attributes: { ...item.attributes, stock: false },
+                        }),
+                      });
+                      if (!r.ok) throw new Error(await r.text());
+                      window.location.reload();
+                    } catch (err) {
+                      alert('Erro: ' + err.message);
+                    }
+                  }}
+                  sx={{ color: '#16a34a', ml: 0.3, p: 0.3 }}
+                >
+                  <InventoryIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             )}
