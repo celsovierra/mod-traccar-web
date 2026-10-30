@@ -21,7 +21,8 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { sessionActions } from '../store';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -35,6 +36,7 @@ const FilaTab = () => {
   const [intervalo, setIntervalo] = useState(10);
   const [unidade, setUnidade] = useState('s');
   const user = useSelector((state) => state.session.user);
+  const dispatch = useDispatch();
   const userAttributes = user.attributes || {};
   const headCell = {
     fontWeight: 800,
@@ -75,7 +77,7 @@ const FilaTab = () => {
   const salvarIntervalo = async (valor, un) => {
     try {
       const attrs = { ...userAttributes, fin_fila_intervalo: valor + un };
-      await fetch('/api/users/' + user.id, {
+      const resp = await fetch('/api/users/' + user.id, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -85,6 +87,7 @@ const FilaTab = () => {
           attributes: attrs,
         }),
       });
+      if (resp.ok) dispatch(sessionActions.updateUser(await resp.json()));
     } catch (e) {
       console.error(e);
     }
