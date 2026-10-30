@@ -78,6 +78,46 @@ const ContasPagarPage = ({ onClose, receberAtraso = 0, receberPorMes = {} }) => 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: editId, descricao, valor, vencimento: mesInicial }),
       });
+      const velho = contas.find((c) => c.id === editId);
+      const rx = /^(.*?)\s*\((\d+)\/(\d+)\)\s*$/;
+      const mo = velho ? String(velho.descricao).match(rx) : null;
+      const mn = String(descricao).match(rx);
+      if (mo) {
+        const base = mn ? mn[1] : descricao;
+        const idx = Number(mo[2]);
+        const posteriores = contas.filter((c) => {
+          const x = String(c.descricao).match(rx);
+          return x && x[1] === mo[1] && x[3] === mo[3] && Number(x[2]) > idx;
+        });
+        for (const c of posteriores) {
+          const x = String(c.descricao).match(rx);
+          await fetch('/api-contas-pagar/update.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: c.id,
+              descricao: `${base} (${x[2]}/${x[3]})`,
+              valor,
+              vencimento: c.vencimento,
+            }),
+          });
+        }
+      } else if (velho) {
+        const mesVelho = String(velho.vencimento).slice(0, 7);
+        const mesmas = contas.filter(
+          (c) =>
+            c.id !== editId &&
+            c.descricao === velho.descricao &&
+            String(c.vencimento).slice(0, 7) > mesVelho,
+        );
+        for (const c of mesmas) {
+          await fetch('/api-contas-pagar/update.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: c.id, descricao, valor, vencimento: c.vencimento }),
+          });
+        }
+      }
     } else {
       const qtd = recorrente ? 12 : parcelas;
       const valorParcela = valor;
