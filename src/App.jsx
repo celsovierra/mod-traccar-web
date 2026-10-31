@@ -12,6 +12,7 @@ import TermsDialog from './common/components/TermsDialog';
 import Loader from './common/components/Loader';
 import fetchOrThrow from './common/util/fetchOrThrow';
 import { ensureDefaultNotifications } from './common/util/ensureDefaultNotifications';
+import PendenciaCard from './financeiro/PendenciaCard';
 
 const useStyles = makeStyles()(() => ({
   page: {
@@ -88,6 +89,7 @@ const App = () => {
         }
       `}</style>
       <SocketController />
+      <PendenciaCard />
       <CachingController />
       <UpdateController />
       <MotionController />
