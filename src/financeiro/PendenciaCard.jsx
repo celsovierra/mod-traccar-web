@@ -22,7 +22,10 @@ const PendenciaCard = () => {
 
   useEffect(() => {
     const a = user?.attributes || {};
-    if (!user || !a.fin_vencimento || !a.fin_valor || a.fin_nao_cobrar === 'true') return;
+    if (!user || !a.fin_vencimento || !a.fin_valor || a.fin_nao_cobrar === 'true') {
+      setOpen(false);
+      return;
+    }
     const p = String(a.fin_vencimento).split('-');
     const venc = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
     const hoje = new Date();
