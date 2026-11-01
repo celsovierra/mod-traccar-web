@@ -22,7 +22,7 @@ const PendenciaCard = () => {
 
   useEffect(() => {
     const a = user?.attributes || {};
-    if (!user || !a.fin_vencimento || !a.fin_valor || a.fin_nao_cobrar === 'true') {
+    if (!user || !a.fin_vencimento || a.fin_nao_cobrar === 'true') {
       setOpen(false);
       return;
     }
@@ -45,7 +45,7 @@ const PendenciaCard = () => {
       (hoje.getFullYear() - venc.getFullYear()) * 12 + (hoje.getMonth() - venc.getMonth()) + 1;
     if (hoje.getDate() < venc.getDate()) meses -= 1;
     if (meses < 1) meses = 1;
-    const valor = parseFloat(String(a.fin_valor).replace(',', '.')) || 0;
+    const valor = parseFloat(String(a.fin_valor || '0').replace(',', '.')) || 0;
     setInfo({
       dias,
       bloqueado: dias > 10,
