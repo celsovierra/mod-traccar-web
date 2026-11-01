@@ -620,7 +620,7 @@ const ClientesTab = () => {
       ...(item.attributes || {}),
       fin_telefone1: d.telefone1,
       fin_telefone2: d.telefone2,
-      fin_valor: d.valor,
+      fin_valor: d.valor || item.attributes?.fin_valor || '',
       fin_vencimento: d.vencimento,
       fin_contrato: d.contrato,
     };
