@@ -98,5 +98,25 @@
     "tamanho": 1.7,
     "largura": 1.2,
     "altura": 1.1
+  },
+  "moto broz vermelha": {
+    "tamanho": 1.5,
+    "largura": 1,
+    "altura": 1
+  },
+  "broz_vermelha": {
+    "tamanho": 1.5,
+    "largura": 1,
+    "altura": 1
+  },
+  "broz_preta_": {
+    "tamanho": 1.5,
+    "largura": 1,
+    "altura": 1
+  },
+  "biz_dourada_": {
+    "tamanho": 1,
+    "largura": 1,
+    "altura": 1
   }
 }

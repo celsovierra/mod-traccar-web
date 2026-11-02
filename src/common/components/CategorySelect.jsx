@@ -121,12 +121,21 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
     <>
       <Typography
         sx={{
-          fontSize: '0.68rem',
+          fontSize: '0.8rem',
+          letterSpacing: 0.4,
           fontWeight: 800,
           color: '#7c3aed',
           textTransform: 'uppercase',
           px: 1,
-          pt: 1,
+          pt: 1.3,
+          pb: 1.3,
+          pl: 1.5,
+          pr: 1,
+          mt: 0.5,
+          mb: 0.5,
+          borderRadius: '12px',
+          backgroundColor: '#f5f3ff',
+          '&:hover': { backgroundColor: '#ede9fe' },
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
@@ -141,7 +150,7 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
         />
       </Typography>
       <Collapse in={openGroups === title} unmountOnExit>
-        <Grid container spacing={1} sx={{ width: 340, px: 0.5, pb: 1 }}>
+        <Grid container spacing={1} sx={{ width: '100%', px: 0.5, pb: 1 }}>
           {options.map((option) => (
             <Grid item xs={4} key={option.id}>
               <MenuItem
@@ -213,7 +222,9 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
         transformOrigin={{ vertical: 'center', horizontal: 'center' }}
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
-        PaperProps={{ sx: { p: 1, maxHeight: 480 } }}
+        PaperProps={{
+          sx: { p: 1.5, width: 380, maxWidth: '92vw', maxHeight: 520, borderRadius: '20px' },
+        }}
       >
         {renderGroup('Ícones que seguem a rota', rotativeOptions)}
         <Divider sx={{ my: 0.5 }} />
