@@ -12,9 +12,9 @@ import {
   DialogTitle,
   TextField,
   Button,
+  Collapse,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import CloseIcon from '@mui/icons-material/Close';
 import defaultSvg from '../../resources/images/icon/default.svg';
 import iconSizesData from '../../resources/images/icon/iconSizes.json';
@@ -52,12 +52,11 @@ const rotativeOptionsBase = buildOptions(rotativeIcons);
 
 const CategorySelect = ({ value, onChange, label, fullWidth }) => {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [rotativeOptions, setRotativeOptions] = useState(rotativeOptionsBase);
+  const rotativeOptions = rotativeOptionsBase;
   const [sizeEditorKey, setSizeEditorKey] = useState(null);
   const [sizeForm, setSizeForm] = useState({ tamanho: 1, largura: 1, altura: 1 });
   const [saving, setSaving] = useState(false);
-  const fileInputRef = useRef(null);
+  const [openGroups, setOpenGroups] = useState(null);
   const clickCountRef = useRef(0);
   const clickTimerRef = useRef(null);
   const selected = value || 'moto_vermlha';
@@ -118,43 +117,6 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
     }
   };
 
-  const handleUploadClick = (event) => {
-    event.stopPropagation();
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-    const name = window.prompt('Nome do Ã­cone:', file.name.replace(/\.[^/.]+$/, ''));
-    if (!name) {
-      event.target.value = '';
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = async () => {
-      setUploading(true);
-      try {
-        const response = await fetch('/api/dev-save-icon', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, dataUrl: reader.result }),
-        });
-        if (!response.ok) throw new Error(await response.text());
-        window.alert(
-          'Ãcone salvo em src/resources/images/icon/rotativos/. Recarregando a pÃ¡gina...',
-        );
-        window.location.reload();
-      } catch (err) {
-        window.alert('Erro ao salvar Ã­cone: ' + err.message);
-      } finally {
-        setUploading(false);
-      }
-    };
-    reader.readAsDataURL(file);
-    event.target.value = '';
-  };
-
   const renderGroup = (title, options) => (
     <>
       <Typography
@@ -165,30 +127,41 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
           textTransform: 'uppercase',
           px: 1,
           pt: 1,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
         }}
+        onClick={() => setOpenGroups((g) => (g === title ? null : title))}
       >
         {title}
+        <ExpandMoreIcon
+          fontSize="small"
+          sx={{ transform: openGroups === title ? 'rotate(180deg)' : 'none' }}
+        />
       </Typography>
-      <Grid container spacing={1} sx={{ width: 340, px: 0.5, pb: 1 }}>
-        {options.map((option) => (
-          <Grid item xs={4} key={option.id}>
-            <MenuItem
-              selected={option.id === selected}
-              onClick={() => handleIconClick(option)}
-              sx={{ flexDirection: 'column', borderRadius: '12px', gap: 0.5, py: 1 }}
-            >
-              <img
-                src={option.icon}
-                alt={option.name}
-                style={{ width: 36, height: 36, objectFit: 'contain' }}
-              />
-              <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, textAlign: 'center' }}>
-                {option.name}
-              </Typography>
-            </MenuItem>
-          </Grid>
-        ))}
-      </Grid>
+      <Collapse in={openGroups === title} unmountOnExit>
+        <Grid container spacing={1} sx={{ width: 340, px: 0.5, pb: 1 }}>
+          {options.map((option) => (
+            <Grid item xs={4} key={option.id}>
+              <MenuItem
+                selected={option.id === selected}
+                onClick={() => handleIconClick(option)}
+                sx={{ flexDirection: 'column', borderRadius: '12px', gap: 0.5, py: 1 }}
+              >
+                <img
+                  src={option.icon}
+                  alt={option.name}
+                  style={{ width: 36, height: 36, objectFit: 'contain' }}
+                />
+                <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, textAlign: 'center' }}>
+                  {option.name}
+                </Typography>
+              </MenuItem>
+            </Grid>
+          ))}
+        </Grid>
+      </Collapse>
     </>
   );
 
@@ -235,55 +208,16 @@ const CategorySelect = ({ value, onChange, label, fullWidth }) => {
       </Typography>
 
       <Menu
-        anchorEl={anchorEl}
+        anchorReference="anchorPosition"
+        anchorPosition={{ top: window.innerHeight / 2, left: window.innerWidth / 2 }}
+        transformOrigin={{ vertical: 'center', horizontal: 'center' }}
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
         PaperProps={{ sx: { p: 1, maxHeight: 480 } }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 1 }}>
-          <IconButton
-            size="small"
-            onClick={handleUploadClick}
-            disabled={uploading}
-            title="Enviar novo Ã­cone (rotativo)"
-            sx={{
-              color: '#7c3aed',
-              backgroundColor: '#f5f3ff',
-              '&:hover': { backgroundColor: '#ede9fe' },
-            }}
-          >
-            <AddPhotoAlternateIcon fontSize="small" />
-          </IconButton>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handleFileChange}
-          />
-        </Box>
-        <Grid container spacing={1} sx={{ width: 340, px: 0.5, pb: 0.5 }}>
-          <Grid item xs={4}>
-            <MenuItem
-              selected={defaultOption.id === selected}
-              onClick={() => handleIconClick(defaultOption)}
-              sx={{ flexDirection: 'column', borderRadius: '12px', gap: 0.5, py: 1 }}
-            >
-              <img
-                src={defaultOption.icon}
-                alt="PadrÃ£o"
-                style={{ width: 36, height: 36, objectFit: 'contain' }}
-              />
-              <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, textAlign: 'center' }}>
-                PadrÃ£o
-              </Typography>
-            </MenuItem>
-          </Grid>
-        </Grid>
+        {renderGroup('Ícones que seguem a rota', rotativeOptions)}
         <Divider sx={{ my: 0.5 }} />
-        {renderGroup('Ãcones que seguem a rota', rotativeOptions)}
-        <Divider sx={{ my: 0.5 }} />
-        {renderGroup('Ãcones estÃ¡ticos', staticOptions)}
+        {renderGroup('Ícones estáticos', staticOptions)}
       </Menu>
 
       <Dialog
