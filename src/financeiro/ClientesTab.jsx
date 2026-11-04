@@ -881,7 +881,7 @@ const ClientesTab = () => {
                                   style={{ cursor: 'pointer', width: 16, height: 16 }}
                                 />
                                 <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>
-                                  NÃ£o cobrar
+                                  Não cobrar
                                 </span>
                               </Box>
                             </Box>
@@ -1338,7 +1338,7 @@ const ClientesTab = () => {
               >
                 {[...Array(12)].map((_, i) => (
                   <MenuItem key={i + 1} value={i + 1}>
-                    {i + 1} {i + 1 === 1 ? 'mÃªs' : 'meses'}
+                    {i + 1} {i + 1 === 1 ? 'mês' : 'meses'}
                   </MenuItem>
                 ))}
               </TextField>
@@ -1354,7 +1354,7 @@ const ClientesTab = () => {
                 Valor total da baixa: <strong>R$ {valorTotal(modalBaixa || {}, mesesBaixa)}</strong>
               </Typography>
               <Typography sx={{ fontSize: '0.78rem', color: '#94a3b8', mt: 2 }}>
-                ApÃ³s confirmar, um recibo serÃ¡ enviado via WhatsApp.
+                Após confirmar, um recibo será enviado via WhatsApp.
               </Typography>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2 }}>
