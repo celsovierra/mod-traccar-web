@@ -337,7 +337,7 @@ def processar(forcar=False):
         return
     conn = conectar()
     with conn.cursor() as cur:
-        cur.execute("SELECT * FROM tc_fila_financeiro WHERE status = %s", ("Pendente",))
+        cur.execute("SELECT * FROM tc_fila_financeiro WHERE status = %s AND telefone IS NOT NULL AND telefone <> ''", ("Pendente",))
         itens = cur.fetchall()
         enviados = 0
         erros = 0
