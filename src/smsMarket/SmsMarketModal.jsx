@@ -94,7 +94,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     try {
       setLoadingCommands(true);
       const response = await fetch('/api/commands');
-      if (!response.ok) throw new Error('Nï¿½o foi possï¿½vel carregar os comandos do Traccar.');
+      if (!response.ok) throw new Error('Não foi possível carregar os comandos do Traccar.');
       const data = await response.json();
       const commands = Array.isArray(data) ? data : [];
       setSavedCommands(
@@ -139,7 +139,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description: name, type: 'custom', attributes: { text } }),
       });
-      if (!response.ok) throw new Error('Nï¿½o foi possï¿½vel salvar o comando no Traccar.');
+      if (!response.ok) throw new Error('Não foi possível salvar o comando no Traccar.');
       setCommandName('');
       setCommandText('');
       await loadCommands();
@@ -198,7 +198,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           attributes: { smsMarketGroup: true, commandIds: selectedCommandIds },
         }),
       });
-      if (!response.ok) throw new Error('Nï¿½o foi possï¿½vel salvar o grupo no Traccar.');
+      if (!response.ok) throw new Error('Não foi possível salvar o grupo no Traccar.');
       setGroupName('');
       setSelectedCommandIds([]);
       await loadCommands();
@@ -214,7 +214,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     const ids = group.attributes?.commandIds || [];
     const commands = savedCommands.filter((command) => ids.includes(command.id));
     if (commands.length === 0) {
-      showToast('Este grupo nï¿½o possui comandos vï¿½lidos.');
+      showToast('Este grupo não possui comandos válidos.');
       return;
     }
     if (!window.confirm('Enviar ' + commands.length + ' comando(s) por SMS?')) return;
@@ -271,12 +271,12 @@ const SmsMarketModal = ({ device, onClose }) => {
     if (type === 'GPRS') {
       setSendingType('GPRS');
       if (!device?.id) {
-        showToast('Nenhum veï¿½culo foi selecionado.');
+        showToast('Nenhum veículo foi selecionado.');
         return;
       }
 
       if ((device?.status || '').toLowerCase() !== 'online') {
-        showToast('Este veï¿½culo estï¿½ offline. Use SMS para enviar o comando.');
+        showToast('Este veículo está offline. Use SMS para enviar o comando.');
         return;
       }
 
@@ -394,7 +394,7 @@ const SmsMarketModal = ({ device, onClose }) => {
 
         if (!response.ok) {
           const detail = await response.text();
-          throw new Error(detail || 'O Traccar nï¿½o aceitou o comando GPRS.');
+          throw new Error(detail || 'O Traccar não aceitou o comando GPRS.');
         }
 
         setReports((prev) => [
@@ -410,14 +410,14 @@ const SmsMarketModal = ({ device, onClose }) => {
             time: new Date().toLocaleTimeString('pt-BR'),
             text: message.trim(),
             phone: phone || '',
-            deviceName: device?.name || 'Veï¿½culo',
+            deviceName: device?.name || 'Veículo',
             response: { transport: 'Traccar GPRS' },
           },
           ...prev,
         ]);
 
         setMessage('');
-        showToast('Comando enviado via GPRS para o veï¿½culo online.');
+        showToast('Comando enviado via GPRS para o veículo online.');
       } catch (error) {
         console.error('Erro ao enviar GPRS:', error);
 
@@ -434,7 +434,7 @@ const SmsMarketModal = ({ device, onClose }) => {
             time: new Date().toLocaleTimeString('pt-BR'),
             text: message.trim(),
             phone: phone || '',
-            deviceName: device?.name || 'Veï¿½culo',
+            deviceName: device?.name || 'Veículo',
             error: error?.message || 'Erro ao enviar comando GPRS.',
           },
           ...prev,
@@ -452,7 +452,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     /* SMS: usa a SMS Market e desconta saldo normalmente */
     setSendingType('SMS');
     if (!creds?.user?.trim() || !creds?.pass?.trim()) {
-      showToast('Configure o usuï¿½rio e a senha do ENVIAR COMANDO na engrenagem.');
+      showToast('Configure o usuário e a senha do ENVIAR COMANDO na engrenagem.');
       setShowSettings(true);
       return;
     }
@@ -462,7 +462,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       const groupCommands = savedCommands.filter((command) => commandIds.includes(command.id));
 
       if (groupCommands.length === 0) {
-        showToast('O grupo selecionado nï¿½o possui comandos vï¿½lidos.');
+        showToast('O grupo selecionado não possui comandos válidos.');
         return;
       }
 
@@ -470,7 +470,7 @@ const SmsMarketModal = ({ device, onClose }) => {
       try {
         groupPhone = normalizeBrazilPhone(phoneOverride || phone);
       } catch (err) {
-        showToast(err?.message || 'Telefone invï¿½lido.');
+        showToast(err?.message || 'Telefone inválido.');
         return;
       }
 
@@ -501,7 +501,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               time: new Date().toLocaleTimeString('pt-BR'),
               text: commandText.trim(),
               phone: groupPhone,
-              deviceName: device?.name || 'Veï¿½culo',
+              deviceName: device?.name || 'Veículo',
               response: res,
             },
             ...prev,
@@ -528,7 +528,7 @@ const SmsMarketModal = ({ device, onClose }) => {
     try {
       normalizedPhone = normalizeBrazilPhone(phoneOverride || phone);
     } catch (err) {
-      showToast(err?.message || 'Telefone invï¿½lido.');
+      showToast(err?.message || 'Telefone inválido.');
       return;
     }
 
@@ -552,7 +552,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         time: new Date().toLocaleTimeString('pt-BR'),
         text: message.trim(),
         phone: normalizedPhone,
-        deviceName: device?.name || 'Veï¿½culo',
+        deviceName: device?.name || 'Veículo',
         response: res,
       };
 
@@ -582,7 +582,7 @@ const SmsMarketModal = ({ device, onClose }) => {
           time: new Date().toLocaleTimeString('pt-BR'),
           text: message.trim(),
           phone: normalizedPhone || phone,
-          deviceName: device?.name || 'Veï¿½culo',
+          deviceName: device?.name || 'Veículo',
           error: error?.message || 'Erro desconhecido',
         },
         ...prev,
@@ -639,7 +639,7 @@ const SmsMarketModal = ({ device, onClose }) => {
               };
             }
           } catch (e) {
-            // Mantï¿½m o estado atual se falhar temporariamente
+            // Mantém o estado atual se falhar temporariamente
           }
           return rep;
         }),
@@ -772,6 +772,10 @@ const SmsMarketModal = ({ device, onClose }) => {
             size="small"
             fullWidth
             label="Usuario / Login"
+            autoComplete="off"
+            slotProps={{
+              htmlInput: { autoCapitalize: 'none', autoCorrect: 'off', spellCheck: false },
+            }}
             value={creds.user}
             onChange={(e) => setCreds({ ...creds, user: e.target.value })}
             sx={{ mb: 1, bgcolor: '#fff' }}
@@ -846,14 +850,14 @@ const SmsMarketModal = ({ device, onClose }) => {
             boxShadow="0 2px 8px rgba(25,118,210,0.08)"
           >
             <Typography variant="body2" color="textSecondary" fontWeight="medium">
-              Tel: {phone || 'Nï¿½o cadastrado'}
+              Tel: {phone || 'Não cadastrado'}
             </Typography>
             <Typography
               variant="caption"
               fontWeight="bold"
               color={phone ? 'primary.main' : 'error.main'}
             >
-              {phone ? '' : 'Cadastre no veï¿½culo'}
+              {phone ? '' : 'Cadastre no veículo'}
             </Typography>
           </Box>
         )}
@@ -1071,7 +1075,7 @@ const SmsMarketModal = ({ device, onClose }) => {
                 fullWidth
                 size="small"
                 label="Nome do comando"
-                placeholder="Exemplo: Bloquear veï¿½culo"
+                placeholder="Exemplo: Bloquear veículo"
                 value={commandName}
                 onChange={(e) => setCommandName(e.target.value)}
                 disabled={loadingCommands}
