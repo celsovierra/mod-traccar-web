@@ -108,7 +108,7 @@ def povoar():
     with conn.cursor() as cur:
         cur.execute("SELECT id, name, attributes FROM tc_users WHERE attributes IS NOT NULL")
         users = cur.fetchall()
-        cur.execute("DELETE FROM tc_fila_financeiro")
+        cur.execute("DELETE FROM tc_fila_financeiro WHERE token_pag IS NULL OR token_pag = ''")
         inseridos = 0
         for u in users:
             attrs = u.get("attributes") or "{}"
@@ -149,7 +149,7 @@ def povoar():
 def limpar():
     conn = conectar()
     with conn.cursor() as cur:
-        cur.execute("DELETE FROM tc_fila_financeiro")
+        cur.execute("DELETE FROM tc_fila_financeiro WHERE token_pag IS NULL OR token_pag = ''")
         conn.commit()
     conn.close()
     print("Fila limpa")

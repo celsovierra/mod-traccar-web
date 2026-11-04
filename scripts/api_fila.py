@@ -84,7 +84,7 @@ def get_pagamento(token):
             row = cur.fetchone()
         conn.close()
         if not row:
-            return f"<script>window.location.href='{row.get('link_pagamento')}';</script>", 200
+            return jsonify({"error": "Link de pagamento expirado. Solicite um novo link ao suporte."}), 404
         if row.get("vencimento"):
             row["vencimento"] = str(row["vencimento"])
         if row.get("pago_em"):
