@@ -102,7 +102,8 @@ const FilaTab = () => {
     }
   };
 
-  const filtrados = filtro === 'Todos' ? itens : itens.filter((i) => i.tipo === filtro);
+  const visiveis = itens.filter((i) => i.status !== 'Gerado');
+  const filtrados = filtro === 'Todos' ? visiveis : visiveis.filter((i) => i.tipo === filtro);
   const total = filtrados.reduce((s, i) => {
     const v = (i.valor || '0').toString().replace('.', '').replace(',', '.');
     return s + (parseFloat(v) || 0);
