@@ -1380,7 +1380,7 @@ const SmsMarketModal = ({ device, onClose }) => {
         >
           <Box display="flex" alignItems="center" gap={0.5}>
             <Typography variant="subtitle2" fontWeight="bold" color="#1976d2">
-              RELATÃ“RIO
+              RELATÓRIO
             </Typography>
             <Paper
               sx={{
