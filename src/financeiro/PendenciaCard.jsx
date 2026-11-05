@@ -89,6 +89,10 @@ const PendenciaCard = () => {
   };
 
   const pagar = async () => {
+    if (!info.valorBase) {
+      mostrarAviso('Valor n\u00e3o cadastrado. Fale com o suporte.', 'erro');
+      return;
+    }
     setLoading(true);
     try {
       const r = await fetch('/api-financeiro/gerar-pix', {
