@@ -503,6 +503,18 @@ if [ -f ./deploy/nginx-gpscell.site.conf ]; then
   else
     echo "   Nginx de $DOMINIO ja existe. Preservando configuracao atual."
   fi
+  # smsmarket com resolver: nginx nao pode cair se o DNS falhar no boot
+  NGX=/etc/nginx/sites-enabled/$DOMINIO
+  OLD="location /api-smsmarket/ { proxy_pass https://api.smsmarket.com.br/webservice-rest/; proxy_ssl_server_name on; }"
+  NEW="location /api-smsmarket/ { resolver 1.1.1.1 8.8.8.8 valid=300s ipv6=off; set \$sms https://api.smsmarket.com.br; rewrite ^/api-smsmarket/(.*)\$ /webservice-rest/\$1 break; proxy_pass \$sms; proxy_ssl_server_name on; }"
+  if [ -f "$NGX" ] && [ "$(grep -cF "$OLD" "$NGX")" = "1" ]; then
+    cp "$NGX" "/root/nginx-$DOMINIO.bak.smsfix"
+    OLD="$OLD" NEW="$NEW" NGX="$NGX" python3 -c "import os;f=os.environ['NGX'];c=open(f).read();open(f,'w').write(c.replace(os.environ['OLD'],os.environ['NEW']))"
+    if nginx -t 2>/dev/null; then echo "   SMSMarket: resolver aplicado."; else cp "/root/nginx-$DOMINIO.bak.smsfix" "$NGX"; echo "   AVISO: smsmarket revertido (nginx -t falhou)."; fi
+  fi
+  mkdir -p /etc/systemd/system/nginx.service.d
+  printf "[Service]\nRestart=on-failure\nRestartSec=10\n" > /etc/systemd/system/nginx.service.d/restart.conf
+  systemctl daemon-reload
   rm -f /etc/nginx/sites-enabled/default
   nginx -t && systemctl reload nginx || echo "   AVISO: nginx falhou."
 fi
