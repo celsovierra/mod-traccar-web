@@ -198,15 +198,7 @@ const ContasPagarPage = ({ onClose, receberAtraso = 0, receberPorMes = {} }) => 
         String(x.vencimento).localeCompare(String(y.vencimento)),
     );
   const totalMes = contasFiltradas.reduce((s, c) => s + Number(c.valor || 0), 0);
-  const receberAcum =
-    receberAtraso +
-    Object.keys(receberPorMes)
-      .filter((k) => k <= mesFiltro)
-      .reduce((s, k) => s + receberPorMes[k], 0);
-  const contasAcum = contas
-    .filter((c) => String(c.vencimento).slice(0, 7) <= mesFiltro)
-    .reduce((s, c) => s + Number(c.valor || 0), 0);
-  const saldoMes = receberAcum - contasAcum;
+  const saldoMes = 0;
   const mesAtualStr = new Date().toISOString().slice(0, 7);
   const menorMes = contas.reduce((mn, c) => {
     const k = String(c.vencimento).slice(0, 7);
