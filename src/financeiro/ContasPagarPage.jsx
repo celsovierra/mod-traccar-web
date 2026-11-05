@@ -207,10 +207,17 @@ const ContasPagarPage = ({ onClose, receberAtraso = 0, receberPorMes = {} }) => 
   const [anoIni, mesIni] = menorMes.split('-').map(Number);
   const hojeRef = new Date();
   const qtdMeses = (hojeRef.getFullYear() - anoIni) * 12 + (hojeRef.getMonth() + 1 - mesIni) + 25;
-  const listaMeses = Array.from({ length: qtdMeses }, (_, i) => {
+  const mesesComPendente = new Set(
+    contas.filter((c) => !Number(c.pago)).map((c) => String(c.vencimento).slice(0, 7)),
+  );
+  const listaMesesTodos = Array.from({ length: qtdMeses }, (_, i) => {
     const d = new Date(anoIni, mesIni - 1 + i, 1);
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
   });
+
+  const listaMeses = listaMesesTodos.filter(
+    (m) => m >= mesAtualStr || m === mesFiltro || mesesComPendente.has(m),
+  );
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f1f5f9', p: 3 }}>
