@@ -618,11 +618,11 @@ const ClientesTab = () => {
     const d = rascunho[item.id];
     const attrs = {
       ...(item.attributes || {}),
-      fin_telefone1: d.telefone1,
-      fin_telefone2: d.telefone2,
+      fin_telefone1: d.telefone1 ?? item.attributes?.fin_telefone1 ?? '',
+      fin_telefone2: d.telefone2 ?? item.attributes?.fin_telefone2 ?? '',
       fin_valor: d.valor || item.attributes?.fin_valor || '',
-      fin_vencimento: d.vencimento,
-      fin_contrato: d.contrato,
+      fin_vencimento: d.vencimento ?? item.attributes?.fin_vencimento ?? '',
+      fin_contrato: d.contrato ?? item.attributes?.fin_contrato ?? '',
     };
     try {
       await fetchOrThrow('/api/users/' + item.id, {
