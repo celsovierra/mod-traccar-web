@@ -633,8 +633,8 @@ const ClientesTab = () => {
           name: item.name || '-',
           email: item.email || item.name || 'sem@email.com',
           attributes: attrs,
-          administrator: user.administrator,
-          masteruser: user.masteruser,
+          administrator: item.administrator,
+          masteruser: item.masteruser,
         }),
       });
       setItems((prev) => prev.map((u) => (u.id === item.id ? { ...u, attributes: attrs } : u)));
