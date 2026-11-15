@@ -548,7 +548,13 @@ else
 fi
 echo "   Forward URL: $FORWARD_URL"
 echo ">> Limitando binlog do MySQL (2 dias)..."
-mysql -u root -e "SET PERSIST binlog_expire_logs_seconds=172800;" 2>/dev/null || true
+if mysql -N -e "SELECT VERSION()" 2>/dev/null | grep -qi mariadb; then
+  mysql -u root -e "SET GLOBAL binlog_expire_logs_seconds=172800;" 2>/dev/null || true
+  echo "[mysqld]" > /etc/mysql/mariadb.conf.d/99-binlog.cnf
+  echo "binlog_expire_logs_seconds = 172800" >> /etc/mysql/mariadb.conf.d/99-binlog.cnf
+else
+  mysql -u root -e "SET PERSIST binlog_expire_logs_seconds=172800;" 2>/dev/null || true
+fi
 echo ">> Garantindo notificacoes de ignicao (web,firebase)..."
 mysql -u traccar -p"Traccar@2026#Sec" traccar -e "UPDATE tc_notifications SET notificators='web,firebase', always=1 WHERE type IN ('ignitionOn','ignitionOff'); DELETE FROM tc_user_notification WHERE notificationid IN (SELECT id FROM tc_notifications WHERE type='ignitionOff'); DELETE un FROM tc_user_notification un JOIN tc_notifications n ON n.id=un.notificationid AND n.type='ignitionOn' JOIN tc_users u ON u.id=un.userid WHERE u.attributes LIKE '%fin_evo_url%'; INSERT INTO tc_device_notification (deviceid, notificationid) SELECT d.id, n.id FROM tc_devices d, tc_notifications n WHERE n.type IN ('ignitionOn','ignitionOff') AND NOT EXISTS (SELECT 1 FROM tc_device_notification x WHERE x.deviceid=d.id AND x.notificationid=n.id);" 2>/dev/null || true
 if grep -q 'event.forward.url' /opt/traccar/conf/traccar.xml; then
