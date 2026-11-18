@@ -359,6 +359,17 @@ def processar(forcar=False):
             if not forcar and agora < hora_config(hora_cfg):
                 pulados += 1
                 continue
+            # Rele o cliente (baixa manual / nao cobrar): cancela o item
+            cur.execute("SELECT attributes FROM tc_users WHERE id = %s", (item["user_id"],))
+            ru = cur.fetchone()
+            if ru:
+                va = to_date(get_attr(ru["attributes"], "fin_vencimento"))
+                nc = str(get_attr(ru["attributes"], "fin_nao_cobrar")).lower() == "true"
+                if nc or (va and to_date(item["vencimento"]) and va != to_date(item["vencimento"])):
+                    cur.execute("UPDATE tc_fila_financeiro SET status=%s WHERE id=%s", ("Cancelado", item["id"]))
+                    conn.commit()
+                    pulados += 1
+                    continue
             # Gera PIX no Mercado Pago se configurado
             attrs_admin = get_admin_attrs()
             gw_ativo = attrs_admin.get("fin_gw_ativo") or ""
