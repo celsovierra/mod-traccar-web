@@ -304,8 +304,7 @@ const ReportFilter = ({
         {Object.keys(options).length === 1 ? (
           <Button
             fullWidth
-            variant="outlined"
-            color="secondary"
+            variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, py: 1.3, boxShadow: "none", "&.Mui-disabled": { bgcolor: "primary.main", color: "#fff", opacity: 0.5 } }}
             disabled={disabled}
             onClick={onClick}
           >
@@ -316,8 +315,7 @@ const ReportFilter = ({
         ) : (
           <SplitButton
             fullWidth
-            variant="outlined"
-            color="secondary"
+            variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, py: 1.3, boxShadow: "none", "&.Mui-disabled": { bgcolor: "primary.main", color: "#fff", opacity: 0.5 } }}
             disabled={disabled}
             onClick={onClick}
             selected={selectedOption}
@@ -331,3 +329,5 @@ const ReportFilter = ({
 };
 
 export default ReportFilter;
+
+
