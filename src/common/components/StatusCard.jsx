@@ -1,4 +1,4 @@
-﻿import { AnchorButton } from '../../features/anchor/AnchorButton';
+import { AnchorButton } from '../../features/anchor/AnchorButton';
 import { useAnchor } from '../../features/anchor/useAnchor';
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -38,6 +38,8 @@ import RouteIcon from '@mui/icons-material/Route';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShareIcon from '@mui/icons-material/Share';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import DeviceReportDialog from './DeviceReportDialog';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -128,7 +130,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   cardAdminPc: {
     [theme.breakpoints.up('md')]: {
-      width: 540,
+      width: 640,
       maxWidth: 'calc(100vw - 490px)',
     },
   },
@@ -1265,6 +1267,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
     }
   };
 
+  const [reportOpen, setReportOpen] = useState(false);
   const handleShareWhatsapp = async () => {
     const pos = position || {};
     const isOnline = device?.status === 'online';
@@ -1849,6 +1852,15 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
 
                     <ButtonBase
                       className={classes.actionItemBtn}
+                      onClick={() => setReportOpen(true)}
+                      disabled={disableActions}
+                    >
+                      <AssessmentIcon sx={{ fontSize: 22, color: '#0ea5e9' }} />
+                      <Typography className={classes.actionText}>Relatório</Typography>
+                    </ButtonBase>
+
+                    <ButtonBase
+                      className={classes.actionItemBtn}
                       onClick={() => navigate(`/settings/device/${deviceId}`)}
                       disabled={disableActions || deviceReadonly}
                     >
@@ -2339,6 +2351,11 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
           </Box>
         </Box>
       </Dialog>
+      <DeviceReportDialog
+        deviceId={deviceId}
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+      />
       <RemoveDialog
         open={removing}
         endpoint="devices"
