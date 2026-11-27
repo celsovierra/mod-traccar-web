@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import {
   Box,
@@ -126,7 +126,7 @@ const CombinedReportPage = () => {
     }
   }, []);
 
-  const renderChip = (type) => {
+  const renderChip = (type, ev) => {
     const cfg = eventConfig[type] || { icon: NotificationsNoneIcon, color: 'default' };
     const Icon = cfg.icon;
     return (
@@ -134,7 +134,11 @@ const CombinedReportPage = () => {
         size="small"
         variant="outlined"
         icon={<Icon />}
-        label={getLabel(type)}
+        label={
+          type === 'alarm' && ev?.attributes?.alarm
+            ? t(prefixString('alarm', ev.attributes.alarm))
+            : getLabel(type)
+        }
         color={cfg.color}
         sx={{ fontWeight: 600 }}
       />
@@ -199,7 +203,7 @@ const CombinedReportPage = () => {
                 </Typography>
               ) : null}
             </Box>
-            {renderChip(event.type)}
+            {renderChip(event.type, event)}
           </Box>
         ))}
       </Paper>
@@ -238,7 +242,7 @@ const CombinedReportPage = () => {
                   <TableRow key={event.id} hover>
                     <TableCell sx={{ fontWeight: 600 }}>{index ? '' : group.name}</TableCell>
                     <TableCell>{formatTime(event.eventTime, 'seconds')}</TableCell>
-                    <TableCell>{renderChip(event.type)}</TableCell>
+                    <TableCell>{renderChip(event.type, event)}</TableCell>
                     <TableCell>{event.user || ''}</TableCell>
                   </TableRow>
                 )),
@@ -268,5 +272,3 @@ const CombinedReportPage = () => {
 };
 
 export default CombinedReportPage;
-
-
