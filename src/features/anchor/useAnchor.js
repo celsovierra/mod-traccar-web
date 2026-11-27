@@ -117,6 +117,7 @@ export const useAnchor = (deviceId) => {
       body: JSON.stringify({
         type: willActivate ? 'anchorActivated' : 'anchorDeactivated',
         user: user?.name || user?.email || '',
+        role: isAdmin ? 'admin' : 'user',
       }),
     }).catch(() => {});
 

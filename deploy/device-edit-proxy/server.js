@@ -269,14 +269,14 @@ async function handleGeofenceList(req, res, deviceId, cookieHeader) {
 async function handleEventCreate(req, res, deviceId, cookieHeader) {
   const body = await readBody(req);
   try {
-    const { type, eventtime, user } = JSON.parse(body || '{}');
+    const { type, eventtime, user, role } = JSON.parse(body || '{}');
     if (!type) { sendJson(res, 400, { error: 'type obrigatorio' }); return; }
     const authorized = await checkDeviceAccess(deviceId, cookieHeader);
     if (!authorized) { sendJson(res, 403, { error: 'Sem permissao' }); return; }
     const [posRows] = await pool.query('SELECT id FROM tc_positions WHERE deviceid = ? ORDER BY id DESC LIMIT 1', [deviceId]);
     const positionId = posRows.length ? posRows[0].id : 0;
     const when = eventtime ? new Date(eventtime) : new Date();
-    await pool.query('INSERT INTO tc_events (type, eventtime, deviceid, positionid, attributes) VALUES (?, ?, ?, ?, ?)', [type, when, deviceId, positionId, JSON.stringify({ user: user || '' })]);
+    await pool.query('INSERT INTO tc_events (type, eventtime, deviceid, positionid, attributes) VALUES (?, ?, ?, ?, ?)', [type, when, deviceId, positionId, JSON.stringify({ user: user || '', role: role || '' })]);
     sendJson(res, 200, { success: true });
   } catch (error) {
     console.error('Erro ao criar evento:', error);

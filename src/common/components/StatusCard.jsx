@@ -878,6 +878,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions }) => {
         body: JSON.stringify({
           type: isStop ? 'deviceBlocked' : 'deviceUnblocked',
           user: user?.name || user?.email || '',
+          role: admin ? 'admin' : 'user',
         }),
       }).catch(() => {});
 

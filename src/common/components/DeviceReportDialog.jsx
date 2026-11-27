@@ -47,6 +47,7 @@ const DeviceReportDialog = ({ deviceId, open, onClose }) => {
   const device = useSelector((state) => state.devices.items[deviceId]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [periodo, setPeriodo] = useState('hoje');
 
   const getLabel = (type) => customLabels[type] || t(prefixString('event', type));
 
@@ -58,6 +59,15 @@ const DeviceReportDialog = ({ deviceId, open, onClose }) => {
         const to = new Date();
         const from = new Date();
         from.setHours(0, 0, 0, 0);
+        if (periodo === 'ontem') {
+          from.setDate(from.getDate() - 1);
+          to.setTime(from.getTime());
+          to.setHours(23, 59, 59, 999);
+        } else if (periodo === '7d') {
+          from.setDate(from.getDate() - 6);
+        } else if (periodo === '30d') {
+          from.setDate(from.getDate() - 29);
+        }
         const q = new URLSearchParams({ from: from.toISOString(), to: to.toISOString() });
         q.append('deviceId', deviceId);
         const resp = await fetchOrThrow('/api/reports/combined?' + q.toString());
@@ -69,13 +79,27 @@ const DeviceReportDialog = ({ deviceId, open, onClose }) => {
           );
           if (ev.ok) {
             const custom = await ev.json();
+            const proprios = [
+              'anchorActivated',
+              'anchorDeactivated',
+              'anchorExited',
+              'deviceBlocked',
+              'deviceUnblocked',
+            ];
             list = [
-              ...list,
+              ...list.filter((e) => !proprios.includes(e.type)),
               ...custom.map((e) => ({
                 id: 'c' + e.id,
                 type: e.type,
                 eventTime: new Date(e.eventtime).getTime(),
-                attributes: {},
+                attributes: {
+                  role: e.attributes
+                    ? (typeof e.attributes === 'string'
+                        ? JSON.parse(e.attributes || '{}')
+                        : e.attributes
+                      ).role
+                    : undefined,
+                },
               })),
             ];
           }
@@ -89,7 +113,7 @@ const DeviceReportDialog = ({ deviceId, open, onClose }) => {
       }
     };
     load();
-  }, [open, deviceId]);
+  }, [open, deviceId, periodo]);
 
   return (
     <Dialog
@@ -103,6 +127,25 @@ const DeviceReportDialog = ({ deviceId, open, onClose }) => {
         <Typography sx={{ fontWeight: 800, fontSize: 15, color: '#111827' }}>
           {device?.name || ''}
         </Typography>
+        <Box sx={{ display: 'flex', gap: 0.8, mt: 1, flexWrap: 'wrap' }}>
+          {[
+            ['hoje', 'Hoje'],
+            ['ontem', 'Ontem'],
+            ['7d', '7 dias'],
+            ['30d', '30 dias'],
+          ].map(([k, n]) => (
+            <Chip
+              key={k}
+              size="small"
+              label={n}
+              clickable
+              onClick={() => setPeriodo(k)}
+              color={periodo === k ? 'primary' : 'default'}
+              variant={periodo === k ? 'filled' : 'outlined'}
+              sx={{ fontWeight: 700 }}
+            />
+          ))}
+        </Box>
       </Box>
       <Box sx={{ overflowY: 'auto', flex: 1, bgcolor: '#fff' }}>
         {loading && <Typography sx={{ p: 2, color: '#6b7280' }}>Carregando...</Typography>}
@@ -132,6 +175,17 @@ const DeviceReportDialog = ({ deviceId, open, onClose }) => {
               <Typography sx={{ fontWeight: 700, fontSize: 13, color: '#111827' }}>
                 {formatTime(ev.eventTime, 'seconds')}
               </Typography>
+              {ev.attributes?.role && (
+                <Typography
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: 11,
+                    color: ev.attributes.role === 'admin' ? '#ea580c' : '#2563eb',
+                  }}
+                >
+                  {ev.attributes.role === 'admin' ? 'ADM' : 'USER'}
+                </Typography>
+              )}
               <Chip
                 size="small"
                 variant="outlined"
